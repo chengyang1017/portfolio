@@ -1,0 +1,209 @@
+:root {
+  --ink: #f3f5f2;
+  --muted: #9eaaa4;
+  --paper: #0d1210;
+  --surface: #151c19;
+  --line: #2c3933;
+  --accent: #c7ff4a;
+  --dark: #1e2824;
+
+  color-scheme: dark;
+}
+
+html,
+body {
+  background: var(--paper);
+  color: var(--ink);
+}
+
+::selection {
+  background: var(--accent);
+  color: #0b100d;
+}
+
+/* Global controls */
+.button {
+  background: var(--accent);
+  color: #0b100d;
+}
+
+.button:hover {
+  background: #d5ff73;
+}
+
+.text-link {
+  text-decoration-color: #65736d;
+}
+
+.language-switcher select {
+  background: #111815;
+  border-color: var(--line);
+  color: var(--ink);
+}
+
+.language-switcher select option {
+  background: #111815;
+  color: var(--ink);
+}
+
+/* Home / project visuals */
+.hero h1 em,
+.page-intro h1 em,
+.about-hero h1 em {
+  color: #718079;
+}
+
+.areas {
+  background: #101613;
+}
+
+.visual {
+  background: #1f2e25;
+}
+
+.tone-blue {
+  background: #18262d;
+}
+
+.tone-sand {
+  background: #2b251c;
+}
+
+.tone-lavender {
+  background: #24212d;
+}
+
+.tone-slate {
+  background: #1d292a;
+}
+
+.tone-coral {
+  background: #2d211d;
+}
+
+.visual-window {
+  background: #111714;
+  color: var(--ink);
+  border: 1px solid #2b3732;
+  box-shadow: 0 28px 65px #00000066;
+}
+
+.visual-bar {
+  border-bottom-color: #2a3731;
+  color: #77857f;
+}
+
+.visual-bar b {
+  color: #9ca8a2;
+}
+
+.visual-body aside {
+  border-right-color: #2a3731;
+}
+
+.visual-body .selected {
+  color: #0b100d;
+}
+
+.visual-pills b {
+  background: #1d2823;
+}
+
+.visual-lines i {
+  background: #2c3933;
+}
+
+.portrait {
+  background: #18231e;
+  color: var(--accent);
+  border: 1px solid var(--line);
+}
+
+/* Project filters */
+.filter-row button.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #0b100d;
+}
+
+/* Case-study sections */
+.challenges {
+  background: #111815;
+}
+
+.challenge-grid article {
+  border-top-color: var(--line);
+}
+
+/* Shared dark feature sections */
+.feature,
+.about-preview,
+.about-story,
+.case-dark {
+  background: var(--dark);
+  color: var(--ink);
+}
+
+/* Footer */
+.footer {
+  background: #101613;
+}
+
+.footer-bottom {
+  border-top-color: var(--line);
+}
+
+/* Source explanation surfaces */
+.source-card,
+.source-feature-list a,
+.related-features a,
+.source-empty,
+.architecture-node,
+.principles article {
+  background: #101613;
+}
+
+.source-card:hover,
+.source-feature-list a:hover,
+.related-features a:hover {
+  background: var(--surface);
+}
+
+.code-flow,
+.related-files,
+.source-code-blocks figure {
+  box-shadow: 0 18px 50px #00000024;
+}
+
+.related-files {
+  background: #141d19;
+}
+
+.related-files article {
+  background: #1d2924;
+  border-color: #34433c;
+}
+
+.related-files article:hover {
+  background: #23312b;
+  border-color: #53645c;
+}
+
+.code-flow {
+  background: #141d19;
+}
+
+.code-flow-step-index,
+.code-flow-step-file {
+  background: #1d2924;
+}
+
+.source-code-blocks figure {
+  background: #111815;
+}
+
+@media (max-width: 680px) {
+  .navbar nav {
+    background: #0d1210;
+  }
+}
