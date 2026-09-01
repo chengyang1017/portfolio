@@ -176,5 +176,165 @@ export const shoppingAppSourceExplanation:
           },
         ],
       },
+      {
+        slug: 'orders-inventory',
+
+        nameKey:
+          'source.shopping.orders.name',
+
+        summaryKey:
+          'source.shopping.orders.summary',
+
+        features: [
+          {
+            slug: 'reserved-stock-expiration',
+
+            nameKey:
+              'source.shopping.reservation.name',
+
+            summaryKey:
+              'source.shopping.reservation.summary',
+
+            explanationKeys: [
+              'source.shopping.reservation.explanation.1',
+              'source.shopping.reservation.explanation.2',
+            ],
+
+            relatedFiles: [
+              {
+                path:
+                  'server/src/services/customer_order_service.ts',
+              },
+              {
+                path:
+                  'server/src/services/order_expiration_service.ts',
+              },
+              {
+                path:
+                  'server/src/services/inventory_service.ts',
+              },
+            ],
+
+            codeFlow: [
+              {
+                id: 'rebuild-order-pricing',
+
+                titleKey:
+                  'source.shopping.reservation.flow.1.title',
+
+                descriptionKey:
+                  'source.shopping.reservation.flow.1.description',
+
+                filePath:
+                  'server/src/services/customer_order_service.ts',
+              },
+              {
+                id: 'reserve-stock',
+
+                titleKey:
+                  'source.shopping.reservation.flow.2.title',
+
+                descriptionKey:
+                  'source.shopping.reservation.flow.2.description',
+
+                filePath:
+                  'server/src/services/customer_order_service.ts',
+              },
+              {
+                id: 'create-expiring-order',
+
+                titleKey:
+                  'source.shopping.reservation.flow.3.title',
+
+                descriptionKey:
+                  'source.shopping.reservation.flow.3.description',
+
+                filePath:
+                  'server/src/services/customer_order_service.ts',
+              },
+              {
+                id: 'release-expired-stock',
+
+                titleKey:
+                  'source.shopping.reservation.flow.4.title',
+
+                descriptionKey:
+                  'source.shopping.reservation.flow.4.description',
+
+                filePath:
+                  'server/src/services/order_expiration_service.ts',
+              },
+            ],
+
+            codeBlocks: [
+              {
+                id: 'create-order-reservation',
+
+                language: 'typescript',
+
+                source: {
+                  type: 'github',
+
+                  repository:
+                    'chengyang1017/shoppingapp123',
+
+                  path:
+                    'server/src/services/customer_order_service.ts',
+
+                  symbol:
+                    'createCustomerOrder',
+                },
+
+                captionKey:
+                  'source.shopping.reservation.code.order',
+              },
+              {
+                id: 'expire-pending-orders',
+
+                language: 'typescript',
+
+                source: {
+                  type: 'github',
+
+                  repository:
+                    'chengyang1017/shoppingapp123',
+
+                  path:
+                    'server/src/services/order_expiration_service.ts',
+
+                  symbol:
+                    'expirePendingOrders',
+                },
+
+                captionKey:
+                  'source.shopping.reservation.code.expiration',
+              },
+              {
+                id: 'inventory-row-lock',
+
+                language: 'typescript',
+
+                source: {
+                  type: 'github',
+
+                  repository:
+                    'chengyang1017/shoppingapp123',
+
+                  path:
+                    'server/src/services/inventory_service.ts',
+
+                  symbol:
+                    'changeInventory',
+                },
+
+                captionKey:
+                  'source.shopping.reservation.code.inventory',
+              },
+            ],
+
+            relatedFeatureSlugs: [],
+          },
+        ],
+      },
     ],
   };
