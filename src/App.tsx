@@ -15,7 +15,7 @@ function MetadataSync(){
     const project = pathname.startsWith('/projects/') ? getProject(pathname.split('/').pop() ?? '') : undefined;
     const page = project?.title ?? (pathname === '/projects' ? 'Projects' : pathname === '/about' ? 'About' : 'Portfolio');
     const title = `${page} — Lim Cheng Yang`;
-    const description = project?.summary ?? 'Lim Cheng Yang is a product-minded software engineer building thoughtful tools for language, learning, and everyday life.';
+    const description = project?.summary ?? 'Portfolio of Lim Cheng Yang documenting public software repositories and one project in development.';
     document.title = title;
     const values: Record<string, string> = {
       'meta[property="og:title"]': title,

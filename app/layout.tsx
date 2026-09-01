@@ -13,23 +13,23 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'Lim Cheng Yang — Software Engineer',
+  title: 'Lim Cheng Yang — Software Projects',
   description:
-    'Lim Cheng Yang is a product-minded software engineer building thoughtful tools for language, learning, and everyday life.',
+    'Portfolio of Lim Cheng Yang documenting public software repositories and one project in development.',
   applicationName: 'Lim Cheng Yang Portfolio',
   authors: [{ name: 'Lim Cheng Yang' }],
   openGraph: {
-    title: 'Lim Cheng Yang — Software Engineer',
+    title: 'Lim Cheng Yang — Software Projects',
     description:
-      'A developer portfolio focused on language technology, learning tools, and product engineering.',
+      'Software projects across language tooling, mobile applications, developer tools, commerce, and backend systems.',
     siteName: 'Lim Cheng Yang Portfolio',
     type: 'website',
   },
   twitter: {
     card: 'summary',
-    title: 'Lim Cheng Yang — Software Engineer',
+    title: 'Lim Cheng Yang — Software Projects',
     description:
-      'A developer portfolio focused on language technology, learning tools, and product engineering.',
+      'Software projects across language tooling, mobile applications, developer tools, commerce, and backend systems.',
   },
 };
 
