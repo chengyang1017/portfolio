@@ -1,13 +1,14 @@
 .code-flow {
   display: grid;
-  gap: 12px;
+  gap: 8px;
+  max-width: 980px;
 }
 
 .code-flow article {
   display: grid;
-  grid-template-columns: 44px minmax(0, 1fr);
+  grid-template-columns: 36px minmax(0, 1fr);
 
-  padding: 20px;
+  padding: 14px 16px;
 
   border: 1px solid var(--line);
 }
@@ -24,9 +25,9 @@
 }
 
 .code-flow h3 {
-  margin: 0 0 8px;
+  margin: 0 0 5px;
 
-  font-size: 1rem;
+  font-size: 0.92rem;
   font-weight: 500;
 }
 
@@ -35,17 +36,18 @@
 
   color: var(--muted);
 
+  font-size: 0.9rem;
   line-height: 1.55;
 }
 
 .code-flow code {
   display: inline-block;
 
-  margin-top: 12px;
+  margin-top: 8px;
 
   color: var(--ink);
 
-  font-size: 0.78rem;
+  font-size: 0.72rem;
 
   overflow-wrap: anywhere;
 }
@@ -53,16 +55,21 @@
 .code-flow article > i {
   grid-column: 2;
 
-  margin-top: 14px;
+  margin-top: 8px;
 
   color: var(--muted);
 
+  font-size: 0.85rem;
   font-style: normal;
 }
 
 @media (max-width: 680px) {
+  .code-flow {
+    max-width: 100%;
+  }
+
   .code-flow article {
     grid-template-columns: 32px minmax(0, 1fr);
-    padding: 18px;
+    padding: 14px;
   }
 }
