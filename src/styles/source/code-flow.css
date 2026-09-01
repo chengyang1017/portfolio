@@ -1,75 +1,169 @@
 .code-flow {
-  display: grid;
-  gap: 8px;
+  list-style: none;
+
   max-width: 980px;
+
+  margin: 0;
+  padding: 24px 26px;
+
+  background: var(--dark);
+  border-radius: 16px;
 }
 
-.code-flow article {
+.code-flow-step {
+  position: relative;
+
   display: grid;
-  grid-template-columns: 36px minmax(0, 1fr);
+  grid-template-columns:
+    46px minmax(0, 1fr);
 
-  padding: 14px 16px;
-
-  border: 1px solid var(--line);
+  gap: 18px;
 }
 
-.code-flow article > span {
-  color: var(--muted);
+/* 步骤之间的连接线 */
+.code-flow-step:not(:last-child)::after {
+  content: "";
 
-  font-size: 0.72rem;
+  position: absolute;
+
+  left: 18px;
+  top: 38px;
+  bottom: 0;
+
+  width: 1px;
+
+  background: #3a4741;
+}
+
+/* 01 / 02 / 03 */
+.code-flow-step-index {
+  position: relative;
+  z-index: 1;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 36px;
+  height: 36px;
+
+  background: #26322d;
+
+  border: 1px solid #64716a;
+  border-radius: 50%;
+
+  color: var(--accent);
+
+  font-size: 0.68rem;
   font-weight: 600;
+  letter-spacing: 0.06em;
 }
 
-.code-flow article > div {
+/* 每一步内容 */
+.code-flow-step-body {
   min-width: 0;
+
+  padding:
+    5px
+    0
+    30px;
+
+  border-top: 1px solid #3a4741;
 }
 
-.code-flow h3 {
-  margin: 0 0 5px;
+.code-flow-step:last-child
+.code-flow-step-body {
+  padding-bottom: 5px;
+}
 
-  font-size: 0.92rem;
+.code-flow-step h3 {
+  margin:
+    0
+    0
+    7px;
+
+  color: #f3f5f2;
+
+  font-size: 1rem;
   font-weight: 500;
+  line-height: 1.35;
 }
 
-.code-flow p {
+.code-flow-step p {
+  max-width: 780px;
+
   margin: 0;
 
-  color: var(--muted);
+  color: #c0c9c4;
 
-  font-size: 0.9rem;
-  line-height: 1.55;
+  font-size: 0.88rem;
+  line-height: 1.6;
 }
 
-.code-flow code {
+/* 文件路径 */
+.code-flow-step-file {
   display: inline-block;
 
-  margin-top: 8px;
+  max-width: 100%;
 
-  color: var(--ink);
+  margin-top: 10px;
+  padding: 5px 8px;
 
-  font-size: 0.72rem;
+  background: #26322d;
+
+  border: 1px solid #3a4741;
+  border-radius: 5px;
+
+  color: #9eaaa4;
+
+  font-size: 0.7rem;
+  line-height: 1.4;
 
   overflow-wrap: anywhere;
-}
-
-.code-flow article > i {
-  grid-column: 2;
-
-  margin-top: 8px;
-
-  color: var(--muted);
-
-  font-size: 0.85rem;
-  font-style: normal;
 }
 
 @media (max-width: 680px) {
   .code-flow {
     max-width: 100%;
+
+    padding: 18px 16px;
   }
 
-  .code-flow article {
-    grid-template-columns: 32px minmax(0, 1fr);
-    padding: 14px;
+  .code-flow-step {
+    grid-template-columns:
+      38px minmax(0, 1fr);
+
+    gap: 12px;
+  }
+
+  .code-flow-step-index {
+    width: 32px;
+    height: 32px;
+
+    font-size: 0.62rem;
+  }
+
+  .code-flow-step:not(:last-child)::after {
+    left: 16px;
+    top: 34px;
+  }
+
+  .code-flow-step-body {
+    padding:
+      3px
+      0
+      25px;
+  }
+
+  .code-flow-step h3 {
+    font-size: 0.94rem;
+  }
+
+  .code-flow-step p {
+    font-size: 0.82rem;
+  }
+
+  .code-flow-step-file {
+    font-size: 0.66rem;
   }
 }
