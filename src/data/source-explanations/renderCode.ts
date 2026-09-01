@@ -1,6 +1,6 @@
 import type { TranslationKey } from '../../i18n/types';
 
-const commentPlaceholder = /\{\{([^{}]+)\}\}/g;
+const commentPlaceholder = /\{\{i18n:([^{}]+)\}\}/g;
 
 export function renderTranslatedCode(
   code: string,
