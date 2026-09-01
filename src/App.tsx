@@ -6,6 +6,9 @@ import { AboutPage } from './pages/AboutPage';
 import { HomePage } from './pages/HomePage';
 import { ProjectDetailPage } from './pages/ProjectDetailPage';
 import { ProjectsPage } from './pages/ProjectsPage';
+import { ProjectSourcePage } from './pages/ProjectSourcePage';
+import { SourceCategoryPage } from './pages/SourceCategoryPage';
+import { SourceFeaturePage } from './pages/SourceFeaturePage';
 import { getProject } from './data/projects';
 
 function ScrollToTop(){ const {pathname}=useLocation(); useEffect(()=>{ window.scrollTo(0,0); },[pathname]); return null; }
@@ -29,4 +32,4 @@ function MetadataSync(){
   }, [pathname]);
   return null;
 }
-export default function App(){ return <><ScrollToTop/><MetadataSync/><Navbar/><Routes><Route path="/" element={<HomePage/>}/><Route path="/projects" element={<ProjectsPage/>}/><Route path="/projects/:slug" element={<ProjectDetailPage/>}/><Route path="/about" element={<AboutPage/>}/><Route path="*" element={<HomePage/>}/></Routes><Footer/></>; }
+export default function App(){ return <><ScrollToTop/><MetadataSync/><Navbar/><Routes><Route path="/" element={<HomePage/>}/><Route path="/projects" element={<ProjectsPage/>}/><Route path="/projects/:slug/source" element={<ProjectSourcePage/>}/><Route path="/projects/:slug/source/:category" element={<SourceCategoryPage/>}/><Route path="/projects/:slug/source/:category/:feature" element={<SourceFeaturePage/>}/><Route path="/projects/:slug" element={<ProjectDetailPage/>}/><Route path="/about" element={<AboutPage/>}/><Route path="*" element={<HomePage/>}/></Routes><Footer/></>; }

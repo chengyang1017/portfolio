@@ -4,9 +4,11 @@ import { ProjectGallery } from '../components/ProjectGallery';
 import { ProjectVisual } from '../components/ProjectVisual';
 import { TechTag } from '../components/TechTag';
 import { getProject, projects } from '../data/projects';
+import { useI18n } from '../i18n/I18nProvider';
 
 export function ProjectDetailPage() {
   const { slug = '' } = useParams();
+  const { t } = useI18n();
   const project = getProject(slug);
   if (!project) return <Navigate to="/projects" replace />;
   const index = projects.indexOf(project);
@@ -26,7 +28,7 @@ export function ProjectDetailPage() {
     </section>
     <section className="case-section shell overview">
       <p className="eyebrow">01 / Overview</p><h2>{project.overview}</h2>
-      <div className="case-links">{project.github && <a href={project.github}>GitHub ↗</a>}</div>
+      <div className="case-links">{project.github && <a href={project.github}>GitHub ↗</a>}<Link to={`/projects/${project.slug}/source`}>{t('source.entry')} ↗</Link></div>
     </section>
     {project.features.length > 0 && <section className="case-section case-dark"><div className="shell"><p className="eyebrow">02 / Verified features</p><div className="features-list">{project.features.map((feature, i) => <article key={feature}><span>{String(i + 1).padStart(2, '0')}</span><h3>{feature}</h3></article>)}</div></div></section>}
     <section className="case-section shell"><p className="eyebrow">03 / Architecture</p><h2 className="case-heading">Verified repository structure and technologies.</h2><ArchitectureDiagram nodes={project.architecture}/><div className="all-tags">{project.technologies.map(t => <TechTag key={t}>{t}</TechTag>)}</div></section>
