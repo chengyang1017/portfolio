@@ -41,6 +41,24 @@ export type SourceCodeSource =
   | InlineCodeSource
   | GitHubCodeSource;
 
+export interface SourceCodeAnnotation {
+  /**
+   * 找到包含这个内容的代码行。
+   * 不使用固定行号，源码前后增加代码也不会立刻失效。
+   */
+  anchor: string;
+
+  /**
+   * 注释放在目标代码之前还是之后。
+   */
+  position?: 'before' | 'after';
+
+  /**
+   * 注释正文使用 i18n。
+   */
+  textKey: TranslationKey;
+}
+
 export interface SourceCodeBlock {
   id: string;
   language: string;
@@ -48,6 +66,12 @@ export interface SourceCodeBlock {
   source: SourceCodeSource;
 
   captionKey?: TranslationKey;
+
+  /**
+   * 只用于 Portfolio 展示。
+   * 不会修改真实 GitHub 源码。
+   */
+  annotations?: SourceCodeAnnotation[];
 }
 
 export interface SourceFeatureExplanation {

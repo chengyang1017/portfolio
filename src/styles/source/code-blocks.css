@@ -233,3 +233,89 @@
     line-height: 1.5;
   }
 }
+
+.source-code-collapse-button {
+  display: grid;
+  place-items: center;
+
+  flex-shrink: 0;
+
+  width: 30px;
+  height: 30px;
+
+  padding: 0;
+
+  border:
+    1px solid
+    rgba(255, 255, 255, 0.12);
+
+  border-radius: 6px;
+
+  background: transparent;
+  color: #9eaaa4;
+
+  cursor: pointer;
+
+  transition:
+    background 0.18s,
+    color 0.18s,
+    border-color 0.18s;
+}
+
+.source-code-collapse-button:hover {
+  background:
+    rgba(
+      255,
+      255,
+      255,
+      0.06
+    );
+
+  border-color:
+    var(--accent);
+
+  color:
+    var(--accent);
+}
+
+.source-code-collapse-icon {
+  width: 15px;
+  height: 15px;
+
+  transition:
+    transform 0.2s ease;
+}
+
+/*
+ * 默认箭头向下：
+ * 表示可以展开。
+ *
+ * 展开以后旋转 180°：
+ * 表示可以收起。
+ */
+.source-code-collapse-icon.expanded {
+  transform:
+    rotate(180deg);
+}
+
+/*
+ * 收起以后只留下 header。
+ */
+.source-code-block.collapsed
+  figcaption {
+  border-bottom: 0;
+}
+
+/*
+ * 收起状态稍微压紧。
+ */
+.source-code-block.collapsed {
+  min-height: 0;
+}
+
+/*
+ * 代码内容区域。
+ */
+.source-code-content {
+  min-width: 0;
+}

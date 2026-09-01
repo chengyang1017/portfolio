@@ -6,7 +6,7 @@ const en: TranslationDictionary = {
     'Trace verified production paths across Flutter, repository boundaries, the Node.js API, Prisma, PostgreSQL, Firestore, and scheduled cleanup jobs.',
   'source.glyphora.posts.name': 'Posts & engagement',
   'source.glyphora.posts.summary':
-    'How multilingual posts cross the client-server boundary and how likes stay responsive without losing database consistency.',
+    'How publishing, likes, bookmarks, reports, multilingual versions, edit history, and post lifecycle operations cross client-server boundaries without losing consistency.',
   'source.glyphora.publish.name': 'Publish a multilingual post',
   'source.glyphora.publish.summary':
     'Validate Quill content, upload media, cross the repository boundary, and atomically create the post and its original language version.',
@@ -54,6 +54,145 @@ const en: TranslationDictionary = {
     'The interface responds immediately but keeps enough state for a precise rollback.',
   'source.glyphora.like.code.server':
     'Repeated PUT requests are harmless and the counter is derived from PostLike rows.',
+  'source.glyphora.bookmark.name': 'Bookmark posts',
+  'source.glyphora.bookmark.summary':
+    'Keep bookmark interactions immediate while persisting one user-post relation and exposing a dedicated saved-post collection.',
+  'source.glyphora.bookmark.explanation.1':
+    'PostDetailScreen applies an optimistic bookmark state and rolls back on failure. PostNodeService chooses bookmark or remove-bookmark based on the desired state, while PostApi maps those operations to POST and DELETE on the same resource.',
+  'source.glyphora.bookmark.explanation.2':
+    'The backend resolves the authenticated user and post, uses upsert for bookmark creation and deleteMany for removal, so repeated requests stay idempotent. Saved posts are returned in reverse bookmark time order.',
+  'source.glyphora.bookmark.flow.1.title': 'Update the bookmark state immediately',
+  'source.glyphora.bookmark.flow.1.description':
+    'The detail screen updates the icon first, keeps the previous value, and marks the operation busy until the server confirms it.',
+  'source.glyphora.bookmark.flow.2.title': 'Choose the desired repository operation',
+  'source.glyphora.bookmark.flow.2.description':
+    'PostNodeService converts the desired boolean state into bookmarkPost or removeBookmark without exposing transport details to the UI.',
+  'source.glyphora.bookmark.flow.3.title': 'Use one idempotent HTTP resource',
+  'source.glyphora.bookmark.flow.3.description':
+    'PostApi sends POST /posts/:id/bookmark to save and DELETE on the same path to remove the bookmark.',
+  'source.glyphora.bookmark.flow.4.title': 'Persist one user-post relation',
+  'source.glyphora.bookmark.flow.4.description':
+    'The API resolves both records, uses upsert to prevent duplicate bookmarks, and deleteMany to make repeated removals harmless.',
+  'source.glyphora.bookmark.code.client':
+    'The detail screen provides optimistic feedback and an exact rollback path.',
+  'source.glyphora.bookmark.code.service':
+    'The service selects save or remove from the desired bookmark state.',
+  'source.glyphora.bookmark.code.api':
+    'PostApi maps bookmark state changes onto POST and DELETE requests.',
+  'source.glyphora.bookmark.code.server':
+    'The backend creates a bookmark with an idempotent upsert.',
+  'source.glyphora.report.name': 'Report posts',
+  'source.glyphora.report.summary':
+    'Collect a structured reason, cross the repository boundary, validate the request, and prevent self-reports or duplicate reports.',
+  'source.glyphora.report.explanation.1':
+    'PostDetailScreen opens the report interaction and prevents overlapping submissions. The repository path forwards only the post ID, reason, and optional details to the Node-backed service.',
+  'source.glyphora.report.explanation.2':
+    'PostApi maps backend error codes into user-facing failures. The server validates the reason enum and details length, rejects self-reports, checks for an existing user-post report, and also relies on the database unique constraint.',
+  'source.glyphora.report.flow.1.title': 'Collect and submit the report',
+  'source.glyphora.report.flow.1.description':
+    'The detail screen gathers a reason and optional details, prevents duplicate taps, and submits through PostRepository.',
+  'source.glyphora.report.flow.2.title': 'Cross the repository boundary',
+  'source.glyphora.report.flow.2.description':
+    'PostNodeService forwards a transport-independent report request to PostApi.',
+  'source.glyphora.report.flow.3.title': 'Map HTTP errors into app errors',
+  'source.glyphora.report.flow.3.description':
+    'PostApi sends POST /posts/:id/reports and translates duplicate, self-report, missing-post, and validation responses.',
+  'source.glyphora.report.flow.4.title': 'Validate identity and uniqueness',
+  'source.glyphora.report.flow.4.description':
+    'The backend verifies the authenticated user and post, rejects reporting your own post, and creates at most one report per user and post.',
+  'source.glyphora.report.code.client':
+    'The detail page owns the user interaction and busy-state protection.',
+  'source.glyphora.report.code.service':
+    'The service forwards the normalized report request.',
+  'source.glyphora.report.code.api':
+    'PostApi sends the report payload and maps backend error codes.',
+  'source.glyphora.report.code.server':
+    'The backend validates, authorizes, deduplicates, and creates the report.',
+  'source.glyphora.versions.name': 'Multilingual post versions',
+  'source.glyphora.versions.summary':
+    'Publish additional language versions without duplicating the post identity, media, engagement counters, or ownership.',
+  'source.glyphora.versions.explanation.1':
+    'PostDetailScreen lets the user choose another language and opens PostTranslationScreen. The translation screen keeps the new title, content, Delta, and translation type separate from the existing post identity.',
+  'source.glyphora.versions.explanation.2':
+    'PostNodeService requires authentication before PostApi sends POST /posts/:id/versions. The backend attaches a new PostVersion to the existing post so availableLanguageCodes can expose all published versions.',
+  'source.glyphora.versions.flow.1.title': 'Choose a target language',
+  'source.glyphora.versions.flow.1.description':
+    'The detail screen filters already-published languages and opens the translation editor for the selected target.',
+  'source.glyphora.versions.flow.2.title': 'Compose the new language version',
+  'source.glyphora.versions.flow.2.description':
+    'PostTranslationScreen validates the translated title and body, preserves rich-text Delta data, and submits the selected translation type.',
+  'source.glyphora.versions.flow.3.title': 'Send the version payload',
+  'source.glyphora.versions.flow.3.description':
+    'PostApi posts languageCode, title, content, bodyDelta, and type to /posts/:id/versions.',
+  'source.glyphora.versions.flow.4.title': 'Attach a PostVersion to the existing post',
+  'source.glyphora.versions.flow.4.description':
+    'The backend resolves the post and authenticated owner, then creates the new language version without creating a second Post record.',
+  'source.glyphora.versions.code.open':
+    'The post detail page selects an unpublished language and opens the translation workflow.',
+  'source.glyphora.versions.code.publish':
+    'The translation screen validates and publishes the translated version.',
+  'source.glyphora.versions.code.service':
+    'The service protects the version-creation boundary with authentication.',
+  'source.glyphora.versions.code.api':
+    'PostApi sends the additional language version to the existing post resource.',
+  'source.glyphora.versions.code.server':
+    'The API creates a new PostVersion under the existing post.',
+  'source.glyphora.history.name': 'Post edit history',
+  'source.glyphora.history.summary':
+    'Expose owner-only snapshots of previous post versions and media states created by the authoritative edit transaction.',
+  'source.glyphora.history.explanation.1':
+    'The edit-history screen requests history through PostRepository. PostRepositoryImpl converts transport maps into PostEditHistoryEntry domain objects before the UI renders them.',
+  'source.glyphora.history.explanation.2':
+    'PostApi reads /posts/:id/edit-history. The backend only allows the post owner to access the history and returns snapshots ordered by editedAt descending, including title, content, Delta, image URLs, language, and edit type.',
+  'source.glyphora.history.flow.1.title': 'Load history for the selected post',
+  'source.glyphora.history.flow.1.description':
+    'The screen stores one Future for the current post and can replace it when the user reloads.',
+  'source.glyphora.history.flow.2.title': 'Map transport data into domain entries',
+  'source.glyphora.history.flow.2.description':
+    'PostRepositoryImpl turns each returned JSON record into a PostEditHistoryEntry.',
+  'source.glyphora.history.flow.3.title': 'Request the owner history endpoint',
+  'source.glyphora.history.flow.3.description':
+    'PostApi performs GET /posts/:id/edit-history and validates that the returned history is a list.',
+  'source.glyphora.history.flow.4.title': 'Authorize and order snapshots',
+  'source.glyphora.history.flow.4.description':
+    'The backend verifies post ownership and returns PostEditHistory rows ordered from newest to oldest.',
+  'source.glyphora.history.code.client':
+    'The history screen can replace its Future to reload the latest snapshots.',
+  'source.glyphora.history.code.repository':
+    'The repository maps raw history records into domain entries.',
+  'source.glyphora.history.code.api':
+    'PostApi loads and validates the edit-history response.',
+  'source.glyphora.history.code.server':
+    'The server restricts history to the owner and returns ordered snapshots.',
+  'source.glyphora.editDelete.name': 'Edit and delete posts',
+  'source.glyphora.editDelete.summary':
+    'Edit rich text and media through an authoritative version transaction, preserve history, and delete post data with storage cleanup.',
+  'source.glyphora.editDelete.explanation.1':
+    'PostDetailScreen opens the rich editor with the current title, content, Delta, and image URLs. Saving goes through updateLanguageVersionContent and PostApi.updateLanguageVersion to the authoritative PATCH route.',
+  'source.glyphora.editDelete.explanation.2':
+    'The PATCH transaction verifies ownership, snapshots the previous version and image list when something changed, updates the PostVersion and PostImage records, and advances Post.updatedAt. Deletion removes backend metadata first and then the service deletes returned Firebase Storage objects without letting stale media fail the completed post deletion.',
+  'source.glyphora.editDelete.flow.1.title': 'Edit the current rich-text version',
+  'source.glyphora.editDelete.flow.1.description':
+    'The detail page opens the editor with title, content, Delta, and images, then updates local state after a successful save.',
+  'source.glyphora.editDelete.flow.2.title': 'Snapshot and update in one transaction',
+  'source.glyphora.editDelete.flow.2.description':
+    'The authoritative PATCH route checks ownership, records the previous version and images when changed, then updates version, media, and post timestamps.',
+  'source.glyphora.editDelete.flow.3.title': 'Delete the post metadata',
+  'source.glyphora.editDelete.flow.3.description':
+    'The delete API removes the post-side data and returns image URLs that may still need storage cleanup.',
+  'source.glyphora.editDelete.flow.4.title': 'Clean up remaining storage objects',
+  'source.glyphora.editDelete.flow.4.description':
+    'PostNodeService deletes returned Firebase Storage URLs one by one and ignores stale-object failures after metadata deletion succeeds.',
+  'source.glyphora.editDelete.code.client':
+    'The detail screen owns the rich-edit navigation and local reconciliation.',
+  'source.glyphora.editDelete.code.service':
+    'The service validates edited content before crossing to the HTTP API.',
+  'source.glyphora.editDelete.code.api':
+    'PostApi sends the edited version and optional image list to the PATCH endpoint.',
+  'source.glyphora.editDelete.code.server':
+    'The server snapshots previous data and applies the edit atomically.',
+  'source.glyphora.editDelete.code.delete':
+    'Deletion completes backend metadata removal first, then cleans up Storage objects.',
   'source.glyphora.chat.name': 'Real-time chat lifecycle',
   'source.glyphora.chat.summary':
     'Repository-separated Firestore messaging with atomic previews, unread counters, logical deletion, and delayed physical cleanup.',
@@ -128,6 +267,20 @@ const en: TranslationDictionary = {
     'An authorized write includes server-timestamped updatedAt and the editor ID in updatedBy.',
   'source.glyphora.notes.permissions.code':
     'Edit authorization is evaluated in the same transaction that writes the note changes.',
+    'source.glyphora.publish.annotation.transaction':
+  'Create the post and its dependent records in one atomic transaction.',
+
+'source.glyphora.publish.annotation.createPost':
+  'Create the main Post record first.',
+
+'source.glyphora.publish.annotation.version':
+  'Store the original-language content as the first PostVersion.',
+
+'source.glyphora.publish.annotation.images':
+  'Attach uploaded image URLs to the newly created post.',
+
+'source.glyphora.publish.annotation.response':
+  'Return the fully serialized post to the Flutter client.',
 };
 
 const simplifiedChinese: TranslationDictionary = {
@@ -136,7 +289,7 @@ const simplifiedChinese: TranslationDictionary = {
     '沿着经过核实的真实代码路径，查看 Flutter 客户端、Repository 边界、Node.js API、Prisma、PostgreSQL、Firestore 与定时清理任务如何协作。',
   'source.glyphora.posts.name': '帖子与互动',
   'source.glyphora.posts.summary':
-    '多语言帖子如何跨越客户端与服务端边界，以及点赞如何兼顾即时反馈与数据库一致性。',
+    '发布、点赞、收藏、举报、多语言版本、编辑历史与帖子生命周期如何跨越客户端和服务端边界，同时保持一致性。',
   'source.glyphora.publish.name': '发布多语言帖子',
   'source.glyphora.publish.summary':
     '校验 Quill 内容、上传媒体、经过 Repository 边界，并以事务创建帖子及其原始语言版本。',
@@ -183,6 +336,145 @@ const simplifiedChinese: TranslationDictionary = {
     '界面立即响应，同时保留足够的旧状态以便精确回滚。',
   'source.glyphora.like.code.server':
     '重复 PUT 不产生副作用，计数由 PostLike 记录推导。',
+  'source.glyphora.bookmark.name': '收藏帖子',
+  'source.glyphora.bookmark.summary':
+    '让收藏按钮立即响应，同时只保存一条用户与帖子的关系，并提供独立的收藏列表。',
+  'source.glyphora.bookmark.explanation.1':
+    'PostDetailScreen 先乐观更新收藏状态，失败时回滚。PostNodeService 根据目标状态选择收藏或取消收藏，PostApi 再把它们映射为同一资源上的 POST 与 DELETE。',
+  'source.glyphora.bookmark.explanation.2':
+    '后端解析当前用户与帖子；创建收藏时使用 upsert 防止重复，取消时使用 deleteMany，让重复请求保持幂等。收藏列表按收藏时间倒序返回。',
+  'source.glyphora.bookmark.flow.1.title': '立即更新收藏状态',
+  'source.glyphora.bookmark.flow.1.description':
+    '详情页先更新图标，保留旧值，并在服务端确认前把操作标记为 busy。',
+  'source.glyphora.bookmark.flow.2.title': '选择对应的 Repository 操作',
+  'source.glyphora.bookmark.flow.2.description':
+    'PostNodeService 根据目标布尔状态选择 bookmarkPost 或 removeBookmark，不让界面接触传输细节。',
+  'source.glyphora.bookmark.flow.3.title': '使用同一个幂等 HTTP 资源',
+  'source.glyphora.bookmark.flow.3.description':
+    'PostApi 用 POST /posts/:id/bookmark 收藏，用同一路径的 DELETE 取消收藏。',
+  'source.glyphora.bookmark.flow.4.title': '保存唯一的用户帖子关系',
+  'source.glyphora.bookmark.flow.4.description':
+    'API 解析用户和帖子，使用 upsert 防止重复收藏，并用 deleteMany 让重复取消也不会出错。',
+  'source.glyphora.bookmark.code.client':
+    '详情页立即反馈收藏状态，并保留精确回滚路径。',
+  'source.glyphora.bookmark.code.service':
+    'Service 根据目标收藏状态选择保存或取消。',
+  'source.glyphora.bookmark.code.api':
+    'PostApi 把收藏状态变化映射为 POST 与 DELETE 请求。',
+  'source.glyphora.bookmark.code.server':
+    '后端通过幂等 upsert 创建收藏记录。',
+  'source.glyphora.report.name': '举报帖子',
+  'source.glyphora.report.summary':
+    '收集结构化举报原因，经过 Repository 边界，校验请求，并阻止自我举报和重复举报。',
+  'source.glyphora.report.explanation.1':
+    'PostDetailScreen 负责举报交互并阻止重复提交。Repository 路径只向 Node 服务传递帖子 ID、原因和可选详情。',
+  'source.glyphora.report.explanation.2':
+    'PostApi 把后端错误码转换为用户可理解的失败信息。服务端校验原因枚举和详情长度，拒绝举报自己的帖子，检查已有举报，并同时依赖数据库唯一约束。',
+  'source.glyphora.report.flow.1.title': '收集并提交举报',
+  'source.glyphora.report.flow.1.description':
+    '详情页收集原因和可选详情，防止重复点击，再通过 PostRepository 提交。',
+  'source.glyphora.report.flow.2.title': '经过 Repository 边界',
+  'source.glyphora.report.flow.2.description':
+    'PostNodeService 把与传输无关的举报请求转交给 PostApi。',
+  'source.glyphora.report.flow.3.title': '把 HTTP 错误映射为应用错误',
+  'source.glyphora.report.flow.3.description':
+    'PostApi 请求 POST /posts/:id/reports，并处理重复举报、自我举报、帖子不存在和校验失败等响应。',
+  'source.glyphora.report.flow.4.title': '校验身份与唯一性',
+  'source.glyphora.report.flow.4.description':
+    '后端验证当前用户和帖子，禁止举报自己的帖子，并保证每个用户对同一帖子最多只有一条举报。',
+  'source.glyphora.report.code.client':
+    '详情页负责举报交互和 busy 状态保护。',
+  'source.glyphora.report.code.service':
+    'Service 转发规范化后的举报请求。',
+  'source.glyphora.report.code.api':
+    'PostApi 发送举报数据并映射后端错误码。',
+  'source.glyphora.report.code.server':
+    '后端完成校验、授权、去重并创建举报。',
+  'source.glyphora.versions.name': '多语言帖子版本',
+  'source.glyphora.versions.summary':
+    '在不复制帖子身份、媒体、互动计数和所有权的情况下，为同一帖子发布额外语言版本。',
+  'source.glyphora.versions.explanation.1':
+    'PostDetailScreen 让用户选择另一种语言并打开 PostTranslationScreen。翻译页面把新标题、正文、Delta 和翻译类型与原帖身份分开处理。',
+  'source.glyphora.versions.explanation.2':
+    'PostNodeService 先要求登录，再由 PostApi 请求 POST /posts/:id/versions。后端把新的 PostVersion 绑定到现有帖子，因此 availableLanguageCodes 可以展示全部已发布版本。',
+  'source.glyphora.versions.flow.1.title': '选择目标语言',
+  'source.glyphora.versions.flow.1.description':
+    '详情页过滤已经发布的语言，并为选中的目标语言打开翻译编辑器。',
+  'source.glyphora.versions.flow.2.title': '编写新的语言版本',
+  'source.glyphora.versions.flow.2.description':
+    'PostTranslationScreen 校验翻译标题和正文，保留富文本 Delta，并提交选定的翻译类型。',
+  'source.glyphora.versions.flow.3.title': '发送语言版本数据',
+  'source.glyphora.versions.flow.3.description':
+    'PostApi 把 languageCode、title、content、bodyDelta 和 type 发到 /posts/:id/versions。',
+  'source.glyphora.versions.flow.4.title': '把 PostVersion 绑定到现有帖子',
+  'source.glyphora.versions.flow.4.description':
+    '后端解析帖子和当前作者，在不创建第二条 Post 的情况下创建新的语言版本。',
+  'source.glyphora.versions.code.open':
+    '帖子详情页选择尚未发布的语言并进入翻译流程。',
+  'source.glyphora.versions.code.publish':
+    '翻译页面校验并发布新的语言版本。',
+  'source.glyphora.versions.code.service':
+    'Service 在创建语言版本前保护认证边界。',
+  'source.glyphora.versions.code.api':
+    'PostApi 把额外语言版本发送到现有帖子资源。',
+  'source.glyphora.versions.code.server':
+    'API 在现有帖子下面创建新的 PostVersion。',
+  'source.glyphora.history.name': '帖子编辑历史',
+  'source.glyphora.history.summary':
+    '展示由权威编辑事务生成的旧版本与媒体快照，并只允许帖子作者读取。',
+  'source.glyphora.history.explanation.1':
+    '编辑历史页面通过 PostRepository 请求数据。PostRepositoryImpl 先把传输层 Map 转成 PostEditHistoryEntry 领域对象，再交给界面显示。',
+  'source.glyphora.history.explanation.2':
+    'PostApi 请求 /posts/:id/edit-history。后端只允许帖子作者读取，并按 editedAt 倒序返回标题、正文、Delta、图片 URL、语言和编辑类型等快照。',
+  'source.glyphora.history.flow.1.title': '加载当前帖子的历史',
+  'source.glyphora.history.flow.1.description':
+    '页面为当前帖子保存一个 Future，并在用户重新加载时替换它。',
+  'source.glyphora.history.flow.2.title': '把传输数据映射为领域对象',
+  'source.glyphora.history.flow.2.description':
+    'PostRepositoryImpl 把每条返回记录转换为 PostEditHistoryEntry。',
+  'source.glyphora.history.flow.3.title': '请求作者专属历史接口',
+  'source.glyphora.history.flow.3.description':
+    'PostApi 请求 GET /posts/:id/edit-history，并确认 history 响应确实是列表。',
+  'source.glyphora.history.flow.4.title': '授权并排序历史快照',
+  'source.glyphora.history.flow.4.description':
+    '后端验证帖子所有权，并按从新到旧的顺序返回 PostEditHistory。',
+  'source.glyphora.history.code.client':
+    '历史页面通过替换 Future 重新加载最新快照。',
+  'source.glyphora.history.code.repository':
+    'Repository 把原始历史记录映射为领域对象。',
+  'source.glyphora.history.code.api':
+    'PostApi 加载并校验编辑历史响应。',
+  'source.glyphora.history.code.server':
+    '服务端只允许作者读取，并返回按时间排序的历史快照。',
+  'source.glyphora.editDelete.name': '编辑与删除帖子',
+  'source.glyphora.editDelete.summary':
+    '通过权威版本事务编辑富文本和媒体、保留编辑历史，并在删除帖子后清理 Storage。',
+  'source.glyphora.editDelete.explanation.1':
+    'PostDetailScreen 用当前标题、正文、Delta 和图片 URL 打开富文本编辑器。保存后经过 updateLanguageVersionContent 和 PostApi.updateLanguageVersion 到达权威 PATCH 路由。',
+  'source.glyphora.editDelete.explanation.2':
+    'PATCH 事务验证作者身份；内容发生变化时先保存旧版本和图片列表，再更新 PostVersion、PostImage 与 Post.updatedAt。删除时先移除后端元数据，再由 Service 删除返回的 Firebase Storage 对象；即使媒体已经不存在，也不会让已完成的帖子删除失败。',
+  'source.glyphora.editDelete.flow.1.title': '编辑当前富文本版本',
+  'source.glyphora.editDelete.flow.1.description':
+    '详情页用标题、正文、Delta 和图片打开编辑器，保存成功后再更新本地状态。',
+  'source.glyphora.editDelete.flow.2.title': '在一个事务中快照并更新',
+  'source.glyphora.editDelete.flow.2.description':
+    '权威 PATCH 路由验证作者，内容变化时记录旧版本和图片，再更新语言版本、媒体与帖子时间。',
+  'source.glyphora.editDelete.flow.3.title': '删除帖子元数据',
+  'source.glyphora.editDelete.flow.3.description':
+    '删除 API 移除帖子侧数据，并返回可能仍需从 Storage 清理的图片 URL。',
+  'source.glyphora.editDelete.flow.4.title': '清理剩余 Storage 对象',
+  'source.glyphora.editDelete.flow.4.description':
+    'PostNodeService 逐个删除返回的 Firebase Storage URL；后端元数据删除成功后，失效媒体对象不会让操作回滚。',
+  'source.glyphora.editDelete.code.client':
+    '详情页负责富文本编辑导航和本地状态对齐。',
+  'source.glyphora.editDelete.code.service':
+    'Service 在进入 HTTP API 前校验编辑后的内容。',
+  'source.glyphora.editDelete.code.api':
+    'PostApi 把编辑后的语言版本和可选图片列表发送到 PATCH 接口。',
+  'source.glyphora.editDelete.code.server':
+    '服务端在一个事务中保存旧数据快照并应用编辑。',
+  'source.glyphora.editDelete.code.delete':
+    '删除先完成后端元数据移除，再清理 Storage 对象。',
   'source.glyphora.chat.name': '实时聊天生命周期',
   'source.glyphora.chat.summary':
     '通过 Repository 隔离 Firestore，并用原子预览、未读计数、逻辑删除与延迟清理管理消息。',
@@ -254,6 +546,20 @@ const simplifiedChinese: TranslationDictionary = {
     '授权后同时写入服务端时间 updatedAt 和编辑者 ID updatedBy。',
   'source.glyphora.notes.permissions.code':
     '编辑权限判断与笔记内容写入发生在同一个事务中。',
+  'source.glyphora.publish.annotation.transaction':
+  '把帖子及其关联数据放进同一个事务中创建。',
+
+'source.glyphora.publish.annotation.createPost':
+  '先创建帖子的主 Post 记录。',
+
+'source.glyphora.publish.annotation.version':
+  '把原始语言内容保存为第一条 PostVersion。',
+
+'source.glyphora.publish.annotation.images':
+  '把已经上传的图片 URL 绑定到新创建的帖子。',
+
+'source.glyphora.publish.annotation.response':
+  '把完整序列化后的帖子返回给 Flutter 客户端。',
 };
 
 const traditionalChinese: TranslationDictionary = {
@@ -262,7 +568,7 @@ const traditionalChinese: TranslationDictionary = {
     '沿著經過核實的真實程式路徑，查看 Flutter 用戶端、Repository 邊界、Node.js API、Prisma、PostgreSQL、Firestore 與排程清理工作如何協作。',
   'source.glyphora.posts.name': '貼文與互動',
   'source.glyphora.posts.summary':
-    '多語言貼文如何跨越用戶端與伺服器端邊界，以及按讚如何兼顧即時回饋與資料庫一致性。',
+    '發布、按讚、收藏、檢舉、多語言版本、編輯歷史與貼文生命週期如何跨越用戶端和伺服器端邊界，同時保持一致性。',
   'source.glyphora.publish.name': '發布多語言貼文',
   'source.glyphora.publish.summary':
     '驗證 Quill 內容、上傳媒體、經過 Repository 邊界，並以交易建立貼文及其原始語言版本。',
@@ -309,6 +615,145 @@ const traditionalChinese: TranslationDictionary = {
     '介面立即回應，同時保留足夠的舊狀態以便精確回復。',
   'source.glyphora.like.code.server':
     '重複 PUT 不產生副作用，計數由 PostLike 記錄推導。',
+  'source.glyphora.bookmark.name': '收藏貼文',
+  'source.glyphora.bookmark.summary':
+    '讓收藏按鈕立即回應，同時只儲存一筆使用者與貼文的關係，並提供獨立的收藏清單。',
+  'source.glyphora.bookmark.explanation.1':
+    'PostDetailScreen 先樂觀更新收藏狀態，失敗時回復。PostNodeService 根據目標狀態選擇收藏或取消收藏，PostApi 再把它們映射為同一資源上的 POST 與 DELETE。',
+  'source.glyphora.bookmark.explanation.2':
+    '後端解析目前使用者與貼文；建立收藏時使用 upsert 防止重複，取消時使用 deleteMany，讓重複請求保持冪等。收藏清單按收藏時間倒序回傳。',
+  'source.glyphora.bookmark.flow.1.title': '立即更新收藏狀態',
+  'source.glyphora.bookmark.flow.1.description':
+    '詳情頁先更新圖示，保留舊值，並在伺服器端確認前把操作標記為 busy。',
+  'source.glyphora.bookmark.flow.2.title': '選擇對應的 Repository 操作',
+  'source.glyphora.bookmark.flow.2.description':
+    'PostNodeService 根據目標布林狀態選擇 bookmarkPost 或 removeBookmark，不讓介面接觸傳輸細節。',
+  'source.glyphora.bookmark.flow.3.title': '使用同一個冪等 HTTP 資源',
+  'source.glyphora.bookmark.flow.3.description':
+    'PostApi 用 POST /posts/:id/bookmark 收藏，用同一路徑的 DELETE 取消收藏。',
+  'source.glyphora.bookmark.flow.4.title': '儲存唯一的使用者貼文關係',
+  'source.glyphora.bookmark.flow.4.description':
+    'API 解析使用者和貼文，使用 upsert 防止重複收藏，並用 deleteMany 讓重複取消也不會出錯。',
+  'source.glyphora.bookmark.code.client':
+    '詳情頁立即回饋收藏狀態，並保留精確回復路徑。',
+  'source.glyphora.bookmark.code.service':
+    'Service 根據目標收藏狀態選擇儲存或取消。',
+  'source.glyphora.bookmark.code.api':
+    'PostApi 把收藏狀態變化映射為 POST 與 DELETE 請求。',
+  'source.glyphora.bookmark.code.server':
+    '後端透過冪等 upsert 建立收藏記錄。',
+  'source.glyphora.report.name': '檢舉貼文',
+  'source.glyphora.report.summary':
+    '收集結構化檢舉原因，經過 Repository 邊界，驗證請求，並阻止自我檢舉和重複檢舉。',
+  'source.glyphora.report.explanation.1':
+    'PostDetailScreen 負責檢舉互動並阻止重複提交。Repository 路徑只向 Node 服務傳遞貼文 ID、原因和可選詳情。',
+  'source.glyphora.report.explanation.2':
+    'PostApi 把後端錯誤碼轉換為使用者可理解的失敗資訊。伺服器端驗證原因列舉和詳情長度，拒絕檢舉自己的貼文，檢查已有檢舉，並同時依賴資料庫唯一約束。',
+  'source.glyphora.report.flow.1.title': '收集並提交檢舉',
+  'source.glyphora.report.flow.1.description':
+    '詳情頁收集原因和可選詳情，防止重複點擊，再透過 PostRepository 提交。',
+  'source.glyphora.report.flow.2.title': '經過 Repository 邊界',
+  'source.glyphora.report.flow.2.description':
+    'PostNodeService 把與傳輸無關的檢舉請求交給 PostApi。',
+  'source.glyphora.report.flow.3.title': '把 HTTP 錯誤映射為應用程式錯誤',
+  'source.glyphora.report.flow.3.description':
+    'PostApi 請求 POST /posts/:id/reports，並處理重複檢舉、自我檢舉、貼文不存在和驗證失敗等回應。',
+  'source.glyphora.report.flow.4.title': '驗證身分與唯一性',
+  'source.glyphora.report.flow.4.description':
+    '後端驗證目前使用者和貼文，禁止檢舉自己的貼文，並保證每個使用者對同一貼文最多只有一筆檢舉。',
+  'source.glyphora.report.code.client':
+    '詳情頁負責檢舉互動和 busy 狀態保護。',
+  'source.glyphora.report.code.service':
+    'Service 轉發正規化後的檢舉請求。',
+  'source.glyphora.report.code.api':
+    'PostApi 傳送檢舉資料並映射後端錯誤碼。',
+  'source.glyphora.report.code.server':
+    '後端完成驗證、授權、去重並建立檢舉。',
+  'source.glyphora.versions.name': '多語言貼文版本',
+  'source.glyphora.versions.summary':
+    '在不複製貼文身分、媒體、互動計數和所有權的情況下，為同一貼文發布額外語言版本。',
+  'source.glyphora.versions.explanation.1':
+    'PostDetailScreen 讓使用者選擇另一種語言並開啟 PostTranslationScreen。翻譯頁面把新標題、本文、Delta 和翻譯類型與原貼文身分分開處理。',
+  'source.glyphora.versions.explanation.2':
+    'PostNodeService 先要求登入，再由 PostApi 請求 POST /posts/:id/versions。後端把新的 PostVersion 綁定到現有貼文，因此 availableLanguageCodes 可以展示全部已發布版本。',
+  'source.glyphora.versions.flow.1.title': '選擇目標語言',
+  'source.glyphora.versions.flow.1.description':
+    '詳情頁過濾已經發布的語言，並為選中的目標語言開啟翻譯編輯器。',
+  'source.glyphora.versions.flow.2.title': '編寫新的語言版本',
+  'source.glyphora.versions.flow.2.description':
+    'PostTranslationScreen 驗證翻譯標題和本文，保留富文字 Delta，並提交選定的翻譯類型。',
+  'source.glyphora.versions.flow.3.title': '傳送語言版本資料',
+  'source.glyphora.versions.flow.3.description':
+    'PostApi 把 languageCode、title、content、bodyDelta 和 type 傳到 /posts/:id/versions。',
+  'source.glyphora.versions.flow.4.title': '把 PostVersion 綁定到現有貼文',
+  'source.glyphora.versions.flow.4.description':
+    '後端解析貼文和目前作者，在不建立第二筆 Post 的情況下建立新的語言版本。',
+  'source.glyphora.versions.code.open':
+    '貼文詳情頁選擇尚未發布的語言並進入翻譯流程。',
+  'source.glyphora.versions.code.publish':
+    '翻譯頁面驗證並發布新的語言版本。',
+  'source.glyphora.versions.code.service':
+    'Service 在建立語言版本前保護驗證邊界。',
+  'source.glyphora.versions.code.api':
+    'PostApi 把額外語言版本傳送到現有貼文資源。',
+  'source.glyphora.versions.code.server':
+    'API 在現有貼文下面建立新的 PostVersion。',
+  'source.glyphora.history.name': '貼文編輯歷史',
+  'source.glyphora.history.summary':
+    '展示由權威編輯交易產生的舊版本與媒體快照，並只允許貼文作者讀取。',
+  'source.glyphora.history.explanation.1':
+    '編輯歷史頁面透過 PostRepository 請求資料。PostRepositoryImpl 先把傳輸層 Map 轉成 PostEditHistoryEntry 領域物件，再交給介面顯示。',
+  'source.glyphora.history.explanation.2':
+    'PostApi 請求 /posts/:id/edit-history。後端只允許貼文作者讀取，並按 editedAt 倒序回傳標題、本文、Delta、圖片 URL、語言和編輯類型等快照。',
+  'source.glyphora.history.flow.1.title': '載入目前貼文的歷史',
+  'source.glyphora.history.flow.1.description':
+    '頁面為目前貼文儲存一個 Future，並在使用者重新載入時替換它。',
+  'source.glyphora.history.flow.2.title': '把傳輸資料映射為領域物件',
+  'source.glyphora.history.flow.2.description':
+    'PostRepositoryImpl 把每筆回傳記錄轉換為 PostEditHistoryEntry。',
+  'source.glyphora.history.flow.3.title': '請求作者專屬歷史介面',
+  'source.glyphora.history.flow.3.description':
+    'PostApi 請求 GET /posts/:id/edit-history，並確認 history 回應確實是清單。',
+  'source.glyphora.history.flow.4.title': '授權並排序歷史快照',
+  'source.glyphora.history.flow.4.description':
+    '後端驗證貼文所有權，並按從新到舊的順序回傳 PostEditHistory。',
+  'source.glyphora.history.code.client':
+    '歷史頁面透過替換 Future 重新載入最新快照。',
+  'source.glyphora.history.code.repository':
+    'Repository 把原始歷史記錄映射為領域物件。',
+  'source.glyphora.history.code.api':
+    'PostApi 載入並驗證編輯歷史回應。',
+  'source.glyphora.history.code.server':
+    '伺服器端只允許作者讀取，並回傳按時間排序的歷史快照。',
+  'source.glyphora.editDelete.name': '編輯與刪除貼文',
+  'source.glyphora.editDelete.summary':
+    '透過權威版本交易編輯富文字和媒體、保留編輯歷史，並在刪除貼文後清理 Storage。',
+  'source.glyphora.editDelete.explanation.1':
+    'PostDetailScreen 用目前標題、本文、Delta 和圖片 URL 開啟富文字編輯器。儲存後經過 updateLanguageVersionContent 和 PostApi.updateLanguageVersion 到達權威 PATCH 路由。',
+  'source.glyphora.editDelete.explanation.2':
+    'PATCH 交易驗證作者身分；內容發生變化時先儲存舊版本和圖片清單，再更新 PostVersion、PostImage 與 Post.updatedAt。刪除時先移除後端中繼資料，再由 Service 刪除回傳的 Firebase Storage 物件；即使媒體已經不存在，也不會讓已完成的貼文刪除失敗。',
+  'source.glyphora.editDelete.flow.1.title': '編輯目前富文字版本',
+  'source.glyphora.editDelete.flow.1.description':
+    '詳情頁用標題、本文、Delta 和圖片開啟編輯器，儲存成功後再更新本機狀態。',
+  'source.glyphora.editDelete.flow.2.title': '在一個交易中快照並更新',
+  'source.glyphora.editDelete.flow.2.description':
+    '權威 PATCH 路由驗證作者，內容變化時記錄舊版本和圖片，再更新語言版本、媒體與貼文時間。',
+  'source.glyphora.editDelete.flow.3.title': '刪除貼文中繼資料',
+  'source.glyphora.editDelete.flow.3.description':
+    '刪除 API 移除貼文側資料，並回傳可能仍需從 Storage 清理的圖片 URL。',
+  'source.glyphora.editDelete.flow.4.title': '清理剩餘 Storage 物件',
+  'source.glyphora.editDelete.flow.4.description':
+    'PostNodeService 逐一刪除回傳的 Firebase Storage URL；後端中繼資料刪除成功後，失效媒體物件不會讓操作回復。',
+  'source.glyphora.editDelete.code.client':
+    '詳情頁負責富文字編輯導覽和本機狀態對齊。',
+  'source.glyphora.editDelete.code.service':
+    'Service 在進入 HTTP API 前驗證編輯後的內容。',
+  'source.glyphora.editDelete.code.api':
+    'PostApi 把編輯後的語言版本和可選圖片清單傳送到 PATCH 介面。',
+  'source.glyphora.editDelete.code.server':
+    '伺服器端在一個交易中儲存舊資料快照並套用編輯。',
+  'source.glyphora.editDelete.code.delete':
+    '刪除先完成後端中繼資料移除，再清理 Storage 物件。',
   'source.glyphora.chat.name': '即時聊天生命週期',
   'source.glyphora.chat.summary':
     '透過 Repository 隔離 Firestore，並用原子預覽、未讀計數、邏輯刪除與延遲清理管理訊息。',
@@ -380,6 +825,20 @@ const traditionalChinese: TranslationDictionary = {
     '授權後同時寫入伺服器端時間 updatedAt 和編輯者 ID updatedBy。',
   'source.glyphora.notes.permissions.code':
     '編輯權限判斷與筆記內容寫入發生在同一個交易中。',
+    'source.glyphora.publish.annotation.transaction':
+  '把貼文及其關聯資料放進同一個交易中建立。',
+
+'source.glyphora.publish.annotation.createPost':
+  '先建立貼文的主要 Post 記錄。',
+
+'source.glyphora.publish.annotation.version':
+  '把原始語言內容儲存為第一筆 PostVersion。',
+
+'source.glyphora.publish.annotation.images':
+  '把已上傳的圖片 URL 綁定到新建立的貼文。',
+
+'source.glyphora.publish.annotation.response':
+  '把完整序列化後的貼文回傳給 Flutter 用戶端。',
 };
 
 export const glyphoraTranslations: Record<Language, TranslationDictionary> = {

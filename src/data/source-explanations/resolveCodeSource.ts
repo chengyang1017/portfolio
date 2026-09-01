@@ -574,7 +574,7 @@ function extractByAnchors(
   const lines = code.split('\n');
 
   let startIndex = 0;
-  let endIndex = lines.length - 1;
+  let endIndex = lines.length;
 
   if (startAnchor) {
     const normalized =
@@ -617,7 +617,7 @@ function extractByAnchors(
   }
 
   return lines
-    .slice(startIndex, endIndex + 1)
+    .slice(startIndex, endIndex)
     .join('\n');
 }
 

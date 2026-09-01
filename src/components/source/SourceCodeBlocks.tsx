@@ -12,15 +12,26 @@ import type {
   SourceCodeBlock,
 } from '../../data/source-explanations';
 
-import { renderTranslatedCode } from '../../data/source-explanations/renderCode';
+import {
+  injectCodeAnnotations,
+  renderTranslatedCode,
+} from '../../data/source-explanations/renderCode';
+
 import {
   resolveCodeBlock,
   type ResolvedCode,
 } from '../../data/source-explanations/resolveCodeSource';
-import { useI18n } from '../../i18n/I18nProvider';
+
+import {
+  useI18n,
+} from '../../i18n/I18nProvider';
 
 interface ResolvedBlockState {
-  status: 'loading' | 'success' | 'error';
+  status:
+    | 'loading'
+    | 'success'
+    | 'error';
+
   result?: ResolvedCode;
   error?: string;
 }
@@ -30,14 +41,22 @@ export function SourceCodeBlocks({
 }: {
   blocks: SourceCodeBlock[];
 }) {
-  const { t } = useI18n();
+  const {
+    t,
+  } = useI18n();
 
-  const [resolvedBlocks, setResolvedBlocks] =
-    useState<Record<string, ResolvedBlockState>>(
-      {},
-    );
+  const [
+    resolvedBlocks,
+    setResolvedBlocks,
+  ] = useState<
+    Record<
+      string,
+      ResolvedBlockState
+    >
+  >({});
 
-  const mountedRef = useRef(true);
+  const mountedRef =
+    useRef(true);
 
   useEffect(() => {
     return () => {
@@ -48,47 +67,59 @@ export function SourceCodeBlocks({
   async function retryBlock(
     block: SourceCodeBlock,
   ) {
-    setResolvedBlocks((current) => ({
-      ...current,
+    setResolvedBlocks(
+      (current) => ({
+        ...current,
 
-      [block.id]: {
-        status: 'loading',
-      },
-    }));
+        [block.id]: {
+          status: 'loading',
+        },
+      }),
+    );
 
     try {
       const result =
-        await resolveCodeBlock(block);
+        await resolveCodeBlock(
+          block,
+        );
 
-      if (!mountedRef.current) {
+      if (
+        !mountedRef.current
+      ) {
         return;
       }
 
-      setResolvedBlocks((current) => ({
-        ...current,
+      setResolvedBlocks(
+        (current) => ({
+          ...current,
 
-        [block.id]: {
-          status: 'success',
-          result,
-        },
-      }));
+          [block.id]: {
+            status: 'success',
+            result,
+          },
+        }),
+      );
     } catch (error) {
-      if (!mountedRef.current) {
+      if (
+        !mountedRef.current
+      ) {
         return;
       }
 
-      setResolvedBlocks((current) => ({
-        ...current,
+      setResolvedBlocks(
+        (current) => ({
+          ...current,
 
-        [block.id]: {
-          status: 'error',
+          [block.id]: {
+            status: 'error',
 
-          error:
-            error instanceof Error
-              ? error.message
-              : 'Unknown source loading error',
-        },
-      }));
+            error:
+              error instanceof Error
+                ? error.message
+                : 'Unknown source loading error',
+          },
+        }),
+      );
     }
   }
 
@@ -96,51 +127,68 @@ export function SourceCodeBlocks({
     let cancelled = false;
 
     async function loadBlocks() {
-      const entries = await Promise.all(
-        blocks.map(async (block) => {
-          try {
-            const result =
-              await resolveCodeBlock(block);
+      const entries =
+        await Promise.all(
+          blocks.map(
+            async (block) => {
+              try {
+                const result =
+                  await resolveCodeBlock(
+                    block,
+                  );
 
-            return [
-              block.id,
-              {
-                status: 'success',
-                result,
-              } satisfies ResolvedBlockState,
-            ] as const;
-          } catch (error) {
-            return [
-              block.id,
-              {
-                status: 'error',
-                error:
-                  error instanceof Error
-                    ? error.message
-                    : 'Unknown source loading error',
-              } satisfies ResolvedBlockState,
-            ] as const;
-          }
-        }),
-      );
+                return [
+                  block.id,
+
+                  {
+                    status:
+                      'success',
+                    result,
+                  } satisfies ResolvedBlockState,
+                ] as const;
+              } catch (error) {
+                return [
+                  block.id,
+
+                  {
+                    status:
+                      'error',
+
+                    error:
+                      error instanceof
+                      Error
+                        ? error.message
+                        : 'Unknown source loading error',
+                  } satisfies ResolvedBlockState,
+                ] as const;
+              }
+            },
+          ),
+        );
 
       if (cancelled) {
         return;
       }
 
       setResolvedBlocks(
-        Object.fromEntries(entries),
+        Object.fromEntries(
+          entries,
+        ),
       );
     }
 
     setResolvedBlocks(
       Object.fromEntries(
-        blocks.map((block) => [
-          block.id,
-          {
-            status: 'loading',
-          } satisfies ResolvedBlockState,
-        ]),
+        blocks.map(
+          (block) => [
+            block.id,
+
+            {
+              status:
+                'loading',
+            } satisfies ResolvedBlockState,
+          ],
+        ),
       ),
     );
 
@@ -151,13 +199,21 @@ export function SourceCodeBlocks({
     };
   }, [blocks]);
 
-  if (blocks.length === 0) {
+  if (
+    blocks.length === 0
+  ) {
     return (
       <section className="source-subsection">
-        <h2>{t('source.codeBlocks')}</h2>
+        <h2>
+          {t(
+            'source.codeBlocks',
+          )}
+        </h2>
 
         <p className="source-inline-empty">
-          {t('source.empty.code')}
+          {t(
+            'source.empty.code',
+          )}
         </p>
       </section>
     );
@@ -165,19 +221,37 @@ export function SourceCodeBlocks({
 
   return (
     <section className="source-subsection">
-      <h2>{t('source.codeBlocks')}</h2>
+      <h2>
+        {t(
+          'source.codeBlocks',
+        )}
+      </h2>
 
       <div className="source-code-blocks">
-        {blocks.map((block) => (
-          <SourceCodeBlockView
-            key={block.id}
-            block={block}
-            state={resolvedBlocks[block.id]}
-            onRetry={() => {
-              void retryBlock(block);
-            }}
-          />
-        ))}
+        {blocks.map(
+          (
+            block,
+            index,
+          ) => (
+            <SourceCodeBlockView
+              key={block.id}
+              block={block}
+              state={
+                resolvedBlocks[
+                  block.id
+                ]
+              }
+              defaultExpanded={
+                index === 0
+              }
+              onRetry={() => {
+                void retryBlock(
+                  block,
+                );
+              }}
+            />
+          ),
+        )}
       </div>
     </section>
   );
@@ -198,67 +272,147 @@ function GitHubIcon() {
   );
 }
 
+function CollapseIcon({
+  expanded,
+}: {
+  expanded: boolean;
+}) {
+  return (
+    <svg
+      className={
+        expanded
+          ? 'source-code-collapse-icon expanded'
+          : 'source-code-collapse-icon'
+      }
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <path
+        d="M6 9l6 6 6-6"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
 function SourceCodeBlockView({
   block,
   state,
+  defaultExpanded,
   onRetry,
 }: {
   block: SourceCodeBlock;
   state?: ResolvedBlockState;
+  defaultExpanded: boolean;
   onRetry: () => void;
 }) {
-  const { t } = useI18n();
+  const {
+    t,
+  } = useI18n();
+
+  const [
+    expanded,
+    setExpanded,
+  ] = useState(
+    defaultExpanded,
+  );
 
   const githubSource =
-    block.source.type === 'github'
+    block.source.type ===
+    'github'
       ? block.source
       : undefined;
 
+  /*
+   * GitHub 原代码
+   * → Portfolio 展示层 annotations
+   * → i18n placeholders
+   * → syntax highlight
+   */
   const code =
-    state?.status === 'success'
+    state?.status ===
+    'success'
       ? renderTranslatedCode(
-          state.result?.code ?? '',
+          injectCodeAnnotations(
+            state.result
+              ?.code ?? '',
+            block.language,
+            block.annotations,
+            t,
+          ),
           t,
         )
       : '';
 
-  const highlighted = useMemo(() => {
-    if (!code) {
-      return '';
-    }
+  const highlighted =
+    useMemo(() => {
+      if (!code) {
+        return '';
+      }
 
-    try {
-      return hljs.highlight(code, {
-        language: block.language,
-      }).value;
-    } catch {
-      return hljs.highlightAuto(code).value;
-    }
-  }, [code, block.language]);
+      try {
+        return hljs.highlight(
+          code,
+          {
+            language:
+              block.language,
+          },
+        ).value;
+      } catch {
+        return hljs
+          .highlightAuto(
+            code,
+          )
+          .value;
+      }
+    }, [
+      code,
+      block.language,
+    ]);
 
   const displayPath =
     githubSource?.path ??
     block.id;
 
-  const fallbackSourceUrl = githubSource
-    ? `https://github.com/${githubSource.repository}/blob/${
-        githubSource.ref ?? 'main'
-      }/${githubSource.path}`
-    : undefined;
+  const fallbackSourceUrl =
+    githubSource
+      ? `https://github.com/${githubSource.repository}/blob/${
+          githubSource.ref ??
+          'main'
+        }/${githubSource.path}`
+      : undefined;
 
   const sourceUrl =
-    state?.status === 'success'
-      ? state.result?.sourceUrl ??
+    state?.status ===
+    'success'
+      ? state.result
+          ?.sourceUrl ??
         fallbackSourceUrl
       : fallbackSourceUrl;
 
   const commitSha =
-    state?.status === 'success'
-      ? state.result?.commitSha
+    state?.status ===
+    'success'
+      ? state.result
+          ?.commitSha
       : undefined;
 
+  const contentId =
+    `source-code-content-${block.id}`;
+
   return (
-    <figure>
+    <figure
+      className={
+        expanded
+          ? 'source-code-block expanded'
+          : 'source-code-block collapsed'
+      }
+    >
       <figcaption>
         <div className="source-code-caption-main">
           <span className="source-code-path">
@@ -268,22 +422,34 @@ function SourceCodeBlockView({
           {githubSource && (
             <div className="source-code-origin">
               <small>
-                {githubSource.repository}
+                {
+                  githubSource.repository
+                }
               </small>
 
               <small>
-                {githubSource.ref ?? 'main'}
+                {githubSource.ref ??
+                  'main'}
               </small>
 
               {commitSha && (
-                <small title={commitSha}>
-                  {commitSha.slice(0, 7)}
+                <small
+                  title={
+                    commitSha
+                  }
+                >
+                  {commitSha.slice(
+                    0,
+                    7,
+                  )}
                 </small>
               )}
 
               {githubSource.symbol && (
                 <small>
-                  {githubSource.symbol}
+                  {
+                    githubSource.symbol
+                  }
                 </small>
               )}
             </div>
@@ -293,7 +459,9 @@ function SourceCodeBlockView({
         <div className="source-code-caption-meta">
           {block.captionKey && (
             <small className="source-code-caption-copy">
-              {t(block.captionKey)}
+              {t(
+                block.captionKey,
+              )}
             </small>
           )}
 
@@ -309,36 +477,89 @@ function SourceCodeBlockView({
               <GitHubIcon />
             </a>
           )}
-        </div>
-      </figcaption>
-
-      {state?.status === 'error' ? (
-        <div className="source-code-status source-code-error">
-          <strong>Unable to load source code</strong>
-
-          <span>{state.error}</span>
 
           <button
             type="button"
-            className="source-code-retry"
-            onClick={onRetry}
+            className="source-code-collapse-button"
+            onClick={() =>
+              setExpanded(
+                (
+                  current,
+                ) =>
+                  !current,
+              )
+            }
+            aria-expanded={
+              expanded
+            }
+            aria-controls={
+              contentId
+            }
+            aria-label={
+              expanded
+                ? 'Collapse source code'
+                : 'Expand source code'
+            }
+            title={
+              expanded
+                ? 'Collapse'
+                : 'Expand'
+            }
           >
-            Retry
+            <CollapseIcon
+              expanded={
+                expanded
+              }
+            />
           </button>
         </div>
-      ) : state?.status !== 'success' ? (
-        <div className="source-code-status">
-          Loading source code…
+      </figcaption>
+
+      {expanded && (
+        <div
+          id={contentId}
+          className="source-code-content"
+        >
+          {state?.status ===
+          'error' ? (
+            <div className="source-code-status source-code-error">
+              <strong>
+                Unable to load
+                source code
+              </strong>
+
+              <span>
+                {state.error}
+              </span>
+
+              <button
+                type="button"
+                className="source-code-retry"
+                onClick={
+                  onRetry
+                }
+              >
+                Retry
+              </button>
+            </div>
+          ) : state?.status !==
+            'success' ? (
+            <div className="source-code-status">
+              Loading source
+              code…
+            </div>
+          ) : (
+            <pre>
+              <code
+                className={`hljs language-${block.language}`}
+                dangerouslySetInnerHTML={{
+                  __html:
+                    highlighted,
+                }}
+              />
+            </pre>
+          )}
         </div>
-      ) : (
-        <pre>
-          <code
-            className={`hljs language-${block.language}`}
-            dangerouslySetInnerHTML={{
-              __html: highlighted,
-            }}
-          />
-        </pre>
       )}
     </figure>
   );

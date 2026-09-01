@@ -1,4 +1,4 @@
-import type { ProjectSourceExplanation } from './types';
+
 
 export const glyphoraSourceExplanation: ProjectSourceExplanation = {
   projectSlug: 'glyphora',
@@ -66,38 +66,87 @@ export const glyphoraSourceExplanation: ProjectSourceExplanation = {
 
               source: {
                 type: 'github',
-
                 repository: 'chengyang1017/glyphora',
-
                 path:
                   'apps/mobile-flutter/lib/features/post/presentation/screens/create_post_screen.dart',
-
                 symbol: 'uploadPost',
               },
 
-              captionKey: 'source.glyphora.publish.code.client',
+              captionKey:
+                'source.glyphora.publish.code.client',
             },
             {
-  id: 'publish-server',
-  language: 'typescript',
+              id: 'publish-service',
+              language: 'dart',
 
-  source: {
-    type: 'github',
+              source: {
+                type: 'github',
+                repository: 'chengyang1017/glyphora',
+                path:
+                  'apps/mobile-flutter/lib/features/post/data/services/post_node_service.dart',
+                symbol: 'createPost',
+              },
+            },
+            {
+              id: 'publish-api',
+              language: 'dart',
 
-    repository: 'chengyang1017/glyphora',
+              source: {
+                type: 'github',
+                repository: 'chengyang1017/glyphora',
+                path:
+                  'apps/mobile-flutter/lib/features/post/data/services/post_api.dart',
+                symbol: 'createPost',
+              },
+            },
+            {
+              id: 'publish-server',
+              language: 'typescript',
 
-    path:
-      'apps/api/src/routes/post_route.ts',
+              source: {
+                type: 'github',
+                repository: 'chengyang1017/glyphora',
+                path:
+                  'apps/api/src/routes/post_route.ts',
+                startAnchor: 'const post =',
+                endAnchor:
+                  '// ============================================================',
+              },
 
-    startAnchor: 'const post =',
+              annotations: [
+                {
+                  anchor: 'const post =',
+                  textKey:
+                    'source.glyphora.publish.annotation.transaction',
+                },
+                {
+                  anchor: 'const createdPost =',
+                  textKey:
+                    'source.glyphora.publish.annotation.createPost',
+                },
+                {
+                  anchor:
+                    'await transaction.postVersion',
+                  textKey:
+                    'source.glyphora.publish.annotation.version',
+                },
+                {
+                  anchor:
+                    'if (images.length > 0)',
+                  textKey:
+                    'source.glyphora.publish.annotation.images',
+                },
+                {
+                  anchor:
+                    'response.status(201).json',
+                  textKey:
+                    'source.glyphora.publish.annotation.response',
+                },
+              ],
 
-    endAnchor:
-      '// ============================================================',
-  },
-
-  captionKey:
-    'source.glyphora.publish.code.server',
-},
+              captionKey:
+                'source.glyphora.publish.code.server',
+            },
           ],
           relatedFeatureSlugs: ['optimistic-like'],
         },
@@ -181,6 +230,555 @@ export const glyphoraSourceExplanation: ProjectSourceExplanation = {
 },
           ],
           relatedFeatureSlugs: ['publish-post'],
+        },
+        {
+          slug: 'bookmark-posts',
+          nameKey: 'source.glyphora.bookmark.name',
+          summaryKey: 'source.glyphora.bookmark.summary',
+          explanationKeys: [
+            'source.glyphora.bookmark.explanation.1',
+            'source.glyphora.bookmark.explanation.2',
+          ],
+          relatedFiles: [
+            {
+              path: 'apps/mobile-flutter/lib/features/post/presentation/screens/post_detail_screen.dart',
+            },
+            {
+              path: 'apps/mobile-flutter/lib/features/post/data/services/post_node_service.dart',
+            },
+            {
+              path: 'apps/mobile-flutter/lib/features/post/data/services/post_api.dart',
+            },
+            {
+              path: 'apps/api/src/routes/bookmark_route.ts',
+            },
+          ],
+          codeFlow: [
+            {
+              id: 'bookmark-optimistic-state',
+              titleKey: 'source.glyphora.bookmark.flow.1.title',
+              descriptionKey: 'source.glyphora.bookmark.flow.1.description',
+              filePath:
+                'apps/mobile-flutter/lib/features/post/presentation/screens/post_detail_screen.dart',
+            },
+            {
+              id: 'bookmark-service-boundary',
+              titleKey: 'source.glyphora.bookmark.flow.2.title',
+              descriptionKey: 'source.glyphora.bookmark.flow.2.description',
+              filePath:
+                'apps/mobile-flutter/lib/features/post/data/services/post_node_service.dart',
+            },
+            {
+              id: 'bookmark-api-operation',
+              titleKey: 'source.glyphora.bookmark.flow.3.title',
+              descriptionKey: 'source.glyphora.bookmark.flow.3.description',
+              filePath:
+                'apps/mobile-flutter/lib/features/post/data/services/post_api.dart',
+            },
+            {
+              id: 'bookmark-idempotent-persistence',
+              titleKey: 'source.glyphora.bookmark.flow.4.title',
+              descriptionKey: 'source.glyphora.bookmark.flow.4.description',
+              filePath: 'apps/api/src/routes/bookmark_route.ts',
+            },
+          ],
+          codeBlocks: [
+            {
+              id: 'bookmark-client',
+              language: 'dart',
+              source: {
+                type: 'github',
+                repository: 'chengyang1017/glyphora',
+                path:
+                  'apps/mobile-flutter/lib/features/post/presentation/screens/post_detail_screen.dart',
+                symbol: '_toggleBookmark',
+              },
+              captionKey: 'source.glyphora.bookmark.code.client',
+            },
+            {
+              id: 'bookmark-service',
+              language: 'dart',
+              source: {
+                type: 'github',
+                repository: 'chengyang1017/glyphora',
+                path:
+                  'apps/mobile-flutter/lib/features/post/data/services/post_node_service.dart',
+                symbol: 'toggleBookmark',
+              },
+              captionKey: 'source.glyphora.bookmark.code.service',
+            },
+            {
+              id: 'bookmark-api',
+              language: 'dart',
+              source: {
+                type: 'github',
+                repository: 'chengyang1017/glyphora',
+                path:
+                  'apps/mobile-flutter/lib/features/post/data/services/post_api.dart',
+                symbol: 'bookmarkPost',
+              },
+              captionKey: 'source.glyphora.bookmark.code.api',
+            },
+            {
+              id: 'bookmark-server',
+              language: 'typescript',
+              source: {
+                type: 'github',
+                repository: 'chengyang1017/glyphora',
+                path: 'apps/api/src/routes/bookmark_route.ts',
+                startAnchor: 'postBookmarkRouter.post(',
+                endAnchor:
+                  '// ============================================================',
+              },
+              captionKey: 'source.glyphora.bookmark.code.server',
+            },
+          ],
+          relatedFeatureSlugs: ['optimistic-like', 'report-posts'],
+        },
+        {
+          slug: 'report-posts',
+          nameKey: 'source.glyphora.report.name',
+          summaryKey: 'source.glyphora.report.summary',
+          explanationKeys: [
+            'source.glyphora.report.explanation.1',
+            'source.glyphora.report.explanation.2',
+          ],
+          relatedFiles: [
+            {
+              path: 'apps/mobile-flutter/lib/features/post/presentation/screens/post_detail_screen.dart',
+            },
+            {
+              path: 'apps/mobile-flutter/lib/features/post/data/services/post_node_service.dart',
+            },
+            {
+              path: 'apps/mobile-flutter/lib/features/post/data/services/post_api.dart',
+            },
+            {
+              path: 'apps/api/src/routes/report_route.ts',
+            },
+          ],
+          codeFlow: [
+            {
+              id: 'report-collect-reason',
+              titleKey: 'source.glyphora.report.flow.1.title',
+              descriptionKey: 'source.glyphora.report.flow.1.description',
+              filePath:
+                'apps/mobile-flutter/lib/features/post/presentation/screens/post_detail_screen.dart',
+            },
+            {
+              id: 'report-repository-boundary',
+              titleKey: 'source.glyphora.report.flow.2.title',
+              descriptionKey: 'source.glyphora.report.flow.2.description',
+              filePath:
+                'apps/mobile-flutter/lib/features/post/data/services/post_node_service.dart',
+            },
+            {
+              id: 'report-http-request',
+              titleKey: 'source.glyphora.report.flow.3.title',
+              descriptionKey: 'source.glyphora.report.flow.3.description',
+              filePath:
+                'apps/mobile-flutter/lib/features/post/data/services/post_api.dart',
+            },
+            {
+              id: 'report-validate-and-create',
+              titleKey: 'source.glyphora.report.flow.4.title',
+              descriptionKey: 'source.glyphora.report.flow.4.description',
+              filePath: 'apps/api/src/routes/report_route.ts',
+            },
+          ],
+          codeBlocks: [
+            {
+              id: 'report-client',
+              language: 'dart',
+              source: {
+                type: 'github',
+                repository: 'chengyang1017/glyphora',
+                path:
+                  'apps/mobile-flutter/lib/features/post/presentation/screens/post_detail_screen.dart',
+                symbol: '_reportPost',
+              },
+              captionKey: 'source.glyphora.report.code.client',
+            },
+            {
+              id: 'report-service',
+              language: 'dart',
+              source: {
+                type: 'github',
+                repository: 'chengyang1017/glyphora',
+                path:
+                  'apps/mobile-flutter/lib/features/post/data/services/post_node_service.dart',
+                symbol: 'reportPost',
+              },
+              captionKey: 'source.glyphora.report.code.service',
+            },
+            {
+              id: 'report-api',
+              language: 'dart',
+              source: {
+                type: 'github',
+                repository: 'chengyang1017/glyphora',
+                path:
+                  'apps/mobile-flutter/lib/features/post/data/services/post_api.dart',
+                symbol: 'reportPost',
+              },
+              captionKey: 'source.glyphora.report.code.api',
+            },
+            {
+              id: 'report-server',
+              language: 'typescript',
+              source: {
+                type: 'github',
+                repository: 'chengyang1017/glyphora',
+                path: 'apps/api/src/routes/report_route.ts',
+                startAnchor: 'postReportRouter.post(',
+              },
+              captionKey: 'source.glyphora.report.code.server',
+            },
+          ],
+          relatedFeatureSlugs: ['bookmark-posts'],
+        },
+        {
+          slug: 'multilingual-versions',
+          nameKey: 'source.glyphora.versions.name',
+          summaryKey: 'source.glyphora.versions.summary',
+          explanationKeys: [
+            'source.glyphora.versions.explanation.1',
+            'source.glyphora.versions.explanation.2',
+          ],
+          relatedFiles: [
+            {
+              path: 'apps/mobile-flutter/lib/features/post/presentation/screens/post_detail_screen.dart',
+            },
+            {
+              path: 'apps/mobile-flutter/lib/features/translation/presentation/screens/post_translation_screen.dart',
+            },
+            {
+              path: 'apps/mobile-flutter/lib/features/post/data/services/post_node_service.dart',
+            },
+            {
+              path: 'apps/mobile-flutter/lib/features/post/data/services/post_api.dart',
+            },
+            {
+              path: 'apps/api/src/routes/post_route.ts',
+            },
+          ],
+          codeFlow: [
+            {
+              id: 'version-select-language',
+              titleKey: 'source.glyphora.versions.flow.1.title',
+              descriptionKey: 'source.glyphora.versions.flow.1.description',
+              filePath:
+                'apps/mobile-flutter/lib/features/post/presentation/screens/post_detail_screen.dart',
+            },
+            {
+              id: 'version-compose-translation',
+              titleKey: 'source.glyphora.versions.flow.2.title',
+              descriptionKey: 'source.glyphora.versions.flow.2.description',
+              filePath:
+                'apps/mobile-flutter/lib/features/translation/presentation/screens/post_translation_screen.dart',
+            },
+            {
+              id: 'version-send-api',
+              titleKey: 'source.glyphora.versions.flow.3.title',
+              descriptionKey: 'source.glyphora.versions.flow.3.description',
+              filePath:
+                'apps/mobile-flutter/lib/features/post/data/services/post_api.dart',
+            },
+            {
+              id: 'version-create-record',
+              titleKey: 'source.glyphora.versions.flow.4.title',
+              descriptionKey: 'source.glyphora.versions.flow.4.description',
+              filePath: 'apps/api/src/routes/post_route.ts',
+            },
+          ],
+          codeBlocks: [
+            {
+              id: 'version-open-client',
+              language: 'dart',
+              source: {
+                type: 'github',
+                repository: 'chengyang1017/glyphora',
+                path:
+                  'apps/mobile-flutter/lib/features/post/presentation/screens/post_detail_screen.dart',
+                symbol: '_openTranslation',
+              },
+              captionKey: 'source.glyphora.versions.code.open',
+            },
+            {
+              id: 'version-publish-client',
+              language: 'dart',
+              source: {
+                type: 'github',
+                repository: 'chengyang1017/glyphora',
+                path:
+                  'apps/mobile-flutter/lib/features/translation/presentation/screens/post_translation_screen.dart',
+                symbol: '_publishTranslation',
+              },
+              captionKey: 'source.glyphora.versions.code.publish',
+            },
+            {
+              id: 'version-service',
+              language: 'dart',
+              source: {
+                type: 'github',
+                repository: 'chengyang1017/glyphora',
+                path:
+                  'apps/mobile-flutter/lib/features/post/data/services/post_node_service.dart',
+                symbol: 'addLanguageVersion',
+              },
+              captionKey: 'source.glyphora.versions.code.service',
+            },
+            {
+              id: 'version-api',
+              language: 'dart',
+              source: {
+                type: 'github',
+                repository: 'chengyang1017/glyphora',
+                path:
+                  'apps/mobile-flutter/lib/features/post/data/services/post_api.dart',
+                symbol: 'addLanguageVersion',
+              },
+              captionKey: 'source.glyphora.versions.code.api',
+            },
+            {
+              id: 'version-server',
+              language: 'typescript',
+              source: {
+                type: 'github',
+                repository: 'chengyang1017/glyphora',
+                path: 'apps/api/src/routes/post_route.ts',
+                startAnchor:
+                  '// POST /api/v1/posts/:id/versions',
+                endAnchor:
+                  '// ============================================================',
+              },
+              captionKey: 'source.glyphora.versions.code.server',
+            },
+          ],
+          relatedFeatureSlugs: ['publish-post', 'edit-delete-posts'],
+        },
+        {
+          slug: 'edit-history',
+          nameKey: 'source.glyphora.history.name',
+          summaryKey: 'source.glyphora.history.summary',
+          explanationKeys: [
+            'source.glyphora.history.explanation.1',
+            'source.glyphora.history.explanation.2',
+          ],
+          relatedFiles: [
+            {
+              path: 'apps/mobile-flutter/lib/features/post/presentation/screens/post_edit_history_screen.dart',
+            },
+            {
+              path: 'apps/mobile-flutter/lib/features/post/data/repositories/post_repository_impl.dart',
+            },
+            {
+              path: 'apps/mobile-flutter/lib/features/post/data/services/post_api.dart',
+            },
+            {
+              path: 'apps/api/src/routes/post_data_route.ts',
+            },
+          ],
+          codeFlow: [
+            {
+              id: 'history-load-screen',
+              titleKey: 'source.glyphora.history.flow.1.title',
+              descriptionKey: 'source.glyphora.history.flow.1.description',
+              filePath:
+                'apps/mobile-flutter/lib/features/post/presentation/screens/post_edit_history_screen.dart',
+            },
+            {
+              id: 'history-map-domain',
+              titleKey: 'source.glyphora.history.flow.2.title',
+              descriptionKey: 'source.glyphora.history.flow.2.description',
+              filePath:
+                'apps/mobile-flutter/lib/features/post/data/repositories/post_repository_impl.dart',
+            },
+            {
+              id: 'history-request-api',
+              titleKey: 'source.glyphora.history.flow.3.title',
+              descriptionKey: 'source.glyphora.history.flow.3.description',
+              filePath:
+                'apps/mobile-flutter/lib/features/post/data/services/post_api.dart',
+            },
+            {
+              id: 'history-owner-query',
+              titleKey: 'source.glyphora.history.flow.4.title',
+              descriptionKey: 'source.glyphora.history.flow.4.description',
+              filePath: 'apps/api/src/routes/post_data_route.ts',
+            },
+          ],
+          codeBlocks: [
+            {
+              id: 'history-client-reload',
+              language: 'dart',
+              source: {
+                type: 'github',
+                repository: 'chengyang1017/glyphora',
+                path:
+                  'apps/mobile-flutter/lib/features/post/presentation/screens/post_edit_history_screen.dart',
+                symbol: '_reload',
+              },
+              captionKey: 'source.glyphora.history.code.client',
+            },
+            {
+              id: 'history-repository',
+              language: 'dart',
+              source: {
+                type: 'github',
+                repository: 'chengyang1017/glyphora',
+                path:
+                  'apps/mobile-flutter/lib/features/post/data/repositories/post_repository_impl.dart',
+                symbol: 'getEditHistory',
+              },
+              captionKey: 'source.glyphora.history.code.repository',
+            },
+            {
+              id: 'history-api',
+              language: 'dart',
+              source: {
+                type: 'github',
+                repository: 'chengyang1017/glyphora',
+                path:
+                  'apps/mobile-flutter/lib/features/post/data/services/post_api.dart',
+                symbol: 'getEditHistory',
+              },
+              captionKey: 'source.glyphora.history.code.api',
+            },
+            {
+              id: 'history-server',
+              language: 'typescript',
+              source: {
+                type: 'github',
+                repository: 'chengyang1017/glyphora',
+                path: 'apps/api/src/routes/post_data_route.ts',
+                startAnchor:
+                  '// GET /api/v1/posts/:id/edit-history',
+              },
+              captionKey: 'source.glyphora.history.code.server',
+            },
+          ],
+          relatedFeatureSlugs: ['edit-delete-posts'],
+        },
+        {
+          slug: 'edit-delete-posts',
+          nameKey: 'source.glyphora.editDelete.name',
+          summaryKey: 'source.glyphora.editDelete.summary',
+          explanationKeys: [
+            'source.glyphora.editDelete.explanation.1',
+            'source.glyphora.editDelete.explanation.2',
+          ],
+          relatedFiles: [
+            {
+              path: 'apps/mobile-flutter/lib/features/post/presentation/screens/post_detail_screen.dart',
+            },
+            {
+              path: 'apps/mobile-flutter/lib/features/post/data/services/post_node_service.dart',
+            },
+            {
+              path: 'apps/mobile-flutter/lib/features/post/data/services/post_api.dart',
+            },
+            {
+              path: 'apps/api/src/routes/post_data_route.ts',
+            },
+            {
+              path: 'apps/api/src/routes/post_route.ts',
+            },
+          ],
+          codeFlow: [
+            {
+              id: 'edit-open-rich-editor',
+              titleKey: 'source.glyphora.editDelete.flow.1.title',
+              descriptionKey: 'source.glyphora.editDelete.flow.1.description',
+              filePath:
+                'apps/mobile-flutter/lib/features/post/presentation/screens/post_detail_screen.dart',
+            },
+            {
+              id: 'edit-save-version',
+              titleKey: 'source.glyphora.editDelete.flow.2.title',
+              descriptionKey: 'source.glyphora.editDelete.flow.2.description',
+              filePath:
+                'apps/api/src/routes/post_data_route.ts',
+            },
+            {
+              id: 'delete-post-metadata',
+              titleKey: 'source.glyphora.editDelete.flow.3.title',
+              descriptionKey: 'source.glyphora.editDelete.flow.3.description',
+              filePath: 'apps/api/src/routes/post_route.ts',
+            },
+            {
+              id: 'delete-storage-cleanup',
+              titleKey: 'source.glyphora.editDelete.flow.4.title',
+              descriptionKey: 'source.glyphora.editDelete.flow.4.description',
+              filePath:
+                'apps/mobile-flutter/lib/features/post/data/services/post_node_service.dart',
+            },
+          ],
+          codeBlocks: [
+            {
+              id: 'edit-client',
+              language: 'dart',
+              source: {
+                type: 'github',
+                repository: 'chengyang1017/glyphora',
+                path:
+                  'apps/mobile-flutter/lib/features/post/presentation/screens/post_detail_screen.dart',
+                symbol: '_editPost',
+              },
+              captionKey: 'source.glyphora.editDelete.code.client',
+            },
+            {
+              id: 'edit-service',
+              language: 'dart',
+              source: {
+                type: 'github',
+                repository: 'chengyang1017/glyphora',
+                path:
+                  'apps/mobile-flutter/lib/features/post/data/services/post_node_service.dart',
+                symbol: 'updateLanguageVersionContent',
+              },
+              captionKey: 'source.glyphora.editDelete.code.service',
+            },
+            {
+              id: 'edit-api',
+              language: 'dart',
+              source: {
+                type: 'github',
+                repository: 'chengyang1017/glyphora',
+                path:
+                  'apps/mobile-flutter/lib/features/post/data/services/post_api.dart',
+                symbol: 'updateLanguageVersion',
+              },
+              captionKey: 'source.glyphora.editDelete.code.api',
+            },
+            {
+              id: 'edit-server',
+              language: 'typescript',
+              source: {
+                type: 'github',
+                repository: 'chengyang1017/glyphora',
+                path: 'apps/api/src/routes/post_data_route.ts',
+                startAnchor:
+                  '// PATCH /api/v1/posts/:id/versions/:languageCode',
+                endAnchor:
+                  '// GET /api/v1/posts/:id/edit-history',
+              },
+              captionKey: 'source.glyphora.editDelete.code.server',
+            },
+            {
+              id: 'delete-service',
+              language: 'dart',
+              source: {
+                type: 'github',
+                repository: 'chengyang1017/glyphora',
+                path:
+                  'apps/mobile-flutter/lib/features/post/data/services/post_node_service.dart',
+                symbol: 'deletePost',
+              },
+              captionKey: 'source.glyphora.editDelete.code.delete',
+            },
+          ],
+          relatedFeatureSlugs: ['multilingual-versions', 'edit-history'],
         },
       ],
     },
