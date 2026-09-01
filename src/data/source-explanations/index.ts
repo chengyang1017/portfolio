@@ -1,20 +1,14 @@
-import { glyphoraSourceExplanation } from './glyphora';
-import { shoppingAppSourceExplanation } from './shoppingApp';
+import {
+  projectSourceExplanations,
+} from '../source-projects';
 
 import type {
   SourceExplanationRegistry,
 } from './types';
 
-// Add only verified source explanations here.
-// Project pages intentionally show a translated empty state
-// until an audited explanation is registered.
 export const sourceExplanations:
-  SourceExplanationRegistry = {
-    glyphora: glyphoraSourceExplanation,
-
-    'shopping-app':
-      shoppingAppSourceExplanation,
-  };
+  SourceExplanationRegistry =
+    projectSourceExplanations;
 
 export const getProjectSource = (
   projectSlug: string,

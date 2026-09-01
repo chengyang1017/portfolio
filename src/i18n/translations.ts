@@ -1,5 +1,5 @@
 import type { Language, TranslationDictionary } from './types';
-import { glyphoraTranslations } from './glyphoraTranslations';
+import { projectTranslations } from '../data/source-projects';
 
 const english: TranslationDictionary = {
   'nav.projects': 'Projects', 'nav.about': 'About', 'nav.contact': 'Contact', 'nav.menu': 'Menu', 'nav.close': 'Close', 'nav.toggle': 'Toggle navigation',
@@ -12,7 +12,7 @@ const english: TranslationDictionary = {
   'source.empty.categoryTitle': 'Category not available', 'source.empty.categoryDescription': 'This source category does not exist or has not been published yet.',
   'source.empty.featureTitle': 'Explanation not available', 'source.empty.featureDescription': 'This feature explanation does not exist or has not been published yet.',
   'source.empty.files': 'No related files have been added.', 'source.empty.flow': 'No code flow has been added.', 'source.empty.code': 'No code blocks have been added.', 'source.empty.related': 'No related features have been added.',
-  ...glyphoraTranslations.en,
+  ...projectTranslations.en,
 };
 
 const simplifiedChinese: TranslationDictionary = {
@@ -26,7 +26,7 @@ const simplifiedChinese: TranslationDictionary = {
   'source.empty.categoryTitle': '分类不可用', 'source.empty.categoryDescription': '此源码分类不存在或尚未发布。',
   'source.empty.featureTitle': '解释不可用', 'source.empty.featureDescription': '此功能解释不存在或尚未发布。',
   'source.empty.files': '尚未添加相关文件。', 'source.empty.flow': '尚未添加代码流程。', 'source.empty.code': '尚未添加代码块。', 'source.empty.related': '尚未添加相关功能。',
-  ...glyphoraTranslations['zh-CN'],
+  ...projectTranslations['zh-CN'],
 };
 
 const traditionalChinese: TranslationDictionary = {
@@ -40,7 +40,7 @@ const traditionalChinese: TranslationDictionary = {
   'source.empty.categoryTitle': '分類無法使用', 'source.empty.categoryDescription': '此原始碼分類不存在或尚未發布。',
   'source.empty.featureTitle': '解釋無法使用', 'source.empty.featureDescription': '此功能解釋不存在或尚未發布。',
   'source.empty.files': '尚未加入相關檔案。', 'source.empty.flow': '尚未加入程式碼流程。', 'source.empty.code': '尚未加入程式碼區塊。', 'source.empty.related': '尚未加入相關功能。',
-  ...glyphoraTranslations['zh-TW'],
+  ...projectTranslations['zh-TW'],
 };
 
 export const translations: Record<Language, TranslationDictionary> = {
