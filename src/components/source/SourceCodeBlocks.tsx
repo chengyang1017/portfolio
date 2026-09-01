@@ -1,6 +1,7 @@
 import {
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from 'react';
 
@@ -11,9 +12,6 @@ import type {
   SourceCodeBlock,
 } from '../../data/source-explanations';
 
-import type {
-  GitHubCodeSource,
-} from '../../data/source-explanations/types';
 
 import { renderTranslatedCode } from '../../data/source-explanations/renderCode';
 import {
@@ -39,6 +37,61 @@ export function SourceCodeBlocks({
     useState<Record<string, ResolvedBlockState>>(
       {},
     );
+
+    const mountedRef = useRef(true);
+
+useEffect(() => {
+  return () => {
+    mountedRef.current = false;
+  };
+}, []);
+
+async function retryBlock(
+  block: SourceCodeBlock,
+) {
+  setResolvedBlocks((current) => ({
+    ...current,
+
+    [block.id]: {
+      status: 'loading',
+    },
+  }));
+
+  try {
+    const result =
+      await resolveCodeBlock(block);
+
+    if (!mountedRef.current) {
+      return;
+    }
+
+    setResolvedBlocks((current) => ({
+      ...current,
+
+      [block.id]: {
+        status: 'success',
+        result,
+      },
+    }));
+  } catch (error) {
+    if (!mountedRef.current) {
+      return;
+    }
+
+    setResolvedBlocks((current) => ({
+      ...current,
+
+      [block.id]: {
+        status: 'error',
+
+        error:
+          error instanceof Error
+            ? error.message
+            : 'Unknown source loading error',
+      },
+    }));
+  }
+}
 
   useEffect(() => {
     let cancelled = false;
@@ -121,6 +174,9 @@ export function SourceCodeBlocks({
             key={block.id}
             block={block}
             state={resolvedBlocks[block.id]}
+            onRetry={() => {
+              void retryBlock(block);
+            }}
           />
         ))}
       </div>
@@ -131,14 +187,18 @@ export function SourceCodeBlocks({
 function SourceCodeBlockView({
   block,
   state,
+  onRetry,
 }: {
   block: SourceCodeBlock;
   state?: ResolvedBlockState;
+  onRetry: () => void;
 }) {
   const { t } = useI18n();
 
   const githubSource =
-    getGitHubSource(block);
+    block.source.type === 'github'
+      ? block.source
+      : undefined;
 
   const code =
     state?.status === 'success'
@@ -164,26 +224,55 @@ function SourceCodeBlockView({
 
   const displayPath =
     githubSource?.path ??
-    getLegacyFilePath(block) ??
     block.id;
 
-  const sourceUrl =
-    state?.status === 'success'
-      ? state.result?.sourceUrl
-      : undefined;
+  const fallbackSourceUrl = githubSource
+  ? `https://github.com/${githubSource.repository}/blob/${
+      githubSource.ref ?? 'main'
+    }/${githubSource.path}`
+  : undefined;
+
+const sourceUrl =
+  state?.status === 'success'
+    ? state.result?.sourceUrl ??
+      fallbackSourceUrl
+    : fallbackSourceUrl;
+
+const commitSha =
+  state?.status === 'success'
+    ? state.result?.commitSha
+    : undefined;
 
   return (
     <figure>
       <figcaption>
         <div className="source-code-caption-main">
-          <span>{displayPath}</span>
+  <span>{displayPath}</span>
 
-          {githubSource?.symbol && (
-            <small className="source-code-symbol">
-              {githubSource.symbol}
-            </small>
-          )}
-        </div>
+  {githubSource && (
+    <div className="source-code-origin">
+  <small>
+    {githubSource.repository}
+  </small>
+
+  <small>
+    {githubSource.ref ?? 'main'}
+  </small>
+
+  {commitSha && (
+    <small title={commitSha}>
+      commit {commitSha.slice(0, 7)}
+    </small>
+  )}
+
+  {githubSource.symbol && (
+    <small>
+      {githubSource.symbol}
+    </small>
+  )}
+</div>
+  )}
+</div>
 
         <div className="source-code-caption-meta">
           {block.captionKey && (
@@ -205,13 +294,19 @@ function SourceCodeBlockView({
       </figcaption>
 
       {state?.status === 'error' ? (
-        <div className="source-code-status source-code-error">
-          <strong>
-            Unable to load source code
-          </strong>
+  <div className="source-code-status source-code-error">
+    <strong>Unable to load source code</strong>
 
-          <span>{state.error}</span>
-        </div>
+    <span>{state.error}</span>
+
+    <button
+      type="button"
+      className="source-code-retry"
+      onClick={onRetry}
+    >
+      Retry
+    </button>
+  </div>
       ) : state?.status !== 'success' ? (
         <div className="source-code-status">
           Loading source code…
@@ -228,32 +323,4 @@ function SourceCodeBlockView({
       )}
     </figure>
   );
-}
-
-function getGitHubSource(
-  block: SourceCodeBlock,
-): GitHubCodeSource | undefined {
-  if (!('source' in block)) {
-    return undefined;
-  }
-
-  if (!block.source) {
-    return undefined;
-  }
-
-  if (block.source.type !== 'github') {
-    return undefined;
-  }
-
-  return block.source;
-}
-
-function getLegacyFilePath(
-  block: SourceCodeBlock,
-): string | undefined {
-  if (!('filePath' in block)) {
-    return undefined;
-  }
-
-  return block.filePath;
 }

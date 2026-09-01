@@ -78,35 +78,26 @@ export const glyphoraSourceExplanation: ProjectSourceExplanation = {
               captionKey: 'source.glyphora.publish.code.client',
             },
             {
-              id: 'publish-server',
-              language: 'typescript',
-              filePath: 'apps/api/src/routes/post_route.ts',
-              captionKey: 'source.glyphora.publish.code.server',
-              code: `const post = await prisma.$transaction(async (transaction) => {
-  const createdPost = await transaction.post.create({
-    data: {
-      firestoreId,
-      authorId: author.id,
-      category,
-      primaryLanguageCode: languageCode,
-      likeCount: 0,
-      commentCount: 0,
-    },
-  });
+  id: 'publish-server',
+  language: 'typescript',
 
-  await transaction.postVersion.create({
-    data: {
-      postId: createdPost.id,
-      authorId: author.id,
-      languageCode,
-      title,
-      content,
-      bodyDelta: bodyDelta as Prisma.InputJsonValue,
-      type: 'original',
-    },
-  });
-});`,
-            },
+  source: {
+    type: 'github',
+
+    repository: 'chengyang1017/glyphora',
+
+    path:
+      'apps/api/src/routes/post_route.ts',
+
+    startAnchor: 'const post =',
+
+    endAnchor:
+      '// ============================================================',
+  },
+
+  captionKey:
+    'source.glyphora.publish.code.server',
+},
           ],
           relatedFeatureSlugs: ['optimistic-like'],
         },
@@ -159,56 +150,35 @@ export const glyphoraSourceExplanation: ProjectSourceExplanation = {
           ],
           codeBlocks: [
             {
-              id: 'optimistic-like-client',
-              language: 'dart',
-              filePath:
-                'apps/mobile-flutter/lib/features/post/presentation/screens/post_detail_screen.dart',
-              captionKey: 'source.glyphora.like.code.client',
-              code: `final previousLiked = _isLiked;
-final previousLikeCount = _likeCount;
-final nextLiked = !previousLiked;
+  id: 'optimistic-like-client',
+  language: 'dart',
 
-setState(() {
-  _isLiked = nextLiked;
-  _likeCount = nextLiked
-      ? previousLikeCount + 1
-      : (previousLikeCount > 0 ? previousLikeCount - 1 : 0);
-});
+  source: {
+    type: 'github',
+    repository: 'chengyang1017/glyphora',
+    path:
+      'apps/mobile-flutter/lib/features/post/presentation/screens/post_detail_screen.dart',
+    symbol: '_toggleLike',
+  },
 
-try {
-  final confirmedLikeCount = await postProvider.toggleLike(
-    widget.postId,
-    liked: nextLiked,
-  );
-  setState(() => _likeCount = confirmedLikeCount);
-} catch (_) {
-  setState(() {
-    _isLiked = previousLiked;
-    _likeCount = previousLikeCount;
-  });
-}`,
-            },
+  captionKey: 'source.glyphora.like.code.client',
+},
             {
-              id: 'like-server-transaction',
-              language: 'typescript',
-              filePath: 'apps/api/src/routes/post_route.ts',
-              captionKey: 'source.glyphora.like.code.server',
-              code: `await transaction.postLike.createMany({
-  data: [{ postId: post.id, userId: user.id }],
-  skipDuplicates: true,
-});
+  id: 'like-server-transaction',
+  language: 'typescript',
 
-const likeCount = await transaction.postLike.count({
-  where: { postId: post.id },
-});
+  source: {
+    type: 'github',
+    repository: 'chengyang1017/glyphora',
+    path: 'apps/api/src/routes/post_route.ts',
 
-await transaction.post.update({
-  where: { id: post.id },
-  data: { likeCount },
-});
+    startAnchor: 'postRouter.put(',
+    endAnchor:
+      '// ============================================================',
+  },
 
-return { liked: true, likeCount };`,
-            },
+  captionKey: 'source.glyphora.like.code.server',
+},
           ],
           relatedFeatureSlugs: ['publish-post'],
         },
@@ -273,36 +243,23 @@ return { liked: true, likeCount };`,
           ],
           codeBlocks: [
             {
-              id: 'chat-send-batch',
-              language: 'dart',
-              filePath:
-                'apps/mobile-flutter/lib/features/chat/data/services/chat_service.dart',
-              captionKey: 'source.glyphora.chat.send.code',
-              code: `batch.set(messageRef, {
-  'type': 'text',
-  'senderId': senderId,
-  'content': cleanContent,
-  'timestamp': now,
-  'hiddenFor': <String>[],
-  'status': 'active',
-  'cleanupAt': null,
-});
+  id: 'chat-send-batch',
+  language: 'dart',
 
-final chatUpdates = <String, dynamic>{
-  'lastMessage': cleanContent,
-  'lastMessageId': messageRef.id,
-  'lastSenderId': senderId,
-  'updatedAt': now,
-};
+  source: {
+    type: 'github',
 
-for (final userId in users) {
-  chatUpdates['unreadCount.$userId'] =
-      userId == senderId ? 0 : FieldValue.increment(1);
-}
+    repository: 'chengyang1017/glyphora',
 
-batch.update(chatRef, chatUpdates);
-await batch.commit();`,
-            },
+    path:
+      'apps/mobile-flutter/lib/features/chat/data/services/chat_service.dart',
+
+    symbol: 'sendMessage',
+  },
+
+  captionKey:
+    'source.glyphora.chat.send.code',
+},
           ],
           relatedFeatureSlugs: ['message-deletion'],
         },
@@ -354,42 +311,36 @@ await batch.commit();`,
             {
               id: 'logical-delete-code',
               language: 'dart',
-              filePath:
-                'apps/mobile-flutter/lib/features/chat/data/services/chat_service.dart',
-              captionKey: 'source.glyphora.chat.delete.code.client',
-              code: `final updates = <String, dynamic>{
-  'status': 'deleted',
-  'deletedBy': currentUserId,
-  'deletedAt': FieldValue.serverTimestamp(),
-  'cleanupAt': _buildCleanupAt(),
-  'content': '',
-  'imageUrl': null,
-  'editedAt': null,
-};
 
-transaction.update(messageRef, updates);`,
+              source: {
+                type: 'github',
+
+                repository: 'chengyang1017/glyphora',
+
+                path:
+                  'apps/mobile-flutter/lib/features/chat/data/services/chat_service.dart',
+
+                symbol: 'deleteMessageForEveryone',
+              },
+
+              captionKey: 'source.glyphora.chat.delete.code.client',
             },
             {
               id: 'cleanup-code',
               language: 'typescript',
-              filePath: 'apps/api/src/jobs/cleanup_expired_chat_messages.ts',
+
+              source: {
+                type: 'github',
+
+                repository: 'chengyang1017/glyphora',
+
+                path:
+                  'apps/api/src/jobs/cleanup_expired_chat_messages.ts',
+
+                symbol: 'cleanupExpiredChatMessages',
+              },
+
               captionKey: 'source.glyphora.chat.delete.code.server',
-              code: `const cleanupSnapshot = await firebaseFirestore
-  .collectionGroup('messages')
-  .where('cleanupAt', '<=', now)
-  .orderBy('cleanupAt')
-  .limit(CLEANUP_BATCH_SIZE)
-  .get();
-
-const canPhysicallyDelete =
-  status === 'deleted' || hiddenForEveryone;
-
-if (!canPhysicallyDelete) {
-  await messageDocument.ref.update({
-    cleanupAt: FieldValue.delete(),
-  });
-  continue;
-}`,
             },
           ],
           relatedFeatureSlugs: ['send-message'],
@@ -461,33 +412,19 @@ if (!canPhysicallyDelete) {
             {
               id: 'note-permission-transaction',
               language: 'dart',
-              filePath:
-                'apps/mobile-flutter/lib/features/notes/data/repositories/firebase_note_repository.dart',
+
+              source: {
+                type: 'github',
+
+                repository: 'chengyang1017/glyphora',
+
+                path:
+                  'apps/mobile-flutter/lib/features/notes/data/repositories/firebase_note_repository.dart',
+
+                symbol: 'updateNote',
+              },
+
               captionKey: 'source.glyphora.notes.permissions.code',
-              code: `await _firestore.runTransaction((transaction) async {
-  final snapshot = await transaction.get(reference);
-
-  if (!snapshot.exists) {
-    throw StateError('笔记不存在');
-  }
-
-  final data = snapshot.data() ?? const <String, dynamic>{};
-  final ownerId = data['ownerId']?.toString() ?? '';
-  final allowOthersEdit = data['allowOthersEdit'] as bool? ?? false;
-  final participantIds = List<String>.from(
-    data['participantIds'] ?? const <String>[],
-  );
-
-  final isOwner = ownerId == userId;
-  final isParticipant = participantIds.contains(userId);
-  final canEdit = isOwner || (isParticipant && allowOthersEdit);
-
-  if (!canEdit) {
-    throw StateError('无权编辑这条笔记');
-  }
-
-  transaction.update(reference, updates);
-});`,
             },
           ],
           relatedFeatureSlugs: [],

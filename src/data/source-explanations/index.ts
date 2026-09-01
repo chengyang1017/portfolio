@@ -1,18 +1,32 @@
 import { glyphoraSourceExplanation } from './glyphora';
-import type { SourceExplanationRegistry } from './types';
+import { shoppingAppSourceExplanation } from './shoppingApp';
 
-// Add only verified source explanations here. Project pages intentionally show
-// a translated empty state until an audited explanation is registered.
-export const sourceExplanations: SourceExplanationRegistry = {
-  glyphora: glyphoraSourceExplanation,
-};
+import type {
+  SourceExplanationRegistry,
+} from './types';
 
-export const getProjectSource = (projectSlug: string) =>
-  sourceExplanations[projectSlug];
+// Add only verified source explanations here.
+// Project pages intentionally show a translated empty state
+// until an audited explanation is registered.
+export const sourceExplanations:
+  SourceExplanationRegistry = {
+    glyphora: glyphoraSourceExplanation,
 
-export const getSourceCategory = (projectSlug: string, categorySlug: string) =>
+    'shopping-app':
+      shoppingAppSourceExplanation,
+  };
+
+export const getProjectSource = (
+  projectSlug: string,
+) => sourceExplanations[projectSlug];
+
+export const getSourceCategory = (
+  projectSlug: string,
+  categorySlug: string,
+) =>
   getProjectSource(projectSlug)?.categories.find(
-    (category) => category.slug === categorySlug,
+    (category) =>
+      category.slug === categorySlug,
   );
 
 export const getSourceFeature = (
@@ -20,8 +34,12 @@ export const getSourceFeature = (
   categorySlug: string,
   featureSlug: string,
 ) =>
-  getSourceCategory(projectSlug, categorySlug)?.features.find(
-    (feature) => feature.slug === featureSlug,
+  getSourceCategory(
+    projectSlug,
+    categorySlug,
+  )?.features.find(
+    (feature) =>
+      feature.slug === featureSlug,
   );
 
 export type {

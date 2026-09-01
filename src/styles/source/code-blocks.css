@@ -68,3 +68,60 @@
     font-size: 0.88rem;
   }
 }
+
+.source-code-status {
+  padding: 1rem 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  font-size: 0.9rem;
+}
+
+.source-code-error {
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.source-code-error strong {
+  font-weight: 600;
+}
+
+.source-code-error span {
+  opacity: 0.8;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.source-code-retry {
+  width: fit-content;
+  padding: 0.5rem 0.9rem;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.source-code-retry:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.source-code-retry:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
+.source-code-origin {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.35rem;
+}
+
+.source-code-origin small {
+  padding: 0.2rem 0.45rem;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 0.72rem;
+  opacity: 0.75;
+}

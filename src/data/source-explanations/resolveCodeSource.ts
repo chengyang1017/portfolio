@@ -6,6 +6,71 @@ import type {
 export interface ResolvedCode {
   code: string;
   sourceUrl?: string;
+  commitSha?: string;
+}
+
+const sourceFileCache = new Map<
+  string,
+  Promise<string>
+>();
+
+const commitShaCache = new Map<
+  string,
+  Promise<string>
+>();
+
+async function resolveCommitSha(
+  repository: string,
+  ref: string,
+): Promise<string> {
+  const cacheKey = `${repository}@${ref}`;
+
+  const cached =
+    commitShaCache.get(cacheKey);
+
+  if (cached) {
+    return cached;
+  }
+
+  const request = fetch(
+    `https://api.github.com/repos/${repository}/commits/${ref}`,
+    {
+      headers: {
+        Accept:
+          'application/vnd.github+json',
+      },
+    },
+  )
+    .then(async (response) => {
+      if (!response.ok) {
+        throw new Error(
+          `Unable to resolve GitHub commit (${response.status})`,
+        );
+      }
+
+      const data = (await response.json()) as {
+        sha?: string;
+      };
+
+      if (!data.sha) {
+        throw new Error(
+          'GitHub commit SHA is missing',
+        );
+      }
+
+      return data.sha;
+    })
+    .catch((error) => {
+      commitShaCache.delete(cacheKey);
+      throw error;
+    });
+
+  commitShaCache.set(
+    cacheKey,
+    request,
+  );
+
+  return request;
 }
 
 /**
@@ -21,25 +86,12 @@ export interface ResolvedCode {
 export async function resolveCodeBlock(
   block: SourceCodeBlock,
 ): Promise<ResolvedCode> {
-  // 旧格式：
-  // {
-  //   code: `...`,
-  //   filePath: '...',
-  // }
-  if (typeof block.code === 'string') {
-    return {
-        code: block.code,
-    };
-  }
-
-  // 新格式中的 inline
   if (block.source.type === 'inline') {
     return {
       code: block.source.code,
     };
   }
 
-  // 新格式中的 GitHub 动态代码
   return resolveGitHubSource(block.source);
 }
 
@@ -48,54 +100,62 @@ async function resolveGitHubSource(
 ): Promise<ResolvedCode> {
   const ref = source.ref ?? 'main';
 
+  const commitSha =
+    await resolveCommitSha(
+        source.repository,
+        ref,
+    );
+
   const rawUrl =
     `https://raw.githubusercontent.com/` +
     `${source.repository}/${ref}/${source.path}`;
 
-  const response = await fetch(rawUrl);
+  const sourceUrl =
+    `https://github.com/` +
+    `${source.repository}/blob/${commitSha}/${source.path}`;
 
-  if (!response.ok) {
+  try {
+    const sourceText =
+      await loadGitHubSourceFile(rawUrl);
+
+    let code = sourceText;
+
+    if (source.symbol) {
+      code = extractSymbol(
+        code,
+        source.symbol,
+      );
+    }
+
+    if (
+      source.startAnchor ||
+      source.endAnchor
+    ) {
+      code = extractByAnchors(
+        code,
+        source.startAnchor,
+        source.endAnchor,
+      );
+    }
+
+    return {
+      code,
+      sourceUrl,
+    };
+  } catch (error) {
+    const message =
+      error instanceof Error
+        ? error.message
+        : 'Unknown source resolution error';
+
+    const target = source.symbol
+      ? `${source.path}#${source.symbol}`
+      : source.path;
+
     throw new Error(
-      `Unable to load source file: ${response.status} ${response.statusText}`,
+      `Unable to resolve ${target}: ${message}`,
     );
   }
-
-  const fileCode = await response.text();
-
-  let selectedCode = fileCode;
-
-  /*
-   * 如果指定 symbol，
-   * 先把范围缩小到这个函数 / 方法。
-   */
-  if (source.symbol) {
-    selectedCode = extractSymbol(
-      fileCode,
-      source.symbol,
-    );
-  }
-
-  /*
-   * 如果还有 anchor，
-   * 再在 symbol 范围内进一步截取。
-   */
-  if (
-    source.startAnchor ||
-    source.endAnchor
-  ) {
-    selectedCode = extractByAnchors(
-      selectedCode,
-      source.startAnchor,
-      source.endAnchor,
-    );
-  }
-
-  return {
-    code: selectedCode.trim(),
-    sourceUrl:
-      `https://github.com/` +
-      `${source.repository}/blob/${ref}/${source.path}`,
-  };
 }
 
 /**
@@ -567,4 +627,57 @@ function normalizeWhitespace(
   return value
     .replace(/\s+/g, ' ')
     .trim();
+}
+
+async function loadGitHubSourceFile(
+  rawUrl: string,
+): Promise<string> {
+  const cached = sourceFileCache.get(rawUrl);
+
+  if (cached) {
+    return cached;
+  }
+
+  const controller = new AbortController();
+
+  const timeout = window.setTimeout(() => {
+    controller.abort();
+  }, 10000);
+
+  const request = fetch(rawUrl, {
+    signal: controller.signal,
+  })
+    .then(async (response) => {
+      if (!response.ok) {
+        throw new Error(
+          `GitHub source request failed (${response.status})`,
+        );
+      }
+
+      return response.text();
+    })
+    .catch((error) => {
+      sourceFileCache.delete(rawUrl);
+
+      if (
+        error instanceof DOMException &&
+        error.name === 'AbortError'
+      ) {
+        throw new Error(
+          'GitHub source request timed out',
+        );
+      }
+
+      throw error;
+    })
+    .finally(() => {
+      window.clearTimeout(timeout);
+    });
+
+  sourceFileCache.set(
+    rawUrl,
+    request,
+  );
+
+  return request;
 }
