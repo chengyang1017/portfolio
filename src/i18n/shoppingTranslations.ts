@@ -8,7 +8,7 @@ const en: TranslationDictionary = {
     'Commerce Platform source code',
 
   'source.shopping.summary':
-    'Trace the verified checkout and payment path across the Flutter customer app, Node.js API, Stripe, Prisma, and PostgreSQL.',
+    'Trace verified commerce paths across the Flutter customer app, Node.js API, Stripe, Prisma, PostgreSQL, order reservation, inventory, and expiration jobs.',
 
   'source.shopping.payments.name':
     'Checkout & payments',
@@ -60,6 +60,57 @@ const en: TranslationDictionary = {
 
   'source.shopping.stripe.code.webhook':
     'The webhook handler verifies Stripe-Signature before forwarding trusted events into the payment service.',
+
+  'source.shopping.orders.name':
+    'Orders & inventory',
+
+  'source.shopping.orders.summary':
+    'How the backend prices orders from current product data, reserves sellable stock, protects concurrent inventory changes, and releases abandoned reservations.',
+
+  'source.shopping.reservation.name':
+    'Reserved stock and order expiration',
+
+  'source.shopping.reservation.summary':
+    'Reserve stock for unpaid online orders, keep cash-on-delivery behavior separate, and automatically cancel expired reservations without racing completed Stripe payments.',
+
+  'source.shopping.reservation.explanation.1':
+    'createCustomerOrder rebuilds prices from active database products instead of trusting client totals. Inside one Prisma transaction, it checks available stock as stock minus reservedStock. Cash-on-delivery orders reduce physical stock immediately, while online-payment orders increase reservedStock and receive a 30-minute reservation expiry.',
+
+  'source.shopping.reservation.explanation.2':
+    'The expiration worker scans overdue unpaid orders in bounded batches. Before cancelling, it checks the Stripe PaymentIntent so a succeeded or still-processing payment is not released by mistake. A successful expiration marks the order cancelled and failed, then decrements reservedStock in the same database transaction. Manual inventory changes also lock the product row and cannot reduce stock below reservedStock.',
+
+  'source.shopping.reservation.flow.1.title':
+    'Rebuild order pricing on the server',
+
+  'source.shopping.reservation.flow.1.description':
+    'Load active products from PostgreSQL, use their stored prices, calculate each line total and shipping, and reject unavailable products or unsafe amounts.',
+
+  'source.shopping.reservation.flow.2.title':
+    'Reserve only actually available stock',
+
+  'source.shopping.reservation.flow.2.description':
+    'Conditional SQL updates require stock minus reservedStock to cover the requested quantity. Online orders increase reservedStock; cash-on-delivery orders reduce stock immediately.',
+
+  'source.shopping.reservation.flow.3.title':
+    'Create an order with an expiration boundary',
+
+  'source.shopping.reservation.flow.3.description':
+    'Online orders enter PENDING_PAYMENT with a 30-minute reservationExpiresAt timestamp, while cash-on-delivery orders enter PROCESSING without a payment reservation.',
+
+  'source.shopping.reservation.flow.4.title':
+    'Verify payment before releasing inventory',
+
+  'source.shopping.reservation.flow.4.description':
+    'The worker skips succeeded or processing PaymentIntents, cancels abandoned intents when possible, then atomically cancels the expired order and releases its reserved stock.',
+
+  'source.shopping.reservation.code.order':
+    'Order creation calculates authoritative prices and reserves or deducts stock inside one transaction.',
+
+  'source.shopping.reservation.code.expiration':
+    'The expiration job checks Stripe before allowing an overdue reservation to be cancelled and released.',
+
+  'source.shopping.reservation.code.inventory':
+    'Administrative inventory changes lock the product row and preserve stock already reserved by pending orders.',
 };
 
 const simplifiedChinese:
@@ -68,7 +119,7 @@ const simplifiedChinese:
       '商城平台源代码',
 
     'source.shopping.summary':
-      '沿着经过核实的真实结账与支付路径，查看 Flutter 客户端、Node.js API、Stripe、Prisma 与 PostgreSQL 如何协作。',
+      '沿着经过核实的真实商城代码路径，查看 Flutter 客户端、Node.js API、Stripe、Prisma、PostgreSQL、订单锁库存、库存管理与超时任务如何协作。',
 
     'source.shopping.payments.name':
       '结账与支付',
@@ -120,6 +171,57 @@ const simplifiedChinese:
 
     'source.shopping.stripe.code.webhook':
       'Webhook Handler 会先验证 Stripe-Signature，再把可信事件交给支付服务处理。',
+
+    'source.shopping.orders.name':
+      '订单与库存',
+
+    'source.shopping.orders.summary':
+      '查看后端如何用当前商品数据重新计算订单金额、锁定可售库存、保护并发库存修改，并释放被放弃的库存预留。',
+
+    'source.shopping.reservation.name':
+      '锁库存与订单超时',
+
+    'source.shopping.reservation.summary':
+      '为未付款线上订单锁定库存，把货到付款流程单独处理，并在不误伤已完成 Stripe 付款的前提下自动取消超时预留。',
+
+    'source.shopping.reservation.explanation.1':
+      'createCustomerOrder 不信任客户端传来的总价，而是从数据库中的有效商品重新取价格并计算订单金额。在一个 Prisma 事务中，它以 stock - reservedStock 作为可售库存。货到付款会立即减少真实 stock；线上付款则增加 reservedStock，并设置 30 分钟的 reservationExpiresAt。',
+
+    'source.shopping.reservation.explanation.2':
+      '订单超时 worker 会按批次扫描已经过期且仍未付款的订单。取消之前会先检查 Stripe PaymentIntent，避免把已经成功或仍在 processing 的付款误当成超时。真正过期时，会在同一个数据库事务中把订单改为 CANCELLED / FAILED，并减少 reservedStock。管理员手动改库存时也会锁住商品行，而且不能把 stock 调整到 reservedStock 以下。',
+
+    'source.shopping.reservation.flow.1.title':
+      '由服务端重新计算订单价格',
+
+    'source.shopping.reservation.flow.1.description':
+      '从 PostgreSQL 读取仍有效的商品和真实价格，重新计算每个订单项、运费与总价，并拒绝已经下架的商品或超出安全整数范围的金额。',
+
+    'source.shopping.reservation.flow.2.title':
+      '只锁定真正可售的库存',
+
+    'source.shopping.reservation.flow.2.description':
+      '条件 SQL 要求 stock - reservedStock 足以覆盖购买数量。线上订单增加 reservedStock；货到付款则直接减少 stock。',
+
+    'source.shopping.reservation.flow.3.title':
+      '创建带超时边界的订单',
+
+    'source.shopping.reservation.flow.3.description':
+      '线上订单进入 PENDING_PAYMENT，并写入 30 分钟后的 reservationExpiresAt；货到付款则直接进入 PROCESSING，不建立付款库存预留。',
+
+    'source.shopping.reservation.flow.4.title':
+      '释放库存前先确认付款状态',
+
+    'source.shopping.reservation.flow.4.description':
+      'Worker 会跳过 succeeded 或 processing 的 PaymentIntent，并尽量取消已经放弃的 intent；确认可以过期后，再原子地取消订单并释放 reservedStock。',
+
+    'source.shopping.reservation.code.order':
+      '订单创建在同一事务里使用服务端价格，并根据支付方式锁定或直接扣减库存。',
+
+    'source.shopping.reservation.code.expiration':
+      '订单超时任务会先检查 Stripe，再决定是否允许取消超时订单并释放锁定库存。',
+
+    'source.shopping.reservation.code.inventory':
+      '管理员库存操作会锁住商品行，并保护已经被待付款订单占用的 reservedStock。',
   };
 
 const traditionalChinese:
@@ -128,7 +230,7 @@ const traditionalChinese:
       '商城平台原始碼',
 
     'source.shopping.summary':
-      '沿著經過核實的真實結帳與付款路徑，查看 Flutter 客戶端、Node.js API、Stripe、Prisma 與 PostgreSQL 如何協作。',
+      '沿著經過核實的真實商城程式碼路徑，查看 Flutter 客戶端、Node.js API、Stripe、Prisma、PostgreSQL、訂單鎖庫存、庫存管理與逾時工作如何協作。',
 
     'source.shopping.payments.name':
       '結帳與付款',
@@ -180,6 +282,57 @@ const traditionalChinese:
 
     'source.shopping.stripe.code.webhook':
       'Webhook Handler 會先驗證 Stripe-Signature，再把可信事件交給付款服務處理。',
+
+    'source.shopping.orders.name':
+      '訂單與庫存',
+
+    'source.shopping.orders.summary':
+      '查看後端如何用目前商品資料重新計算訂單金額、鎖定可售庫存、保護並行庫存修改，並釋放被放棄的庫存預留。',
+
+    'source.shopping.reservation.name':
+      '鎖庫存與訂單逾時',
+
+    'source.shopping.reservation.summary':
+      '為未付款線上訂單鎖定庫存，把貨到付款流程分開處理，並在不誤傷已完成 Stripe 付款的前提下自動取消逾時預留。',
+
+    'source.shopping.reservation.explanation.1':
+      'createCustomerOrder 不信任客戶端傳來的總價，而是從資料庫中的有效商品重新取得價格並計算訂單金額。在一個 Prisma 交易中，它以 stock - reservedStock 作為可售庫存。貨到付款會立即減少真實 stock；線上付款則增加 reservedStock，並設定 30 分鐘的 reservationExpiresAt。',
+
+    'source.shopping.reservation.explanation.2':
+      '訂單逾時 worker 會分批掃描已經過期且仍未付款的訂單。取消之前會先檢查 Stripe PaymentIntent，避免把已成功或仍在 processing 的付款誤當成逾時。真正過期時，會在同一個資料庫交易中把訂單改成 CANCELLED / FAILED，並減少 reservedStock。管理員手動修改庫存時也會鎖住商品列，而且不能把 stock 調整到 reservedStock 以下。',
+
+    'source.shopping.reservation.flow.1.title':
+      '由伺服器重新計算訂單價格',
+
+    'source.shopping.reservation.flow.1.description':
+      '從 PostgreSQL 讀取仍有效的商品和真實價格，重新計算每個訂單項目、運費與總價，並拒絕已下架商品或超出安全整數範圍的金額。',
+
+    'source.shopping.reservation.flow.2.title':
+      '只鎖定真正可售的庫存',
+
+    'source.shopping.reservation.flow.2.description':
+      '條件 SQL 要求 stock - reservedStock 足以覆蓋購買數量。線上訂單增加 reservedStock；貨到付款則直接減少 stock。',
+
+    'source.shopping.reservation.flow.3.title':
+      '建立帶逾時邊界的訂單',
+
+    'source.shopping.reservation.flow.3.description':
+      '線上訂單進入 PENDING_PAYMENT，並寫入 30 分鐘後的 reservationExpiresAt；貨到付款則直接進入 PROCESSING，不建立付款庫存預留。',
+
+    'source.shopping.reservation.flow.4.title':
+      '釋放庫存前先確認付款狀態',
+
+    'source.shopping.reservation.flow.4.description':
+      'Worker 會跳過 succeeded 或 processing 的 PaymentIntent，並盡量取消已放棄的 intent；確認可以逾時後，再原子地取消訂單並釋放 reservedStock。',
+
+    'source.shopping.reservation.code.order':
+      '訂單建立在同一個交易中使用伺服器價格，並依付款方式鎖定或直接扣減庫存。',
+
+    'source.shopping.reservation.code.expiration':
+      '訂單逾時工作會先檢查 Stripe，再決定是否允許取消逾時訂單並釋放鎖定庫存。',
+
+    'source.shopping.reservation.code.inventory':
+      '管理員庫存操作會鎖住商品列，並保護已被待付款訂單占用的 reservedStock。',
   };
 
 export const shoppingTranslations: Record<
