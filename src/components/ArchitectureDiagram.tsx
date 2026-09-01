@@ -1,0 +1,2 @@
+import type { Project } from '../data/projects';
+export function ArchitectureDiagram({ nodes }: { nodes: Project['architecture'] }) { return <div className="architecture" aria-label="Project architecture">{nodes.map((node, index) => <div className="architecture-node" key={node.label}><span>{String(index + 1).padStart(2,'0')}</span><strong>{node.label}</strong><small>{node.detail}</small>{index < nodes.length - 1 && <i>→</i>}</div>)}</div>; }

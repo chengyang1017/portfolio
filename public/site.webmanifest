@@ -1,0 +1,9 @@
+{
+  "name": "Lim Cheng Yang Portfolio",
+  "short_name": "Lim Cheng Yang",
+  "description": "Portfolio of Lim Cheng Yang, a product-minded software engineer.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f3f2ed",
+  "theme_color": "#18201e"
+}
