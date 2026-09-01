@@ -1,0 +1,70 @@
+.source-code-blocks {
+  display: grid;
+  gap: 28px;
+
+  max-width: 900px;
+}
+
+.source-code-blocks figure {
+  margin: 0;
+
+  overflow: hidden;
+
+  background: var(--dark);
+  color: #e8ede9;
+
+  border-radius: 10px;
+}
+
+.source-code-blocks figcaption {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+
+  padding: 18px 24px;
+
+  border-bottom: 1px solid #46514c;
+
+  color: #aeb9b4;
+
+  font-size: 0.82rem;
+}
+
+.source-code-blocks figcaption small {
+  text-align: right;
+}
+
+.source-code-blocks pre {
+  margin: 0;
+
+  padding: 28px 30px;
+
+  overflow: auto;
+
+  font-size: 0.95rem;
+  line-height: 1.75;
+}
+
+.source-code-blocks .hljs {
+  padding: 0;
+  background: transparent;
+}
+
+@media (max-width: 680px) {
+  .source-code-blocks {
+    max-width: 100%;
+  }
+
+  .source-code-blocks figcaption {
+    padding: 14px 16px;
+    gap: 12px;
+
+    font-size: 0.74rem;
+  }
+
+  .source-code-blocks pre {
+    padding: 22px 18px;
+
+    font-size: 0.88rem;
+  }
+}

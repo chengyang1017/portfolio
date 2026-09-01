@@ -1,0 +1,181 @@
+.about-hero {
+  padding: 100px 0 120px;
+}
+
+.about-hero > div {
+  display: grid;
+  grid-template-columns: 1fr 0.36fr;
+  gap: 60px;
+
+  align-items: end;
+
+  margin-top: 30px;
+}
+
+.about-hero h1 {
+  max-width: 1120px;
+  margin: 0;
+
+  font-family: 'Manrope', sans-serif;
+  font-size: clamp(3.7rem, 7.2vw, 7.15rem);
+  font-weight: 500;
+
+  line-height: 0.99;
+  letter-spacing: -0.07em;
+}
+
+.about-hero h1 em {
+  color: #7d8a85;
+  font-style: normal;
+}
+
+.about-hero > div > p {
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.about-story {
+  padding: 110px 0;
+
+  background: var(--dark);
+  color: white;
+}
+
+.about-story-grid {
+  display: grid;
+  grid-template-columns: 0.85fr 1.15fr;
+  gap: 100px;
+}
+
+.portrait-large {
+  height: 650px;
+}
+
+.about-story-grid h2 {
+  font-size: 4rem;
+  font-weight: 500;
+
+  letter-spacing: -0.06em;
+}
+
+.about-story-grid > div:last-child > p {
+  color: #aab4af;
+
+  font-size: 1.05rem;
+  line-height: 1.75;
+}
+
+.about-story blockquote {
+  margin: 50px 0;
+
+  padding-left: 24px;
+
+  border-left: 2px solid var(--accent);
+
+  font-family: 'Manrope', sans-serif;
+  font-size: 1.6rem;
+
+  line-height: 1.45;
+}
+
+.principles {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+
+  border-left: 1px solid var(--line);
+}
+
+.principles article {
+  min-height: 290px;
+
+  padding: 26px;
+
+  display: flex;
+  flex-direction: column;
+
+  border: 1px solid var(--line);
+  border-left: 0;
+}
+
+.principles span {
+  color: var(--muted);
+  font-size: 0.7rem;
+}
+
+.principles h3 {
+  margin: auto 0 12px;
+
+  font-weight: 500;
+}
+
+.principles p {
+  margin: 0;
+
+  color: var(--muted);
+
+  line-height: 1.55;
+}
+
+.about-cta {
+  padding: 100px 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  border-top: 1px solid var(--line);
+}
+
+.about-cta h2 {
+  max-width: 620px;
+
+  font-size: 2.8rem;
+  font-weight: 500;
+
+  letter-spacing: -0.05em;
+}
+
+@media (max-width: 900px) {
+  .about-story-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .about-hero > div {
+    grid-template-columns: 1fr;
+  }
+
+  .principles {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 680px) {
+  .about-hero h1 {
+    font-size: clamp(3rem, 14vw, 5rem);
+  }
+
+  .about-hero > div {
+    margin-top: 20px;
+  }
+
+  .portrait-large {
+    height: 480px;
+  }
+
+  .about-story {
+    padding: 75px 0;
+  }
+
+  .about-story-grid {
+    gap: 60px;
+  }
+
+  .principles {
+    grid-template-columns: 1fr;
+  }
+
+  .about-cta {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

@@ -1,0 +1,68 @@
+.code-flow {
+  display: grid;
+  gap: 12px;
+}
+
+.code-flow article {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr);
+
+  padding: 20px;
+
+  border: 1px solid var(--line);
+}
+
+.code-flow article > span {
+  color: var(--muted);
+
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.code-flow article > div {
+  min-width: 0;
+}
+
+.code-flow h3 {
+  margin: 0 0 8px;
+
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.code-flow p {
+  margin: 0;
+
+  color: var(--muted);
+
+  line-height: 1.55;
+}
+
+.code-flow code {
+  display: inline-block;
+
+  margin-top: 12px;
+
+  color: var(--ink);
+
+  font-size: 0.78rem;
+
+  overflow-wrap: anywhere;
+}
+
+.code-flow article > i {
+  grid-column: 2;
+
+  margin-top: 14px;
+
+  color: var(--muted);
+
+  font-style: normal;
+}
+
+@media (max-width: 680px) {
+  .code-flow article {
+    grid-template-columns: 32px minmax(0, 1fr);
+    padding: 18px;
+  }
+}

@@ -63,28 +63,19 @@ export const glyphoraSourceExplanation: ProjectSourceExplanation = {
             {
               id: 'publish-client',
               language: 'dart',
-              filePath:
-                'apps/mobile-flutter/lib/features/post/presentation/screens/create_post_screen.dart',
-              captionKey: 'source.glyphora.publish.code.client',
-              code: `final postId = _draftPostId;
-final imageUrls = await uploadImages(postId);
 
-await postRepository.createPost(
-  PostModel(
-    id: postId,
-    userId: user.id,
-    title: title.text.trim(),
-    content: plainContent,
-    bodyDelta: bodyDelta,
-    category: widget.category,
-    categoryId: _selectedCategoryId,
-    categoryPath: _resolvedCategoryPath,
-    languageCode: widget.languageCode,
-    primaryLanguageCode: widget.languageCode,
-    availableLanguageCodes: <String>[widget.languageCode],
-    imageUrls: imageUrls,
-  ),
-);`,
+              source: {
+                type: 'github',
+
+                repository: 'chengyang1017/glyphora',
+
+                path:
+                  'apps/mobile-flutter/lib/features/post/presentation/screens/create_post_screen.dart',
+
+                symbol: 'uploadPost',
+              },
+
+              captionKey: 'source.glyphora.publish.code.client',
             },
             {
               id: 'publish-server',
