@@ -1,0 +1,211 @@
+.architecture {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 18px;
+
+  margin: 70px 0 40px;
+}
+
+.architecture-node {
+  --architecture-accent: var(--accent);
+
+  min-height: 250px;
+  padding: 22px 22px 24px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+
+  position: relative;
+
+  overflow: visible;
+
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background:
+    radial-gradient(
+      circle at 16% 0%,
+      color-mix(in srgb, var(--architecture-accent) 12%, transparent),
+      transparent 45%
+    ),
+    var(--surface);
+  box-shadow: 0 12px 30px #00000012;
+
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.architecture-node::before {
+  content: '';
+
+  position: absolute;
+  inset: -1px 24px auto;
+
+  height: 2px;
+
+  border-radius: 99px;
+  background: var(--architecture-accent);
+  opacity: 0.9;
+}
+
+.architecture-node:hover {
+  transform: translateY(-4px);
+  border-color: color-mix(in srgb, var(--architecture-accent) 38%, var(--line));
+  box-shadow: 0 20px 46px #00000020;
+}
+
+.architecture-node-topline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.architecture-number {
+  color: var(--architecture-accent);
+
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+}
+
+.architecture-role {
+  max-width: 150px;
+
+  overflow: hidden;
+
+  color: var(--muted);
+
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  text-align: right;
+  letter-spacing: 0.09em;
+
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.architecture-brand {
+  width: 68px;
+  height: 68px;
+
+  display: grid;
+  place-items: center;
+
+  position: relative;
+
+  border: 1px solid color-mix(in srgb, var(--architecture-accent) 24%, var(--line));
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--architecture-accent) 8%, var(--paper));
+}
+
+.architecture-brand img,
+.architecture-brand-fallback {
+  grid-area: 1 / 1;
+}
+
+.architecture-brand img {
+  width: 34px;
+  height: 34px;
+
+  position: relative;
+  z-index: 1;
+
+  object-fit: contain;
+}
+
+.architecture-brand-fallback {
+  color: var(--architecture-accent);
+
+  font-family: 'Manrope', sans-serif;
+  font-size: 0.92rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.architecture-node-copy {
+  margin-top: auto;
+
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.architecture-node-copy strong {
+  margin: 0;
+
+  font-family: 'Manrope', sans-serif;
+  font-size: clamp(1.25rem, 1.7vw, 1.65rem);
+  font-weight: 500;
+  line-height: 1.05;
+  letter-spacing: -0.045em;
+}
+
+.architecture-node-copy small {
+  margin: 0;
+
+  color: var(--muted);
+
+  font-size: 0.84rem;
+  line-height: 1.5;
+}
+
+.architecture-connector {
+  width: 34px;
+  height: 34px;
+
+  display: grid;
+  place-items: center;
+
+  position: absolute;
+  right: -26px;
+  top: calc(50% - 17px);
+  z-index: 3;
+
+  padding: 0;
+
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: var(--paper);
+  color: var(--ink);
+
+  font-size: 0.9rem;
+  font-style: normal;
+}
+
+@media (max-width: 900px) {
+  .architecture {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .architecture-connector {
+    display: none;
+  }
+}
+
+@media (max-width: 680px) {
+  .architecture {
+    grid-template-columns: 1fr;
+    gap: 14px;
+
+    margin-top: 50px;
+  }
+
+  .architecture-node {
+    min-height: 205px;
+    padding: 20px;
+  }
+
+  .architecture-brand {
+    width: 58px;
+    height: 58px;
+    border-radius: 15px;
+  }
+
+  .architecture-brand img {
+    width: 29px;
+    height: 29px;
+  }
+}
