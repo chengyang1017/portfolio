@@ -1,8 +1,16 @@
 @font-face {
-  font-family: 'Nom Na Tong';
-  src: url('https://github.com/nomfoundation/font/releases/download/v5.17/NomNaTong-Regular.ttf') format('truetype');
+  font-family: 'Minh Nguyen';
+  src: url('https://raw.githubusercontent.com/TKYKmori/Minh-Nguyen/9f6510f3a658b741664dd270267aa6a1a7084dc3/Minh%20Nguyen%20Regular.ttf') format('truetype');
   font-style: normal;
   font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Minh Nguyen';
+  src: url('https://raw.githubusercontent.com/TKYKmori/Minh-Nguyen/9f6510f3a658b741664dd270267aa6a1a7084dc3/Minh%20Nguyen%20SemiBold.ttf') format('truetype');
+  font-style: normal;
+  font-weight: 600;
   font-display: swap;
 }
 
@@ -15,7 +23,7 @@
 }
 
 html[data-script='hani'] {
-  --nom-font: 'Nom Na Tong', 'Gothic Nguyen', 'Noto Serif CJK TC', 'Noto Serif CJK SC', serif;
+  --nom-font: 'Minh Nguyen', 'Gothic Nguyen', 'Noto Serif CJK TC', 'Noto Serif CJK SC', serif;
   font-family: var(--nom-font);
   font-synthesis: none;
 }
@@ -31,15 +39,14 @@ html[data-script='hani'] :is(h1, h2, h3, h4, h5, h6, p, a, span, small, strong, 
 }
 
 html[data-script='hani'] :is(h1, h2, h3, h4, strong, .eyebrow):not(pre *, code *) {
-  font-weight: 400;
+  font-weight: 600;
 }
 
-/* The overview headline has a more specific Manrope rule in overview.css.
-   Override it explicitly in Chữ Nôm mode so this one block uses the same
-   Hán-Nôm font as the rest of the page instead of falling back through Manrope. */
+/* overview.css explicitly assigns Manrope to this headline, so Chữ Nôm mode
+   must override that more specific selector as well. */
 html[data-script='hani'] .overview-redesign .overview-main h2 {
   font-family: var(--nom-font);
-  font-weight: 400;
+  font-weight: 600;
   font-synthesis: none;
   letter-spacing: -0.015em;
 }
