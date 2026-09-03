@@ -52,6 +52,23 @@ const vietnameseCopy = {
   fallback: ['Năng lực đã xác minh', 'Một năng lực sản phẩm có thể kiểm chứng từ triển khai hiện tại.', ['Đã xác minh', 'Sản phẩm']],
 } as const;
 
+const nomCopy = {
+  verified: '㐌確認',
+  publishing: ['發行', '流造成內容吧登媒介㐌得確認𥪝庫碼。', ['內容', '媒介']],
+  engagement: ['相互', '各𩈘相互吧探究𢴇共同常結綏。', ['社會', '探究']],
+  communication: ['交接', '流呐𡀯朱信𠴍直接吧活動即時。', ['即時', '信𠴍']],
+  collaboration: ['共同作', '役編輯𢺹𢩿吧內容固構築朱需求共同作。', ['Rich text', '𢺹𢩿']],
+  operations: ['運行', '糊疏、探究、檢閱吧管理圍產品核心。', ['名性', '管理']],
+  commerce: ['商買', '流邊客貨吧運行𨑜𠁀經驗買賣。', ['商買', '流程']],
+  payments: ['清算', '處理清算得結合𠓨流交易自頭𦤾尾。', ['清算', 'Backend']],
+  language: ['系生態言語', '空間朱共同言語、系𡨸吧役𢲫㢅𦤾𡗉言語少資源欣。', ['言語', '共同']],
+  input: ['入料', '處理入吧結合記字𨑗設備如𠬠能力產品。', ['入料', '移動']],
+  data: ['數料', '訪入、轉換或出數料固構築抵互助系統職能。', ['數料', 'Pipeline']],
+  discovery: ['探究', '役尋劍吧䀡𢴇𠊛用移轉𮞊𥪝產品。', ['尋劍', 'UX']],
+  developer: ['工具立程', '流程發展或能力曉碼得確認自庫碼。', ['Developer', 'Tooling']],
+  fallback: ['能力㐌確認', '𠬠能力產品固体確認自份寔現現在。', ['㐌確認', '產品']],
+} as const;
+
 const copy = {
   en: {
     verified: 'Verified',
@@ -102,7 +119,7 @@ const copy = {
     fallback: ['已驗證能力', '目前實作中可從儲存庫驗證的產品能力。', ['已驗證', '產品']],
   },
   'vi-Latn': vietnameseCopy,
-  'vi-Hani': vietnameseCopy,
+  'vi-Hani': nomCopy,
 } as const;
 
 function resolveFeatureMeta(feature: string): FeatureMeta {
