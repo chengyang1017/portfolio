@@ -65,8 +65,26 @@ const vietnameseLatin: TranslationDictionary = {
 };
 
 const vietnameseNom: TranslationDictionary = {
-  'language.vi-Hani': 'Tiếng Việt · 𡨸喃',
+  // First Chữ Nôm pass: only terms backed by the uploaded Hán-Nôm standard table.
+  // Missing strings intentionally fall back to Quốc ngữ until they are verified.
+  'nav.projects': '預案',
+  'nav.about': '介紹',
+  'nav.contact': '聯繫',
+  'nav.menu': '目錄',
+  'nav.close': '㨂',
+  'language.label': '言語',
+  'language.en': '㗂英',
+  'language.vi-Latn': '㗂越 · 國語',
+  'language.vi-Hani': '㗂越 · 𡨸喃',
+  'language.english': '㗂英',
+  'language.vietnamese': '㗂越',
+  'language.back': '言語',
+  'language.variant.latin': '國語',
   'language.variant.nom': '𡨸喃',
+  'source.entry': '碼源 / 解釋碼',
+  'source.title': '解釋碼源',
+  'source.eyebrow': '碼源預案',
+  'source.explanation': '解釋碼',
 };
 
 export const translations: Record<AppLocale, TranslationDictionary> = {
