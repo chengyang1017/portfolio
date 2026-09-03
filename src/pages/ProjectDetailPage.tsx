@@ -53,13 +53,42 @@ export function ProjectDetailPage() {
         </dl>
       </section>
 
-      <section className="case-section shell overview">
-        <p className="eyebrow">01 / Overview</p>
-        <h2>{project.overview}</h2>
-        <div className="case-links">
-          {project.github && <a href={project.github}>GitHub ↗</a>}
-          <Link to={`/projects/${project.slug}/source`}>{t('source.entry')} ↗</Link>
+      <section className="case-section shell overview overview-redesign">
+        <div className="overview-rail">
+          <p className="eyebrow">01 / Overview</p>
+          <span>Project snapshot</span>
         </div>
+
+        <div className="overview-main">
+          <p className="overview-kicker">
+            {project.category} · {project.status}
+          </p>
+          <h2>{project.summary}</h2>
+          <p className="overview-description">{project.overview}</p>
+
+          <dl className="overview-metrics" aria-label="Project overview metrics">
+            <div>
+              <dt>Verified features</dt>
+              <dd>{String(project.features.length).padStart(2, '0')}</dd>
+            </div>
+            <div>
+              <dt>Architecture nodes</dt>
+              <dd>{String(project.architecture.length).padStart(2, '0')}</dd>
+            </div>
+            <div>
+              <dt>Technologies</dt>
+              <dd>{String(project.technologies.length).padStart(2, '0')}</dd>
+            </div>
+          </dl>
+        </div>
+
+        <aside className="overview-sidebar">
+          <span className="overview-sidebar-label">Explore</span>
+          <div className="case-links">
+            {project.github && <a href={project.github}>GitHub ↗</a>}
+            <Link to={`/projects/${project.slug}/source`}>{t('source.entry')} ↗</Link>
+          </div>
+        </aside>
       </section>
 
       {project.features.length > 0 && (
