@@ -1,0 +1,31 @@
+name: Audit Chữ Nôm font coverage
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'src/i18n/translations.ts'
+      - 'src/i18n/projectDetailTranslations.ts'
+      - 'src/components/FeatureShowcase.tsx'
+      - 'src/styles/nom-font.css'
+      - 'scripts/check-nom-font-coverage.mjs'
+      - '.github/workflows/nom-font-coverage.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Check Gothic Nguyen coverage
+        run: node scripts/check-nom-font-coverage.mjs
