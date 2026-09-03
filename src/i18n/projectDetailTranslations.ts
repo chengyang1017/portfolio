@@ -1,5 +1,5 @@
 import type { Project } from '../data/projects';
-import type { Language } from './types';
+import type { AppLocale, Language } from './types';
 
 type DetailCopy = Pick<Project, 'summary' | 'overview' | 'features' | 'challenges' | 'architecture' | 'gallery'>;
 
@@ -46,7 +46,28 @@ const glyphora: Record<Exclude<Language, 'en'>, DetailCopy> = {
   },
 };
 
-export function glyphoraEcosystemCopy(language: Language) {
+const glyphoraVietnamese: DetailCopy = {
+  summary: 'Một cộng đồng đa ngôn ngữ lấy hệ sinh thái ngôn ngữ làm trung tâm, ưu tiên Chữ Nôm và mở rộng dần cho các ngôn ngữ, phương ngữ và hệ chữ ít tài nguyên.',
+  overview: 'Glyphora (Vạn Văn Xã) không chỉ thêm tính năng “đa ngôn ngữ” vào một mạng xã hội thông thường. Ngôn ngữ và hệ chữ là cách cộng đồng được tổ chức: người dùng có thể đăng bài, khám phá nội dung, trò chuyện và chia sẻ ghi chú quanh ngôn ngữ mình sử dụng. Chữ Nôm là một trọng tâm hiện tại; hướng dài hạn là mở rộng tới nhiều ngôn ngữ, phương ngữ và hệ chữ ít tài nguyên hơn để chúng có không gian nội dung, giao tiếp, lưu trữ, khám phá và kết nối với các công cụ ngôn ngữ khác. Kho mã gồm ứng dụng Flutter và React Native, Node.js API, trang quản trị React, PostgreSQL và các dịch vụ Firebase.',
+  features: ['Bài viết văn bản và hình ảnh', 'Lượt thích, bình luận, danh mục và bảng tin', 'Bạn bè, tin nhắn riêng và trò chuyện thời gian thực', 'Ghi chú rich-text dùng chung', 'Không gian cộng đồng cho Chữ Nôm và nhiều ngôn ngữ', 'Hồ sơ, khám phá và quản trị'],
+  challenges: [
+    { title: 'Vòng đời tin nhắn', description: 'Kho mã triển khai xóa logic, dọn dẹp theo lịch, dọn phương tiện và cập nhật phần xem trước cuộc trò chuyện.' },
+    { title: 'Dịch vụ dữ liệu kết hợp', description: 'Dữ liệu nghiệp vụ phía máy chủ dùng Node.js, Prisma và PostgreSQL, trong khi xác thực, trò chuyện, lưu trữ và các chức năng thời gian thực khác dùng Firebase.' },
+  ],
+  architecture: [
+    { label: 'Flutter', detail: 'Ứng dụng di động' },
+    { label: 'Node.js API', detail: 'Express + Prisma' },
+    { label: 'PostgreSQL', detail: 'Dữ liệu ứng dụng' },
+    { label: 'Firebase', detail: 'Xác thực + thời gian thực' },
+  ],
+  gallery: [
+    { title: 'Bài viết cộng đồng', caption: 'Văn bản, hình ảnh, danh mục, lượt thích và bình luận.' },
+    { title: 'Trò chuyện thời gian thực', caption: 'Tin nhắn riêng, xem trước cuộc trò chuyện và xử lý vòng đời tin nhắn.' },
+    { title: 'Ghi chú dùng chung', caption: 'Ghi chú rich-text được chia sẻ giữa những người tham gia trò chuyện.' },
+  ],
+};
+
+export function glyphoraEcosystemCopy(language: AppLocale) {
   if (language === 'zh-CN') {
     return {
       eyebrow: '语言生态定位',
@@ -65,6 +86,15 @@ export function glyphoraEcosystemCopy(language: Language) {
     };
   }
 
+  if (language.startsWith('vi-')) {
+    return {
+      eyebrow: 'Định vị hệ sinh thái ngôn ngữ',
+      title: 'Không chỉ “hỗ trợ nhiều ngôn ngữ” — mà xây cộng đồng xoay quanh chính các ngôn ngữ.',
+      description: 'Chữ Nôm là một trọng tâm hiện tại. Vạn Văn Xã được thiết kế để tiếp tục mở rộng cho các ngôn ngữ, phương ngữ và hệ chữ ít tài nguyên, để chúng có nội dung, giao tiếp, lưu trữ, khám phá và các công cụ ngôn ngữ kết nối với nhau.',
+      tags: ['Chữ Nôm', 'Ngôn ngữ ít tài nguyên', 'Phương ngữ', 'Hệ chữ', 'Cộng đồng ngôn ngữ'],
+    };
+  }
+
   return {
     eyebrow: 'Language ecosystem positioning',
     title: 'Not merely multilingual support — a community ecosystem built around languages themselves.',
@@ -73,10 +103,16 @@ export function glyphoraEcosystemCopy(language: Language) {
   };
 }
 
-export function localizeProjectDetail(project: Project, language: Language): Project {
+export function localizeProjectDetail(project: Project, language: AppLocale): Project {
   if (language === 'en') return project;
 
-  const localized = project.slug === 'glyphora' ? glyphora[language] : undefined;
+  let localized: DetailCopy | undefined;
+  if (project.slug === 'glyphora') {
+    localized = language.startsWith('vi-')
+      ? glyphoraVietnamese
+      : glyphora[language as Exclude<Language, 'en'>];
+  }
+
   if (!localized) return project;
 
   return {
@@ -85,101 +121,53 @@ export function localizeProjectDetail(project: Project, language: Language): Pro
   };
 }
 
-export function projectDetailUi(language: Language) {
+const vietnameseUi = {
+  allProjects: '← Tất cả dự án',
+  status: 'Trạng thái',
+  coreStack: 'Công nghệ chính',
+  source: 'Mã nguồn',
+  publicRepository: 'Kho mã công khai',
+  notPublic: 'Chưa công khai',
+  overview: '01 / Tổng quan',
+  snapshot: 'Tổng quan dự án',
+  verifiedFeatures: 'Tính năng đã xác minh',
+  architectureNodes: 'Thành phần kiến trúc',
+  technologies: 'Công nghệ',
+  explore: 'Khám phá',
+  githubRepository: 'Kho GitHub',
+  sourceWalkthrough: 'Mã nguồn / Giải thích mã',
+  featureSection: '02 / Tính năng đã xác minh',
+  featureHeading: 'Sản phẩm thực sự hỗ trợ những gì.',
+  featureSummary: 'Các năng lực sản phẩm được xác minh từ kho mã, thay vì chỉ là một danh sách tính năng.',
+  architecture: '03 / Kiến trúc',
+  architectureHeading: 'Cấu trúc kho mã và công nghệ đã được xác minh.',
+  sourceWalkthroughLabel: 'Dẫn đường mã nguồn',
+  sourceWalkthroughTitle: 'Theo dõi từ tính năng đến phần triển khai cụ thể trong kho mã.',
+  sourceWalkthroughDescription: 'Xem khu vực dự án, tệp đã xác minh, luồng mã và ghi chú triển khai ngay trong portfolio.',
+  exploreSource: 'Khám phá kiến trúc mã nguồn ↗',
+  implementation: '04 / Chi tiết triển khai',
+  projectAreas: '05 / Khu vực dự án',
+  projectAreasHeading: 'Các khu vực sản phẩm và bề mặt triển khai tiêu biểu.',
+  previousProject: '← Dự án trước',
+  nextProject: 'Dự án tiếp theo →',
+};
+
+export function projectDetailUi(language: AppLocale) {
   if (language === 'zh-CN') {
     return {
-      allProjects: '← 所有项目',
-      status: '状态',
-      coreStack: '核心技术栈',
-      source: '源码',
-      publicRepository: '公开仓库',
-      notPublic: '未公开',
-      overview: '01 / 项目概览',
-      snapshot: '项目概览',
-      verifiedFeatures: '已验证功能',
-      architectureNodes: '架构节点',
-      technologies: '技术',
-      explore: '查看',
-      githubRepository: 'GitHub 仓库',
-      sourceWalkthrough: '源码 / 代码解释',
-      featureSection: '02 / 已验证功能',
-      featureHeading: '这个产品实际支持什么。',
-      featureSummary: '基于仓库中已验证实现整理出的产品能力，而不是简单的功能清单。',
-      architecture: '03 / 架构',
-      architectureHeading: '已验证的仓库结构与技术栈。',
-      sourceWalkthroughLabel: '源码导览',
-      sourceWalkthroughTitle: '从功能一路追踪到仓库中的具体实现。',
-      sourceWalkthroughDescription: '直接在作品集中查看项目区域、已验证文件、代码流程与实现说明。',
-      exploreSource: '查看源码架构 ↗',
-      implementation: '04 / 实现细节',
-      projectAreas: '05 / 项目区域',
-      projectAreasHeading: '精选产品区域与实现界面。',
-      previousProject: '← 上一个项目',
-      nextProject: '下一个项目 →',
+      allProjects: '← 所有项目', status: '状态', coreStack: '核心技术栈', source: '源码', publicRepository: '公开仓库', notPublic: '未公开', overview: '01 / 项目概览', snapshot: '项目概览', verifiedFeatures: '已验证功能', architectureNodes: '架构节点', technologies: '技术', explore: '查看', githubRepository: 'GitHub 仓库', sourceWalkthrough: '源码 / 代码解释', featureSection: '02 / 已验证功能', featureHeading: '这个产品实际支持什么。', featureSummary: '基于仓库中已验证实现整理出的产品能力，而不是简单的功能清单。', architecture: '03 / 架构', architectureHeading: '已验证的仓库结构与技术栈。', sourceWalkthroughLabel: '源码导览', sourceWalkthroughTitle: '从功能一路追踪到仓库中的具体实现。', sourceWalkthroughDescription: '直接在作品集中查看项目区域、已验证文件、代码流程与实现说明。', exploreSource: '查看源码架构 ↗', implementation: '04 / 实现细节', projectAreas: '05 / 项目区域', projectAreasHeading: '精选产品区域与实现界面。', previousProject: '← 上一个项目', nextProject: '下一个项目 →',
     };
   }
 
   if (language === 'zh-TW') {
     return {
-      allProjects: '← 所有專案',
-      status: '狀態',
-      coreStack: '核心技術棧',
-      source: '原始碼',
-      publicRepository: '公開儲存庫',
-      notPublic: '未公開',
-      overview: '01 / 專案概覽',
-      snapshot: '專案概覽',
-      verifiedFeatures: '已驗證功能',
-      architectureNodes: '架構節點',
-      technologies: '技術',
-      explore: '查看',
-      githubRepository: 'GitHub 儲存庫',
-      sourceWalkthrough: '原始碼 / 程式碼解釋',
-      featureSection: '02 / 已驗證功能',
-      featureHeading: '這個產品實際支援什麼。',
-      featureSummary: '依據儲存庫中已驗證實作整理出的產品能力，而不是單純的功能清單。',
-      architecture: '03 / 架構',
-      architectureHeading: '已驗證的儲存庫結構與技術棧。',
-      sourceWalkthroughLabel: '原始碼導覽',
-      sourceWalkthroughTitle: '從功能一路追蹤到儲存庫中的具體實作。',
-      sourceWalkthroughDescription: '直接在作品集中查看專案區域、已驗證檔案、程式碼流程與實作說明。',
-      exploreSource: '查看原始碼架構 ↗',
-      implementation: '04 / 實作細節',
-      projectAreas: '05 / 專案區域',
-      projectAreasHeading: '精選產品區域與實作介面。',
-      previousProject: '← 上一個專案',
-      nextProject: '下一個專案 →',
+      allProjects: '← 所有專案', status: '狀態', coreStack: '核心技術棧', source: '原始碼', publicRepository: '公開儲存庫', notPublic: '未公開', overview: '01 / 專案概覽', snapshot: '專案概覽', verifiedFeatures: '已驗證功能', architectureNodes: '架構節點', technologies: '技術', explore: '查看', githubRepository: 'GitHub 儲存庫', sourceWalkthrough: '原始碼 / 程式碼解釋', featureSection: '02 / 已驗證功能', featureHeading: '這個產品實際支援什麼。', featureSummary: '依據儲存庫中已驗證實作整理出的產品能力，而不是單純的功能清單。', architecture: '03 / 架構', architectureHeading: '已驗證的儲存庫結構與技術棧。', sourceWalkthroughLabel: '原始碼導覽', sourceWalkthroughTitle: '從功能一路追蹤到儲存庫中的具體實作。', sourceWalkthroughDescription: '直接在作品集中查看專案區域、已驗證檔案、程式碼流程與實作說明。', exploreSource: '查看原始碼架構 ↗', implementation: '04 / 實作細節', projectAreas: '05 / 專案區域', projectAreasHeading: '精選產品區域與實作介面。', previousProject: '← 上一個專案', nextProject: '下一個專案 →',
     };
   }
 
+  if (language.startsWith('vi-')) return vietnameseUi;
+
   return {
-    allProjects: '← All projects',
-    status: 'Status',
-    coreStack: 'Core stack',
-    source: 'Source',
-    publicRepository: 'Public repository',
-    notPublic: 'Not public',
-    overview: '01 / Overview',
-    snapshot: 'Project snapshot',
-    verifiedFeatures: 'Verified features',
-    architectureNodes: 'Architecture nodes',
-    technologies: 'Technologies',
-    explore: 'Explore',
-    githubRepository: 'GitHub repository',
-    sourceWalkthrough: 'Source / Code explanation',
-    featureSection: '02 / Verified features',
-    featureHeading: 'What the product actually supports.',
-    featureSummary: 'Repository-backed capabilities presented as product surfaces, not a plain feature checklist.',
-    architecture: '03 / Architecture',
-    architectureHeading: 'Verified repository structure and technologies.',
-    sourceWalkthroughLabel: 'Source walkthrough',
-    sourceWalkthroughTitle: 'Follow the implementation from feature to repository code.',
-    sourceWalkthroughDescription: 'Browse project areas, verified files, code flow, and implementation notes without leaving the portfolio.',
-    exploreSource: 'Explore source architecture ↗',
-    implementation: '04 / Implementation details',
-    projectAreas: '05 / Project areas',
-    projectAreasHeading: 'Selected product areas and implementation surfaces.',
-    previousProject: '← Previous project',
-    nextProject: 'Next project →',
+    allProjects: '← All projects', status: 'Status', coreStack: 'Core stack', source: 'Source', publicRepository: 'Public repository', notPublic: 'Not public', overview: '01 / Overview', snapshot: 'Project snapshot', verifiedFeatures: 'Verified features', architectureNodes: 'Architecture nodes', technologies: 'Technologies', explore: 'Explore', githubRepository: 'GitHub repository', sourceWalkthrough: 'Source / Code explanation', featureSection: '02 / Verified features', featureHeading: 'What the product actually supports.', featureSummary: 'Repository-backed capabilities presented as product surfaces, not a plain feature checklist.', architecture: '03 / Architecture', architectureHeading: 'Verified repository structure and technologies.', sourceWalkthroughLabel: 'Source walkthrough', sourceWalkthroughTitle: 'Follow the implementation from feature to repository code.', sourceWalkthroughDescription: 'Browse project areas, verified files, code flow, and implementation notes without leaving the portfolio.', exploreSource: 'Explore source architecture ↗', implementation: '04 / Implementation details', projectAreas: '05 / Project areas', projectAreasHeading: 'Selected product areas and implementation surfaces.', previousProject: '← Previous project', nextProject: 'Next project →',
   };
 }

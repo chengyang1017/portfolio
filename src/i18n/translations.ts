@@ -1,9 +1,11 @@
-import type { Language, TranslationDictionary } from './types';
+import type { AppLocale, TranslationDictionary } from './types';
 import { projectTranslations } from '../data/source-projects';
 
 const english: TranslationDictionary = {
   'nav.projects': 'Projects', 'nav.about': 'About', 'nav.contact': 'Contact', 'nav.menu': 'Menu', 'nav.close': 'Close', 'nav.toggle': 'Toggle navigation',
-  'language.label': 'Language', 'language.en': 'English', 'language.zh-CN': '简体中文', 'language.zh-TW': '繁體中文',
+  'language.label': 'Language', 'language.en': 'English', 'language.zh-CN': 'Simplified Chinese', 'language.zh-TW': 'Traditional Chinese', 'language.vi-Latn': 'Vietnamese · Latin', 'language.vi-Hani': 'Vietnamese · Chữ Nôm',
+  'language.english': 'English', 'language.chinese': '中文', 'language.vietnamese': 'Tiếng Việt', 'language.back': 'Languages',
+  'language.variant.simplified': '简体中文', 'language.variant.traditional': '繁體中文', 'language.variant.latin': 'Quốc ngữ', 'language.variant.nom': 'Chữ Nôm',
   'source.entry': 'Source Code / Code Explanation', 'source.title': 'Source Code Explanation', 'source.eyebrow': 'Project source', 'source.description': 'Browse verified source categories, features, related files, code flow, and translated code commentary.', 'source.categories': 'Source categories',
   'source.category': 'Category', 'source.features': 'Features', 'source.feature': 'Feature', 'source.explanation': 'Code explanation',
   'source.relatedFiles': 'Related files', 'source.codeFlow': 'Code flow', 'source.codeBlocks': 'Code blocks', 'source.relatedFeatures': 'Related features',
@@ -17,7 +19,9 @@ const english: TranslationDictionary = {
 
 const simplifiedChinese: TranslationDictionary = {
   'nav.projects': '项目', 'nav.about': '关于', 'nav.contact': '联系', 'nav.menu': '菜单', 'nav.close': '关闭', 'nav.toggle': '切换导航菜单',
-  'language.label': '语言', 'language.en': 'English', 'language.zh-CN': '简体中文', 'language.zh-TW': '繁體中文',
+  'language.label': '语言', 'language.en': 'English', 'language.zh-CN': '简体中文', 'language.zh-TW': '繁體中文', 'language.vi-Latn': '越南语 · 拉丁字', 'language.vi-Hani': '越南语 · 喃字',
+  'language.english': 'English', 'language.chinese': '中文', 'language.vietnamese': '越南语', 'language.back': '语言',
+  'language.variant.simplified': '简体中文', 'language.variant.traditional': '繁體中文', 'language.variant.latin': '国语字 / 拉丁字', 'language.variant.nom': '喃字',
   'source.entry': '源代码 / 代码解释', 'source.title': '源代码解释', 'source.eyebrow': '项目源码', 'source.description': '浏览经过验证的源码分类、功能、相关文件、代码流程和翻译后的代码注释。', 'source.categories': '源码分类',
   'source.category': '分类', 'source.features': '功能', 'source.feature': '功能', 'source.explanation': '代码解释',
   'source.relatedFiles': '相关文件', 'source.codeFlow': '代码流程', 'source.codeBlocks': '代码块', 'source.relatedFeatures': '相关功能',
@@ -31,7 +35,9 @@ const simplifiedChinese: TranslationDictionary = {
 
 const traditionalChinese: TranslationDictionary = {
   'nav.projects': '專案', 'nav.about': '關於', 'nav.contact': '聯絡', 'nav.menu': '選單', 'nav.close': '關閉', 'nav.toggle': '切換導覽選單',
-  'language.label': '語言', 'language.en': 'English', 'language.zh-CN': '简体中文', 'language.zh-TW': '繁體中文',
+  'language.label': '語言', 'language.en': 'English', 'language.zh-CN': '简体中文', 'language.zh-TW': '繁體中文', 'language.vi-Latn': '越南語 · 拉丁字', 'language.vi-Hani': '越南語 · 喃字',
+  'language.english': 'English', 'language.chinese': '中文', 'language.vietnamese': '越南語', 'language.back': '語言',
+  'language.variant.simplified': '简体中文', 'language.variant.traditional': '繁體中文', 'language.variant.latin': '國語字 / 拉丁字', 'language.variant.nom': '喃字',
   'source.entry': '原始碼 / 程式碼解釋', 'source.title': '原始碼解釋', 'source.eyebrow': '專案原始碼', 'source.description': '瀏覽經過驗證的原始碼分類、功能、相關檔案、程式碼流程和翻譯後的程式碼註解。', 'source.categories': '原始碼分類',
   'source.category': '分類', 'source.features': '功能', 'source.feature': '功能', 'source.explanation': '程式碼解釋',
   'source.relatedFiles': '相關檔案', 'source.codeFlow': '程式碼流程', 'source.codeBlocks': '程式碼區塊', 'source.relatedFeatures': '相關功能',
@@ -43,8 +49,30 @@ const traditionalChinese: TranslationDictionary = {
   ...projectTranslations['zh-TW'],
 };
 
-export const translations: Record<Language, TranslationDictionary> = {
+const vietnameseLatin: TranslationDictionary = {
+  'nav.projects': 'Dự án', 'nav.about': 'Giới thiệu', 'nav.contact': 'Liên hệ', 'nav.menu': 'Menu', 'nav.close': 'Đóng', 'nav.toggle': 'Mở hoặc đóng điều hướng',
+  'language.label': 'Ngôn ngữ', 'language.en': 'English', 'language.zh-CN': 'Tiếng Trung · Giản thể', 'language.zh-TW': 'Tiếng Trung · Phồn thể', 'language.vi-Latn': 'Tiếng Việt · Quốc ngữ', 'language.vi-Hani': 'Tiếng Việt · Chữ Nôm',
+  'language.english': 'English', 'language.chinese': 'Tiếng Trung', 'language.vietnamese': 'Tiếng Việt', 'language.back': 'Ngôn ngữ',
+  'language.variant.simplified': 'Giản thể', 'language.variant.traditional': 'Phồn thể', 'language.variant.latin': 'Quốc ngữ', 'language.variant.nom': 'Chữ Nôm',
+  'source.entry': 'Mã nguồn / Giải thích mã', 'source.title': 'Giải thích mã nguồn', 'source.eyebrow': 'Mã nguồn dự án', 'source.description': 'Xem các nhóm mã nguồn đã xác minh, tính năng, tệp liên quan, luồng mã và phần giải thích đã dịch.', 'source.categories': 'Nhóm mã nguồn',
+  'source.category': 'Nhóm', 'source.features': 'Tính năng', 'source.feature': 'Tính năng', 'source.explanation': 'Giải thích mã',
+  'source.relatedFiles': 'Tệp liên quan', 'source.codeFlow': 'Luồng mã', 'source.codeBlocks': 'Khối mã', 'source.relatedFeatures': 'Tính năng liên quan',
+  'source.backToProject': 'Quay lại dự án', 'source.backProject': 'Quay lại chi tiết dự án', 'source.overview': 'Tổng quan mã nguồn', 'source.viewCategory': 'Xem nhóm', 'source.viewFeature': 'Xem giải thích',
+  'source.empty.title': 'Phần giải thích mã nguồn đang được bổ sung', 'source.empty.description': 'Dự án này chưa có phần giải thích mã nguồn đã xác minh.',
+  'source.empty.categoryTitle': 'Nhóm chưa khả dụng', 'source.empty.categoryDescription': 'Nhóm mã nguồn này không tồn tại hoặc chưa được xuất bản.',
+  'source.empty.featureTitle': 'Phần giải thích chưa khả dụng', 'source.empty.featureDescription': 'Phần giải thích cho tính năng này chưa tồn tại hoặc chưa được xuất bản.',
+  'source.empty.files': 'Chưa có tệp liên quan.', 'source.empty.flow': 'Chưa có luồng mã.', 'source.empty.code': 'Chưa có khối mã.', 'source.empty.related': 'Chưa có tính năng liên quan.',
+};
+
+const vietnameseNom: TranslationDictionary = {
+  'language.vi-Hani': 'Tiếng Việt · 𡨸喃',
+  'language.variant.nom': '𡨸喃',
+};
+
+export const translations: Record<AppLocale, TranslationDictionary> = {
   en: english,
   'zh-CN': simplifiedChinese,
   'zh-TW': traditionalChinese,
+  'vi-Latn': vietnameseLatin,
+  'vi-Hani': vietnameseNom,
 };

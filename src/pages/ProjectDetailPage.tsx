@@ -7,8 +7,9 @@ import { TechTag } from '../components/TechTag';
 import { getProject, projects } from '../data/projects';
 import { useI18n } from '../i18n/I18nProvider';
 import { glyphoraEcosystemCopy, localizeProjectDetail, projectDetailUi } from '../i18n/projectDetailTranslations';
+import type { AppLocale } from '../i18n/types';
 
-function localizedCategory(category: string, language: 'en' | 'zh-CN' | 'zh-TW') {
+function localizedCategory(category: string, language: AppLocale) {
   if (language === 'zh-CN') {
     if (category === 'Product') return '产品';
     if (category === 'Language') return '语言';
@@ -21,10 +22,16 @@ function localizedCategory(category: string, language: 'en' | 'zh-CN' | 'zh-TW')
     if (category === 'AI & Developer Tools') return 'AI 與開發者工具';
   }
 
+  if (language.startsWith('vi-')) {
+    if (category === 'Product') return 'Sản phẩm';
+    if (category === 'Language') return 'Ngôn ngữ';
+    if (category === 'AI & Developer Tools') return 'AI & Công cụ lập trình';
+  }
+
   return category;
 }
 
-function localizedStatus(status: string, language: 'en' | 'zh-CN' | 'zh-TW') {
+function localizedStatus(status: string, language: AppLocale) {
   if (language === 'zh-CN') {
     if (status === 'Active development') return '持续开发中';
     if (status === 'In Development') return '开发中';
@@ -37,6 +44,13 @@ function localizedStatus(status: string, language: 'en' | 'zh-CN' | 'zh-TW') {
     if (status === 'In Development') return '開發中';
     if (status === 'Public repository') return '公開儲存庫';
     if (status === 'Archived') return '已封存';
+  }
+
+  if (language.startsWith('vi-')) {
+    if (status === 'Active development') return 'Đang phát triển';
+    if (status === 'In Development') return 'Đang phát triển';
+    if (status === 'Public repository') return 'Kho mã công khai';
+    if (status === 'Archived') return 'Đã lưu trữ';
   }
 
   return status;
