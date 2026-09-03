@@ -1,17 +1,131 @@
 import { Link } from 'react-router-dom';
-import { AreaCard } from '../components/AreaCard';
-import { FeaturedProject } from '../components/FeaturedProject';
 import { Hero } from '../components/Hero';
-import { ProjectCard } from '../components/ProjectCard';
 import { SectionHeader } from '../components/SectionHeader';
 import { TechTag } from '../components/TechTag';
-import { projects } from '../data/projects';
+import { projects, type Project } from '../data/projects';
+import { homeCategory, homeCopy, homeProjectDescription, homeStatus } from '../i18n/homeTranslations';
+import { useI18n } from '../i18n/I18nProvider';
+import type { AppLocale } from '../i18n/types';
 
-export function HomePage() { return <>
-  <Hero/>
-  <section className="section shell"><SectionHeader index="01" eyebrow="Selected work" action={<Link className="text-link" to="/projects">All projects ↗</Link>}/><FeaturedProject project={projects[0]}/><div className="home-project-grid">{projects.slice(1,3).map(p => <ProjectCard project={p} key={p.slug}/>)}</div></section>
-  <section className="section areas"><div className="shell"><SectionHeader index="02" eyebrow="Areas I build in" title="Software across languages, platforms, and systems."/><div className="area-grid"><AreaCard number="01" icon="Aa" title="Language technology" description="Dictionary, morphology, language configuration, and writing-system projects."/><AreaCard number="02" icon="</>" title="Developer tools" description="Desktop editing and Flutter UI tooling from public repositories."/><AreaCard number="03" icon="◇" title="Product engineering" description="Mobile, web, commerce, community, and backend applications."/></div></div></section>
-  <section className="section shell stack-section"><SectionHeader index="03" eyebrow="Verified technology" title="Technologies present in the projects."/><div className="stack-row"><h3>Client</h3><div>{['Flutter','Dart','Android','Kotlin','React','TypeScript','Vite','Electron'].map(x=><TechTag key={x}>{x}</TechTag>)}</div></div><div className="stack-row"><h3>Backend & data</h3><div>{['Node.js','Express','Prisma','PostgreSQL','Python','Flask','SQLite','ASP.NET Core','EF Core'].map(x=><TechTag key={x}>{x}</TechTag>)}</div></div><div className="stack-row"><h3>Platforms & services</h3><div>{['Firebase','Stripe','Serverpod','Monaco Editor','Pandas'].map(x=><TechTag key={x}>{x}</TechTag>)}</div></div></section>
-  <section className="section about-preview"><div className="shell about-grid"><div><p className="eyebrow">04 / About</p><div className="portrait"><span>LCY</span><i>PUBLIC SOURCE</i></div></div><div><h2>Projects documented<br/><em>from their source.</em></h2><p>This portfolio presents Lim Cheng Yang’s public software repositories and one language platform currently in development. Project descriptions are limited to information verified from source code, repository documentation, or the supplied project status.</p><Link className="text-link" to="/about">About this portfolio ↗</Link></div></div></section>
-  <section className="contact shell" id="contact"><p className="eyebrow">05 / Profile</p><h2>Explore the source<br/><a href="https://github.com/chengyang1017">on GitHub.</a></h2><div><p>Public repositories are available from the verified GitHub profile.</p><a className="button button-light" href="https://github.com/chengyang1017">GitHub profile <span>↗</span></a></div></section>
-</>; }
+function ProjectIndexRow({ project, language, action }: { project: Project; language: AppLocale; action: string }) {
+  return (
+    <Link className="home-project-row" data-tone={project.tone} to={`/projects/${project.slug}`}>
+      <span className="home-project-number">{project.number}</span>
+
+      <div className="home-project-identity">
+        <p>{homeCategory(project.category, language)} · {homeStatus(project.status, language)}</p>
+        <h3>{project.title}</h3>
+      </div>
+
+      <p className="home-project-summary">
+        {homeProjectDescription(project.slug, language, project.summary)}
+      </p>
+
+      <div className="home-project-stack">
+        {project.technologies.slice(0, 3).map((technology) => (
+          <span key={technology}>{technology}</span>
+        ))}
+      </div>
+
+      <span className="home-project-action" aria-label={`${action}: ${project.title}`}>↗</span>
+    </Link>
+  );
+}
+
+export function HomePage() {
+  const { language } = useI18n();
+  const copy = homeCopy(language);
+  const selectedProjects = projects.slice(0, 5);
+
+  return (
+    <>
+      <Hero />
+
+      <section className="home-section home-work shell">
+        <div className="home-section-intro">
+          <div>
+            <p className="eyebrow">01 / {copy.work.eyebrow}</p>
+            <h2>{copy.work.title}</h2>
+          </div>
+          <div className="home-section-note">
+            <p>{copy.work.description}</p>
+            <Link className="text-link" to="/projects">{copy.work.allProjects}</Link>
+          </div>
+        </div>
+
+        <div className="home-project-index">
+          {selectedProjects.map((project) => (
+            <ProjectIndexRow
+              key={project.slug}
+              project={project}
+              language={language}
+              action={copy.work.viewProject}
+            />
+          ))}
+        </div>
+      </section>
+
+      <section className="home-section home-areas">
+        <div className="shell">
+          <SectionHeader index="02" eyebrow={copy.areas.eyebrow} title={copy.areas.title} />
+          <div className="home-area-list">
+            {copy.areas.items.map((item, index) => (
+              <article className="home-area-row" key={item.title}>
+                <span>{String(index + 1).padStart(2, '0')}</span>
+                <h3>{item.title}</h3>
+                <p>{item.description}</p>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="home-section shell home-stack-section">
+        <SectionHeader index="03" eyebrow={copy.stack.eyebrow} title={copy.stack.title} />
+        <div className="home-stack-grid">
+          <div className="home-stack-group">
+            <h3>{copy.stack.client}</h3>
+            <div>{['Flutter', 'Dart', 'Android', 'Kotlin', 'React', 'TypeScript', 'Vite', 'Electron'].map((item) => <TechTag key={item}>{item}</TechTag>)}</div>
+          </div>
+          <div className="home-stack-group">
+            <h3>{copy.stack.backend}</h3>
+            <div>{['Node.js', 'Express', 'Prisma', 'PostgreSQL', 'Python', 'Flask', 'SQLite', 'ASP.NET Core', 'EF Core'].map((item) => <TechTag key={item}>{item}</TechTag>)}</div>
+          </div>
+          <div className="home-stack-group">
+            <h3>{copy.stack.platform}</h3>
+            <div>{['Firebase', 'Stripe', 'Serverpod', 'Monaco Editor', 'Pandas'].map((item) => <TechTag key={item}>{item}</TechTag>)}</div>
+          </div>
+        </div>
+      </section>
+
+      <section className="home-section home-about-preview">
+        <div className="shell home-about-grid">
+          <div className="home-about-identity">
+            <p className="eyebrow">04 / {copy.about.eyebrow}</p>
+            <div className="home-about-monogram">
+              <strong>LCY</strong>
+              <span>{copy.about.label}</span>
+            </div>
+          </div>
+
+          <div className="home-about-copy">
+            <h2>{copy.about.title} <em>{copy.about.accent}</em></h2>
+            <p>{copy.about.description}</p>
+            <Link className="text-link" to="/about">{copy.about.link}</Link>
+          </div>
+        </div>
+      </section>
+
+      <section className="home-contact shell" id="contact">
+        <div>
+          <p className="eyebrow">05 / {copy.contact.eyebrow}</p>
+          <h2>{copy.contact.title}</h2>
+        </div>
+        <div>
+          <p>{copy.contact.description}</p>
+          <a className="button" href="https://github.com/chengyang1017">{copy.contact.action}</a>
+        </div>
+      </section>
+    </>
+  );
+}
