@@ -57,6 +57,85 @@
   line-height: 1.72;
 }
 
+.ecosystem-statement {
+  margin-top: 34px;
+  padding: 26px 28px 24px;
+
+  position: relative;
+  overflow: hidden;
+
+  border: 1px solid color-mix(in srgb, var(--accent) 24%, var(--line));
+  border-radius: 22px;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--accent) 7%, transparent), transparent 55%),
+    var(--surface);
+}
+
+.ecosystem-statement::before {
+  content: '';
+
+  width: 110px;
+  height: 2px;
+
+  position: absolute;
+  left: 28px;
+  top: 0;
+
+  background: var(--accent);
+}
+
+.ecosystem-statement-eyebrow {
+  display: block;
+
+  color: var(--accent);
+
+  font-size: 0.61rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+.ecosystem-statement strong {
+  display: block;
+  max-width: 660px;
+  margin-top: 13px;
+
+  font-family: 'Manrope', sans-serif;
+  font-size: clamp(1.35rem, 2vw, 2.05rem);
+  font-weight: 500;
+  line-height: 1.16;
+  letter-spacing: -0.04em;
+}
+
+.ecosystem-statement p {
+  max-width: 650px;
+  margin: 15px 0 0;
+
+  color: var(--muted);
+  font-size: 0.88rem;
+  line-height: 1.65;
+}
+
+.ecosystem-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+
+  margin-top: 20px;
+}
+
+.ecosystem-tags span {
+  padding: 7px 10px;
+
+  border: 1px solid var(--line);
+  border-radius: 999px;
+
+  color: var(--muted);
+  background: color-mix(in srgb, var(--paper) 70%, transparent);
+
+  font-size: 0.62rem;
+}
+
 .overview-metrics {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -193,6 +272,20 @@
   .overview-description {
     margin-top: 22px;
     font-size: 0.94rem;
+  }
+
+  .ecosystem-statement {
+    margin-top: 26px;
+    padding: 22px 20px 20px;
+    border-radius: 18px;
+  }
+
+  .ecosystem-statement::before {
+    left: 20px;
+  }
+
+  .ecosystem-statement strong {
+    font-size: 1.45rem;
   }
 
   .overview-metrics {
