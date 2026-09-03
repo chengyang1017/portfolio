@@ -6,15 +6,55 @@ import { ProjectVisual } from '../components/ProjectVisual';
 import { TechTag } from '../components/TechTag';
 import { getProject, projects } from '../data/projects';
 import { useI18n } from '../i18n/I18nProvider';
+import { localizeProjectDetail, projectDetailUi } from '../i18n/projectDetailTranslations';
+
+function localizedCategory(category: string, language: 'en' | 'zh-CN' | 'zh-TW') {
+  if (language === 'zh-CN') {
+    if (category === 'Product') return '产品';
+    if (category === 'Language') return '语言';
+    if (category === 'AI & Developer Tools') return 'AI 与开发者工具';
+  }
+
+  if (language === 'zh-TW') {
+    if (category === 'Product') return '產品';
+    if (category === 'Language') return '語言';
+    if (category === 'AI & Developer Tools') return 'AI 與開發者工具';
+  }
+
+  return category;
+}
+
+function localizedStatus(status: string, language: 'en' | 'zh-CN' | 'zh-TW') {
+  if (language === 'zh-CN') {
+    if (status === 'Active development') return '持续开发中';
+    if (status === 'In Development') return '开发中';
+    if (status === 'Public repository') return '公开仓库';
+    if (status === 'Archived') return '已归档';
+  }
+
+  if (language === 'zh-TW') {
+    if (status === 'Active development') return '持續開發中';
+    if (status === 'In Development') return '開發中';
+    if (status === 'Public repository') return '公開儲存庫';
+    if (status === 'Archived') return '已封存';
+  }
+
+  return status;
+}
 
 export function ProjectDetailPage() {
   const { slug = '' } = useParams();
-  const { t } = useI18n();
-  const project = getProject(slug);
+  const { t, language } = useI18n();
+  const sourceProject = getProject(slug);
 
-  if (!project) return <Navigate to="/projects" replace />;
+  if (!sourceProject) return <Navigate to="/projects" replace />;
 
-  const index = projects.indexOf(project);
+  const project = localizeProjectDetail(sourceProject, language);
+  const ui = projectDetailUi(language);
+  const projectCategory = localizedCategory(project.category, language);
+  const projectStatus = localizedStatus(project.status, language);
+
+  const index = projects.indexOf(sourceProject);
   const prev = projects[(index - 1 + projects.length) % projects.length];
   const next = projects[(index + 1) % projects.length];
 
@@ -22,13 +62,13 @@ export function ProjectDetailPage() {
     <main className="case-study">
       <section className="case-hero shell">
         <Link className="back-link" to="/projects">
-          ← All projects
+          {ui.allProjects}
         </Link>
 
         <div className="case-title">
           <div>
             <p className="eyebrow">
-              {project.category} · {project.status}
+              {projectCategory} · {projectStatus}
             </p>
             <h1>{project.title}</h1>
           </div>
@@ -39,53 +79,53 @@ export function ProjectDetailPage() {
 
         <dl className="project-facts">
           <div>
-            <dt>Status</dt>
-            <dd>{project.status}</dd>
+            <dt>{ui.status}</dt>
+            <dd>{projectStatus}</dd>
           </div>
           <div>
-            <dt>Core stack</dt>
+            <dt>{ui.coreStack}</dt>
             <dd>{project.technologies.slice(0, 3).join(', ')}</dd>
           </div>
           <div>
-            <dt>Source</dt>
-            <dd>{project.github ? 'Public repository' : 'Not public'}</dd>
+            <dt>{ui.source}</dt>
+            <dd>{project.github ? ui.publicRepository : ui.notPublic}</dd>
           </div>
         </dl>
       </section>
 
       <section className="case-section shell overview overview-redesign">
         <div className="overview-rail">
-          <p className="eyebrow">01 / Overview</p>
-          <span>Project snapshot</span>
+          <p className="eyebrow">{ui.overview}</p>
+          <span>{ui.snapshot}</span>
         </div>
 
         <div className="overview-main">
           <p className="overview-kicker">
-            {project.category} · {project.status}
+            {projectCategory} · {projectStatus}
           </p>
           <h2>{project.summary}</h2>
           <p className="overview-description">{project.overview}</p>
 
-          <dl className="overview-metrics" aria-label="Project overview metrics">
+          <dl className="overview-metrics" aria-label={ui.snapshot}>
             <div>
-              <dt>Verified features</dt>
+              <dt>{ui.verifiedFeatures}</dt>
               <dd>{String(project.features.length).padStart(2, '0')}</dd>
             </div>
             <div>
-              <dt>Architecture nodes</dt>
+              <dt>{ui.architectureNodes}</dt>
               <dd>{String(project.architecture.length).padStart(2, '0')}</dd>
             </div>
             <div>
-              <dt>Technologies</dt>
+              <dt>{ui.technologies}</dt>
               <dd>{String(project.technologies.length).padStart(2, '0')}</dd>
             </div>
           </dl>
         </div>
 
         <aside className="overview-sidebar">
-          <span className="overview-sidebar-label">Explore</span>
+          <span className="overview-sidebar-label">{ui.explore}</span>
           <div className="case-links">
-            {project.github && <a href={project.github}>GitHub ↗</a>}
+            {project.github && <a href={project.github}>{ui.githubRepository} ↗</a>}
             <Link to={`/projects/${project.slug}/source`}>{t('source.entry')} ↗</Link>
           </div>
         </aside>
@@ -96,22 +136,26 @@ export function ProjectDetailPage() {
           <div className="shell">
             <div className="feature-section-intro">
               <div>
-                <p className="eyebrow">02 / Verified features</p>
-                <h2>What the product actually supports.</h2>
+                <p className="eyebrow">{ui.featureSection}</p>
+                <h2>{ui.featureHeading}</h2>
               </div>
               <div className="feature-section-summary">
                 <strong>{String(project.features.length).padStart(2, '0')}</strong>
-                <p>Repository-backed capabilities presented as product surfaces, not a plain feature checklist.</p>
+                <p>{ui.featureSummary}</p>
               </div>
             </div>
-            <FeatureShowcase features={project.features} />
+            <FeatureShowcase
+              features={sourceProject.features}
+              displayFeatures={project.features}
+              language={language}
+            />
           </div>
         </section>
       )}
 
       <section className="case-section shell">
-        <p className="eyebrow">03 / Architecture</p>
-        <h2 className="case-heading">Verified repository structure and technologies.</h2>
+        <p className="eyebrow">{ui.architecture}</p>
+        <h2 className="case-heading">{ui.architectureHeading}</h2>
         <ArchitectureDiagram nodes={project.architecture} />
         <div className="all-tags">
           {project.technologies.map((technology) => (
@@ -122,13 +166,11 @@ export function ProjectDetailPage() {
         {project.github && (
           <div className="source-cta">
             <div>
-              <small>Source walkthrough</small>
-              <strong>Follow the implementation from feature to repository code.</strong>
-              <p>
-                Browse project areas, verified files, code flow, and implementation notes without leaving the portfolio.
-              </p>
+              <small>{ui.sourceWalkthroughLabel}</small>
+              <strong>{ui.sourceWalkthroughTitle}</strong>
+              <p>{ui.sourceWalkthroughDescription}</p>
             </div>
-            <Link to={`/projects/${project.slug}/source`}>Explore source architecture ↗</Link>
+            <Link to={`/projects/${project.slug}/source`}>{ui.exploreSource}</Link>
           </div>
         )}
       </section>
@@ -136,7 +178,7 @@ export function ProjectDetailPage() {
       {project.challenges.length > 0 && (
         <section className="case-section challenges">
           <div className="shell">
-            <p className="eyebrow">04 / Implementation details</p>
+            <p className="eyebrow">{ui.implementation}</p>
             <div className="challenge-grid">
               {project.challenges.map((item, challengeIndex) => (
                 <article key={item.title}>
@@ -152,23 +194,23 @@ export function ProjectDetailPage() {
 
       {project.gallery.length > 0 && (
         <section className="case-section shell">
-          <p className="eyebrow">05 / Project areas</p>
-          <h2 className="case-heading project-areas-heading">Selected product areas and implementation surfaces.</h2>
+          <p className="eyebrow">{ui.projectAreas}</p>
+          <h2 className="case-heading project-areas-heading">{ui.projectAreasHeading}</h2>
           <ProjectGallery project={project} />
         </section>
       )}
 
       <nav className="project-pagination shell" aria-label="Adjacent projects">
         <Link className="project-pagination-card" to={`/projects/${prev.slug}`}>
-          <small>← Previous project</small>
+          <small>{ui.previousProject}</small>
           <strong>{prev.shortTitle}</strong>
-          <span>{prev.category}</span>
+          <span>{localizedCategory(prev.category, language)}</span>
           <p>{prev.summary}</p>
         </Link>
         <Link className="project-pagination-card project-pagination-next" to={`/projects/${next.slug}`}>
-          <small>Next project →</small>
+          <small>{ui.nextProject}</small>
           <strong>{next.shortTitle}</strong>
-          <span>{next.category}</span>
+          <span>{localizedCategory(next.category, language)}</span>
           <p>{next.summary}</p>
         </Link>
       </nav>
