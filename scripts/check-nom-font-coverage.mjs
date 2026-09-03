@@ -1,6 +1,6 @@
 import { readFile } from 'node:fs/promises';
 
-const FONT_URL = 'https://cdn.jsdelivr.net/gh/TKYKmori/Gothic-Nguyen@ece1ab0df64ffd5f3001214b274c30e69140436a/Gothic%20Nguyen%20Regular.ttf';
+const FONT_CSS_PATH = 'src/styles/nom-font.css';
 
 const SOURCE_REGIONS = [
   {
@@ -144,6 +144,13 @@ function codePointLabel(codePoint) {
   return `U+${codePoint.toString(16).toUpperCase().padStart(4, '0')}`;
 }
 
+async function activeFont() {
+  const css = await readFile(FONT_CSS_PATH, 'utf8');
+  const firstFontFace = css.match(/@font-face\s*\{[\s\S]*?font-family:\s*['"]([^'"]+)['"][\s\S]*?src:\s*url\(['"]?([^'"\)]+)['"]?\)/i);
+  if (!firstFontFace) throw new Error(`Could not find the active @font-face in ${FONT_CSS_PATH}`);
+  return { name: firstFontFace[1], url: firstFontFace[2] };
+}
+
 async function main() {
   const strings = [];
   for (const source of SOURCE_REGIONS) {
@@ -154,7 +161,8 @@ async function main() {
   }
 
   const contexts = collectHanCharacters(strings);
-  const response = await fetch(FONT_URL);
+  const font = await activeFont();
+  const response = await fetch(font.url, { redirect: 'follow' });
   if (!response.ok) throw new Error(`Font download failed: ${response.status} ${response.statusText}`);
   const fontBuffer = Buffer.from(await response.arrayBuffer());
   const coverage = parseCmapCoverage(fontBuffer);
@@ -162,9 +170,9 @@ async function main() {
   const used = [...contexts.keys()].sort((a, b) => a - b);
   const missing = used.filter((codePoint) => !coverage.has(codePoint));
 
-  console.log(`Gothic Nguyen font: ${FONT_URL}`);
+  console.log(`${font.name} font: ${font.url}`);
   console.log(`Unique Han characters used in vi-Hani copy: ${used.length}`);
-  console.log(`Covered by Gothic Nguyen: ${used.length - missing.length}`);
+  console.log(`Covered by ${font.name}: ${used.length - missing.length}`);
   console.log(`Missing / fallback characters: ${missing.length}`);
 
   if (missing.length === 0) {
