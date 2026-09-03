@@ -1,4 +1,4 @@
-import type { CSSProperties } from 'react';
+import { useState, type CSSProperties } from 'react';
 import type { Project } from '../data/projects';
 
 type BrandIcon = {
@@ -48,6 +48,26 @@ function getInitials(label: string) {
   return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
 }
 
+function ArchitectureBrand({ brand, label }: { brand?: BrandIcon; label: string }) {
+  const [imageFailed, setImageFailed] = useState(false);
+  const showBrandIcon = Boolean(brand) && !imageFailed;
+
+  return (
+    <div className="architecture-brand" aria-hidden="true">
+      {showBrandIcon && brand ? (
+        <img
+          src={`https://cdn.simpleicons.org/${brand.slug}/${brand.color}`}
+          alt=""
+          loading="lazy"
+          onError={() => setImageFailed(true)}
+        />
+      ) : (
+        <span className="architecture-brand-fallback">{getInitials(label)}</span>
+      )}
+    </div>
+  );
+}
+
 export function ArchitectureDiagram({ nodes }: { nodes: Project['architecture'] }) {
   return (
     <div className="architecture" aria-label="Project architecture">
@@ -66,19 +86,7 @@ export function ArchitectureDiagram({ nodes }: { nodes: Project['architecture'] 
               <span className="architecture-role">{node.detail}</span>
             </div>
 
-            <div className="architecture-brand" aria-hidden="true">
-              <span className="architecture-brand-fallback">{getInitials(node.label)}</span>
-              {brand && (
-                <img
-                  src={`https://cdn.simpleicons.org/${brand.slug}/${brand.color}`}
-                  alt=""
-                  loading="lazy"
-                  onError={(event) => {
-                    event.currentTarget.style.display = 'none';
-                  }}
-                />
-              )}
-            </div>
+            <ArchitectureBrand brand={brand} label={node.label} />
 
             <div className="architecture-node-copy">
               <strong>{node.label}</strong>
