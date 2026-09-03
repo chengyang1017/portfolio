@@ -28,6 +28,7 @@
 }
 
 .case-title > p {
+  max-width: 520px;
   margin: 0;
 
   color: var(--muted);
@@ -36,7 +37,7 @@
 }
 
 .case-hero > .visual {
-  height: 700px;
+  height: 660px;
   margin: 0;
 }
 
@@ -46,7 +47,7 @@
 
 .project-facts {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 
   margin: 0;
 
@@ -55,6 +56,11 @@
 
 .project-facts > div {
   padding: 25px 0;
+}
+
+.project-facts > div + div {
+  padding-left: 24px;
+  border-left: 1px solid var(--line);
 }
 
 .project-facts dt {
@@ -157,7 +163,7 @@
 
 .architecture {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 18px;
 
   margin: 75px 0 40px;
@@ -206,6 +212,58 @@
   font-style: normal;
 }
 
+.source-cta {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: end;
+  gap: 50px;
+
+  margin-top: 56px;
+  padding: 32px;
+
+  border: 1px solid var(--line);
+}
+
+.source-cta > div {
+  max-width: 680px;
+}
+
+.source-cta small {
+  display: block;
+  margin-bottom: 16px;
+
+  color: var(--muted);
+  font-size: 0.67rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+.source-cta strong {
+  display: block;
+
+  font-family: 'Manrope', sans-serif;
+  font-size: clamp(1.5rem, 2.4vw, 2.35rem);
+  font-weight: 500;
+  line-height: 1.2;
+  letter-spacing: -0.04em;
+}
+
+.source-cta p {
+  max-width: 620px;
+  margin: 16px 0 0;
+
+  color: var(--muted);
+  line-height: 1.65;
+}
+
+.source-cta > a {
+  white-space: nowrap;
+
+  font-size: 0.82rem;
+  text-decoration: underline;
+  text-underline-offset: 5px;
+}
+
 .challenges {
   background: #e2e5dc;
 }
@@ -245,25 +303,44 @@
   line-height: 1.7;
 }
 
+.project-areas-heading {
+  max-width: 720px;
+}
+
 .gallery {
   display: grid;
-  gap: 75px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 52px 28px;
 
   margin-top: 55px;
 }
 
 .gallery figure {
+  min-width: 0;
   margin: 0;
 }
 
+.gallery figure:first-child {
+  grid-column: 1 / -1;
+}
+
 .gallery .visual {
-  height: 620px;
+  height: 430px;
   margin: 0;
+}
+
+.gallery figure:first-child .visual {
+  height: 560px;
+}
+
+.gallery .visual-window {
+  width: 88%;
 }
 
 .gallery figcaption {
   display: grid;
   grid-template-columns: 0.12fr 1fr;
+  gap: 12px;
 
   margin-top: 20px;
 }
@@ -282,38 +359,83 @@
   margin: 5px 0;
 
   color: var(--muted);
+  line-height: 1.55;
+}
+
+.visual-focus-copy {
+  max-width: 420px;
+  margin: -15px 0 22px;
+
+  color: var(--muted);
+  font-size: 0.78rem;
+  line-height: 1.5;
 }
 
 .project-pagination {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
 
   margin-bottom: 110px;
+  padding-top: 28px;
 
   border-top: 1px solid var(--line);
 }
 
-.project-pagination a {
-  padding: 45px 0;
+.project-pagination-card {
+  min-height: 230px;
+  padding: 28px;
 
   display: flex;
   flex-direction: column;
-  gap: 12px;
+
+  border: 1px solid var(--line);
+
+  transition: transform 0.2s ease, border-color 0.2s ease;
 }
 
-.project-pagination a:last-child {
+.project-pagination-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--muted);
+}
+
+.project-pagination-next {
   text-align: right;
 }
 
-.project-pagination small {
+.project-pagination small,
+.project-pagination span,
+.project-pagination p {
   color: var(--muted);
 }
 
 .project-pagination strong {
+  margin-top: 42px;
+
   font-size: 2rem;
   font-weight: 500;
 
   letter-spacing: -0.04em;
+}
+
+.project-pagination span {
+  margin-top: 8px;
+
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.project-pagination p {
+  max-width: 520px;
+  margin: auto 0 0;
+
+  font-size: 0.82rem;
+  line-height: 1.55;
+}
+
+.project-pagination-next p {
+  margin-left: auto;
 }
 
 @media (max-width: 900px) {
@@ -326,42 +448,86 @@
     grid-template-columns: 1fr;
   }
 
-  .architecture {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
   .architecture-node i {
     display: none;
   }
 
-  .project-facts {
-    grid-template-columns: repeat(2, 1fr);
+  .source-cta {
+    grid-template-columns: 1fr;
+    align-items: start;
+    gap: 28px;
+  }
+
+  .gallery {
+    grid-template-columns: 1fr;
+  }
+
+  .gallery figure:first-child {
+    grid-column: auto;
+  }
+
+  .gallery figure:first-child .visual,
+  .gallery .visual {
+    height: 390px;
   }
 }
 
 @media (max-width: 680px) {
   .case-hero {
     padding-top: 35px;
+    padding-bottom: 72px;
   }
 
   .case-title {
-    margin-top: 55px;
+    margin: 55px 0 38px;
+  }
+
+  .case-title h1 {
+    font-size: clamp(3.2rem, 16vw, 5rem);
   }
 
   .case-hero > .visual {
-    height: 430px;
+    height: 360px;
   }
 
   .project-facts {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr;
+  }
+
+  .project-facts > div {
+    padding: 18px 0;
+  }
+
+  .project-facts > div + div {
+    padding-left: 0;
+    border-top: 1px solid var(--line);
+    border-left: 0;
   }
 
   .case-section {
     padding-block: 75px;
   }
 
+  .features-list article {
+    grid-template-columns: 44px 1fr;
+  }
+
   .architecture {
     grid-template-columns: 1fr;
+    margin-top: 50px;
+  }
+
+  .architecture-node {
+    min-height: 150px;
+  }
+
+  .source-cta {
+    margin-top: 42px;
+    padding: 24px;
+  }
+
+  .source-cta > a {
+    white-space: normal;
   }
 
   .challenge-grid {
@@ -369,19 +535,46 @@
     gap: 45px;
   }
 
-  .gallery .visual {
-    height: 390px;
+  .challenge-grid h3 {
+    margin-top: 36px;
   }
 
   .gallery {
-    gap: 50px;
+    gap: 46px;
+  }
+
+  .gallery figure:first-child .visual,
+  .gallery .visual {
+    height: 300px;
   }
 
   .gallery figcaption {
-    grid-template-columns: 0.2fr 1fr;
+    grid-template-columns: 34px 1fr;
+  }
+
+  .visual-focus-copy {
+    display: none;
+  }
+
+  .project-pagination {
+    grid-template-columns: 1fr;
+    gap: 14px;
+
+    margin-bottom: 72px;
+  }
+
+  .project-pagination-card,
+  .project-pagination-next {
+    min-height: 205px;
+    text-align: left;
   }
 
   .project-pagination strong {
-    font-size: 1.25rem;
+    margin-top: 32px;
+    font-size: 1.5rem;
+  }
+
+  .project-pagination-next p {
+    margin-left: 0;
   }
 }
