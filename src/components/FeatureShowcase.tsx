@@ -45,7 +45,7 @@ const copy = {
     operations: ['Operations', 'Identity, discovery, moderation, and administration surfaces around the core product.', ['Identity', 'Admin']],
     commerce: ['Commerce', 'Customer and operational flows that move data through the commerce experience.', ['Commerce', 'Workflow']],
     payments: ['Payments', 'Payment handling integrated into the project’s end-to-end transaction flow.', ['Payments', 'Backend']],
-    language: ['Language', 'Language-aware product behaviour and localisation across the interface.', ['i18n', 'Language']],
+    language: ['Language ecosystem', 'Language-aware spaces designed for communities, scripts, and future support for underrepresented languages.', ['Languages', 'Community']],
     input: ['Input', 'On-device input and composition behaviour implemented as a product capability.', ['Input', 'Mobile']],
     data: ['Data', 'Structured data access, transformation, or export supporting the feature set.', ['Data', 'Pipeline']],
     discovery: ['Discovery', 'Search and browsing flows that help users move through the product quickly.', ['Search', 'UX']],
@@ -61,7 +61,7 @@ const copy = {
     operations: ['运营与管理', '围绕核心产品的身份、发现、审核与管理能力。', ['身份', '管理']],
     commerce: ['电商', '贯穿购物体验的用户端与运营端流程。', ['电商', '流程']],
     payments: ['支付', '集成在端到端交易流程中的支付处理能力。', ['支付', '后端']],
-    language: ['语言', '贯穿界面的多语言与本地化产品能力。', ['国际化', '语言']],
+    language: ['语言生态', '围绕语言社区、文字系统与未来更多小语种支持设计的产品空间。', ['小语种', '社区']],
     input: ['输入', '作为产品能力实现的端侧输入与组合处理。', ['输入', '移动端']],
     data: ['数据', '支撑功能体系的数据访问、转换与导出能力。', ['数据', '管线']],
     discovery: ['发现', '帮助用户快速浏览与检索产品内容的能力。', ['搜索', '体验']],
@@ -77,7 +77,7 @@ const copy = {
     operations: ['營運與管理', '圍繞核心產品的身分、探索、審核與管理能力。', ['身分', '管理']],
     commerce: ['電商', '貫穿購物體驗的使用者端與營運端流程。', ['電商', '流程']],
     payments: ['付款', '整合在端到端交易流程中的付款處理能力。', ['付款', '後端']],
-    language: ['語言', '貫穿介面的多語言與在地化產品能力。', ['國際化', '語言']],
+    language: ['語言生態', '圍繞語言社群、文字系統與未來更多小語種支援設計的產品空間。', ['小語種', '社群']],
     input: ['輸入', '作為產品能力實作的裝置端輸入與組字處理。', ['輸入', '行動端']],
     data: ['資料', '支撐功能體系的資料存取、轉換與匯出能力。', ['資料', '管線']],
     discovery: ['探索', '幫助使用者快速瀏覽與搜尋產品內容的能力。', ['搜尋', '體驗']],
@@ -96,7 +96,7 @@ function resolveFeatureMeta(feature: string): FeatureMeta {
   if (/profile|admin|moderation|discover|identity/.test(value)) return { kind: 'operations', icon: UsersRound, tone: 'mint' };
   if (/cart|checkout|order|product|catalog|inventory|commerce/.test(value)) return { kind: 'commerce', icon: ShoppingBag, tone: 'amber' };
   if (/stripe|payment/.test(value)) return { kind: 'payments', icon: CreditCard, tone: 'violet' };
-  if (/language|locali[sz]|translation|multilingual/.test(value)) return { kind: 'language', icon: Languages, tone: 'lime' };
+  if (/language|locali[sz]|translation|multilingual|nom|nôm/.test(value)) return { kind: 'language', icon: Languages, tone: 'lime' };
   if (/keyboard|input|telex|composition/.test(value)) return { kind: 'input', icon: Keyboard, tone: 'sky' };
   if (/sqlite|database|data|export|csv|json|excel/.test(value)) return { kind: 'data', icon: Database, tone: 'mint' };
   if (/search|discovery|browse/.test(value)) return { kind: 'discovery', icon: Search, tone: 'sky' };
