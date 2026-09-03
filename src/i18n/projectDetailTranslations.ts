@@ -67,6 +67,27 @@ const glyphoraVietnamese: DetailCopy = {
   ],
 };
 
+const glyphoraNom: DetailCopy = {
+  summary: '𠬠共同多言語𥙩系生態言語𫜵中心、優先𡨸喃吧漸𢲫㢅朱各言語、方語吧系𡨸少資源。',
+  overview: 'Glyphora（萬文社）空只添職能「多言語」𠓨𠬠網社會通常。言語吧系𡨸𱺵格共同得組織：𠊛用固体登排𢪏、探究內容、呐𡀯吧𢺹𢩿𥱬註蹺言語𨉟使用。𡨸喃𱺵𠬠重心現在；方向𨱽限𱺵接續𢲫㢅𦤾𡗉言語、方語吧系𡨸少資源欣、抵衆固空間內容、交接、留𡨺、探究吧結綏貝各工具言語恪。庫碼包𠁟應用 Flutter 吧 React Native、Node.js API、頁管理 React、PostgreSQL吧各服務 Firebase。',
+  features: ['排𢪏文本吧形影', '次㤇適、評論、名目吧榜信', '伴佊、信𠴍𥢆吧交接即時', '𥱬註 rich-text 用共同', '空間共同朱𡨸喃吧𡗉言語', '糊疏、探究吧管理'],
+  challenges: [
+    { title: '循環生命信𠴍', description: '庫碼寔現刪邏輯、清理蹺歷、清理媒介吧更新份䀡𠓀局交接。' },
+    { title: '服務數料結合', description: '數料業務邊服務用 Node.js、Prisma 吧 PostgreSQL、𡀳確認身份、交接、留𡨺吧各職能即時恪用 Firebase。' },
+  ],
+  architecture: [
+    { label: 'Flutter', detail: '應用移動' },
+    { label: 'Node.js API', detail: 'Express + Prisma' },
+    { label: 'PostgreSQL', detail: '數料應用' },
+    { label: 'Firebase', detail: '確認身份 + 即時' },
+  ],
+  gallery: [
+    { title: '排𢪏共同', caption: '文本、形影、名目、次㤇適吧評論。' },
+    { title: '交接即時', caption: '信𠴍𥢆、份䀡𠓀局交接吧處理循環生命信𠴍。' },
+    { title: '𥱬註用共同', caption: '𥱬註 rich-text 得𢺹𢩿𡧲仍𠊛參加交接。' },
+  ],
+};
+
 export function glyphoraEcosystemCopy(language: AppLocale) {
   if (language === 'zh-CN') {
     return {
@@ -86,7 +107,16 @@ export function glyphoraEcosystemCopy(language: AppLocale) {
     };
   }
 
-  if (language.startsWith('vi-')) {
+  if (language === 'vi-Hani') {
+    return {
+      eyebrow: '定位系生態言語',
+      title: '空只互助𡗉言語—𦓡𡀳𡏦𥩯共同𥙩言語𫜵中心。',
+      description: '𡨸喃𱺵𠬠𥪝仍重點現在。萬文社接續𢲫㢅朱各言語、方語吧系𡨸少資源欣、抵衆固內容、交接、留𡨺、探究吧各工具言語結綏貝僥。',
+      tags: ['𡨸喃', '言語少資源', '方語', '系𡨸', '共同言語'],
+    };
+  }
+
+  if (language === 'vi-Latn') {
     return {
       eyebrow: 'Định vị hệ sinh thái ngôn ngữ',
       title: 'Không chỉ “hỗ trợ nhiều ngôn ngữ” — mà xây cộng đồng xoay quanh chính các ngôn ngữ.',
@@ -108,9 +138,11 @@ export function localizeProjectDetail(project: Project, language: AppLocale): Pr
 
   let localized: DetailCopy | undefined;
   if (project.slug === 'glyphora') {
-    localized = language.startsWith('vi-')
-      ? glyphoraVietnamese
-      : glyphora[language as Exclude<Language, 'en'>];
+    localized = language === 'vi-Hani'
+      ? glyphoraNom
+      : language === 'vi-Latn'
+        ? glyphoraVietnamese
+        : glyphora[language as Exclude<Language, 'en'>];
   }
 
   if (!localized) return project;
@@ -152,6 +184,37 @@ const vietnameseUi = {
   nextProject: 'Dự án tiếp theo →',
 };
 
+const vietnameseNomUi = {
+  allProjects: '← 各預案',
+  status: '狀態',
+  coreStack: '工藝主要',
+  source: '碼源',
+  publicRepository: '庫碼公開',
+  notPublic: '吻𣗓公開',
+  overview: '01 / 總觀',
+  snapshot: '總觀預案',
+  verifiedFeatures: '職能㐌確認',
+  architectureNodes: '成分構築',
+  technologies: '工藝',
+  explore: '䀡',
+  githubRepository: '庫 GitHub',
+  sourceWalkthrough: '碼源 / 解釋碼',
+  featureSection: '02 / 各職能㐌確認',
+  featureHeading: '產品寔際固仍職能尼。',
+  featureSummary: '各能力產品尼得確認自庫碼、空只𱺵𠬠名冊職能。',
+  architecture: '03 / 構築',
+  architectureHeading: '構築庫碼吧工藝㐌得確認。',
+  sourceWalkthroughLabel: '向引碼源',
+  sourceWalkthroughTitle: '䀡自職能𦤾份寔現具體𥪝庫碼。',
+  sourceWalkthroughDescription: '䀡區域預案、文件㐌確認、流碼吧𥱬註寔現𠓨作品集尼。',
+  exploreSource: '䀡構築碼源 ↗',
+  implementation: '04 / 枝節寔現',
+  projectAreas: '05 / 區域預案',
+  projectAreasHeading: '各區域產品吧份寔現代表。',
+  previousProject: '← 預案𠓀',
+  nextProject: '預案𢖖 →',
+};
+
 export function projectDetailUi(language: AppLocale) {
   if (language === 'zh-CN') {
     return {
@@ -165,7 +228,8 @@ export function projectDetailUi(language: AppLocale) {
     };
   }
 
-  if (language.startsWith('vi-')) return vietnameseUi;
+  if (language === 'vi-Hani') return vietnameseNomUi;
+  if (language === 'vi-Latn') return vietnameseUi;
 
   return {
     allProjects: '← All projects', status: 'Status', coreStack: 'Core stack', source: 'Source', publicRepository: 'Public repository', notPublic: 'Not public', overview: '01 / Overview', snapshot: 'Project snapshot', verifiedFeatures: 'Verified features', architectureNodes: 'Architecture nodes', technologies: 'Technologies', explore: 'Explore', githubRepository: 'GitHub repository', sourceWalkthrough: 'Source / Code explanation', featureSection: '02 / Verified features', featureHeading: 'What the product actually supports.', featureSummary: 'Repository-backed capabilities presented as product surfaces, not a plain feature checklist.', architecture: '03 / Architecture', architectureHeading: 'Verified repository structure and technologies.', sourceWalkthroughLabel: 'Source walkthrough', sourceWalkthroughTitle: 'Follow the implementation from feature to repository code.', sourceWalkthroughDescription: 'Browse project areas, verified files, code flow, and implementation notes without leaving the portfolio.', exploreSource: 'Explore source architecture ↗', implementation: '04 / Implementation details', projectAreas: '05 / Project areas', projectAreasHeading: 'Selected product areas and implementation surfaces.', previousProject: '← Previous project', nextProject: 'Next project →',
