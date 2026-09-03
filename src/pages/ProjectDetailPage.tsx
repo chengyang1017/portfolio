@@ -121,7 +121,7 @@ export function ProjectDetailPage() {
       {project.gallery.length > 0 && (
         <section className="case-section shell">
           <p className="eyebrow">05 / Project areas</p>
-          <h2 className="case-heading project-areas-heading">Different parts of the product, not repeated screenshots.</h2>
+          <h2 className="case-heading project-areas-heading">Selected product areas and implementation surfaces.</h2>
           <ProjectGallery project={project} />
         </section>
       )}
