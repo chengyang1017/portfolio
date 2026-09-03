@@ -1,5 +1,6 @@
 import { Link, Navigate, useParams } from 'react-router-dom';
 import { ArchitectureDiagram } from '../components/ArchitectureDiagram';
+import { FeatureShowcase } from '../components/FeatureShowcase';
 import { ProjectGallery } from '../components/ProjectGallery';
 import { ProjectVisual } from '../components/ProjectVisual';
 import { TechTag } from '../components/TechTag';
@@ -62,17 +63,19 @@ export function ProjectDetailPage() {
       </section>
 
       {project.features.length > 0 && (
-        <section className="case-section case-dark">
+        <section className="case-section case-dark feature-section">
           <div className="shell">
-            <p className="eyebrow">02 / Verified features</p>
-            <div className="features-list">
-              {project.features.map((feature, featureIndex) => (
-                <article key={feature}>
-                  <span>{String(featureIndex + 1).padStart(2, '0')}</span>
-                  <h3>{feature}</h3>
-                </article>
-              ))}
+            <div className="feature-section-intro">
+              <div>
+                <p className="eyebrow">02 / Verified features</p>
+                <h2>What the product actually supports.</h2>
+              </div>
+              <div className="feature-section-summary">
+                <strong>{String(project.features.length).padStart(2, '0')}</strong>
+                <p>Repository-backed capabilities presented as product surfaces, not a plain feature checklist.</p>
+              </div>
             </div>
+            <FeatureShowcase features={project.features} />
           </div>
         </section>
       )}
