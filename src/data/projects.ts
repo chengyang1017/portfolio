@@ -22,10 +22,10 @@ export interface Project {
 export const projects: Project[] = [
   {
     slug: 'glyphora', title: 'Glyphora', shortTitle: 'Glyphora', category: 'Product', status: 'Active development', number: '01',
-    summary: 'A multilingual social community for posts, discovery, profiles, friendships, messaging, real-time chat, and shared notes.',
-    overview: 'Glyphora (万文社) is a multilingual community application built around language, culture, and communication. Its repository contains Flutter and React Native clients, a Node.js API, a React administration app, PostgreSQL data, and Firebase services.',
+    summary: 'A multilingual community built as a language ecosystem, with Chữ Nôm support and a long-term focus on underrepresented languages, dialects, and writing systems.',
+    overview: 'Glyphora (万文社) is not designed as a generic social network with translation added on top. It treats language itself as a community layer: people can publish, discover, chat, and share notes around the languages and scripts they use. Chữ Nôm is one of its current focal areas, while the broader direction is to expand support for more underrepresented languages, dialects, and writing systems and give them room to build lasting digital communities and ecosystems. The repository contains Flutter and React Native clients, a Node.js API, a React administration app, PostgreSQL data, and Firebase services.',
     technologies: ['Flutter', 'Dart', 'Node.js', 'Express', 'Prisma', 'PostgreSQL', 'Firebase', 'React'],
-    features: ['Text and image posts', 'Likes, comments, categories, and feeds', 'Friends, direct messages, and real-time chat', 'Shared rich-text notes', 'Profiles, discovery, and administration'],
+    features: ['Text and image posts', 'Likes, comments, categories, and feeds', 'Friends, direct messages, and real-time chat', 'Shared rich-text notes', 'Chữ Nôm and multilingual language spaces', 'Profiles, discovery, and administration'],
     challenges: [
       { title: 'Message lifecycle', description: 'The repository documents logical message deletion, scheduled cleanup, media cleanup, and chat-preview refresh behavior.' },
       { title: 'Hybrid data services', description: 'Server-side business data uses Node.js, Prisma, and PostgreSQL while authentication, chat, storage, and other real-time services use Firebase.' },
@@ -142,24 +142,12 @@ export const projects: Project[] = [
     slug: 'shipin-serverpod', title: 'shipin-serverpod', shortTitle: 'Shipin Serverpod', category: 'Product', status: 'Archived', number: '10',
     summary: 'Archived Serverpod backend source retained after the Shipin backend moved into the main Shipin monorepo.',
     overview: 'This repository is no longer the active Shipin backend. Its README states that the Serverpod backend was merged into the main Shipin monorepo and that this repository remains for historical reference.',
-    technologies: ['Dart', 'Serverpod', 'Flutter'],
-    features: ['Archived backend source', 'Serverpod client package', 'Serverpod server package', 'Flutter application package'],
-    challenges: [{ title: 'Repository migration', description: 'The commit history was imported into the active Shipin monorepo, and development continues there.' }],
-    architecture: [{ label: 'Flutter', detail: 'Application package' }, { label: 'Serverpod client', detail: 'Generated client' }, { label: 'Serverpod server', detail: 'Backend source' }],
-    gallery: [{ title: 'Archived source', caption: 'Historical Serverpod backend repository.' }, { title: 'Monorepo migration', caption: 'Development moved to the main Shipin repository.' }],
-    github: 'https://github.com/chengyang1017/shipin-serverpod', tone: 'coral', mockup: 'commerce',
-  },
-  {
-    slug: 'flutter-languages-config', title: 'flutter-languages-config', shortTitle: 'Language Core', category: 'Language', status: 'Public repository', number: '11',
-    summary: 'A Dart package containing shared multilingual metadata and sorting configuration.',
-    overview: 'The package metadata identifies this repository as glyphora_language_core. Its source exports language, language-variant, country, font, script, and country-language configuration modules.',
-    technologies: ['Dart'],
-    features: ['Language metadata', 'Language variants', 'Country and language relationships', 'Font configuration', 'Writing-system configuration', 'Localized names and sorting keys'],
-    challenges: [{ title: 'Shared configuration model', description: 'The source models languages, countries, scripts, fonts, variants, localized names, and lookup helpers in one Dart package.' }],
-    architecture: [{ label: 'Languages', detail: 'Names + sort keys' }, { label: 'Countries', detail: 'Language relations' }, { label: 'Scripts', detail: 'Writing systems' }, { label: 'Fonts', detail: 'Font metadata' }],
-    gallery: [{ title: 'Language configuration', caption: 'Localized names, sorting keys, scripts, and variants.' }, { title: 'Country metadata', caption: 'Country codes and language relationships.' }, { title: 'Script and font data', caption: 'Writing-system and font configuration.' }],
-    github: 'https://github.com/chengyang1017/flutter-languages-config', tone: 'sand', mockup: 'language',
+    technologies: ['Dart', 'Serverpod', 'PostgreSQL'],
+    features: [], challenges: [], architecture: [{ label: 'Serverpod', detail: 'Dart backend' }, { label: 'PostgreSQL', detail: 'Database' }], gallery: [],
+    github: 'https://github.com/chengyang1017/shipin-serverpod', tone: 'slate', mockup: 'commerce',
   },
 ];
 
-export const getProject = (slug: string) => projects.find((project) => project.slug === slug);
+export function getProject(slug: string) {
+  return projects.find((project) => project.slug === slug);
+}
