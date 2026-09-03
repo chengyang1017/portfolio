@@ -578,3 +578,97 @@
     margin-left: 0;
   }
 }
+
+/* Desktop case-study hero: keep the project identity and visual in one viewport.
+   The previous stacked 660px mockup pushed useful project facts below the fold. */
+@media (min-width: 901px) {
+  .case-hero {
+    display: grid;
+    grid-template-columns: minmax(0, 0.92fr) minmax(460px, 1.08fr);
+    column-gap: clamp(34px, 4vw, 64px);
+    row-gap: 0;
+    padding-top: 34px;
+    padding-bottom: 54px;
+  }
+
+  .case-hero > .back-link {
+    grid-column: 1 / -1;
+  }
+
+  .case-title {
+    grid-column: 1;
+    grid-row: 2;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: flex-start;
+    gap: 26px;
+    margin: 44px 0 0;
+    padding: 0 0 30px;
+  }
+
+  .case-title h1 {
+    margin-top: 18px;
+    font-size: clamp(3.6rem, 5.4vw, 6.25rem);
+    line-height: 0.94;
+    letter-spacing: -0.065em;
+  }
+
+  .case-title > p {
+    max-width: 500px;
+    font-size: 0.96rem;
+    line-height: 1.62;
+  }
+
+  .case-hero > .visual {
+    grid-column: 2;
+    grid-row: 2;
+    align-self: end;
+    height: clamp(360px, 27vw, 430px);
+    min-height: 0;
+    margin: 30px 0 0;
+  }
+
+  .case-hero > .visual .visual-window {
+    width: 88%;
+    max-width: 650px;
+  }
+
+  .case-hero > .visual .visual-body {
+    min-height: 250px;
+  }
+
+  .project-facts {
+    grid-column: 1 / -1;
+    margin-top: 26px;
+  }
+
+  .project-facts > div {
+    padding-top: 18px;
+    padding-bottom: 18px;
+  }
+}
+
+@media (min-width: 681px) and (max-width: 900px) {
+  .case-hero {
+    padding-top: 34px;
+    padding-bottom: 62px;
+  }
+
+  .case-title {
+    margin: 50px 0 34px;
+  }
+
+  .case-title h1 {
+    font-size: clamp(3.7rem, 10vw, 6rem);
+  }
+
+  .case-hero > .visual {
+    height: 430px;
+  }
+
+  .project-facts > div {
+    padding-top: 20px;
+    padding-bottom: 20px;
+  }
+}
