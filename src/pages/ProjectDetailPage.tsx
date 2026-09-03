@@ -6,7 +6,7 @@ import { ProjectVisual } from '../components/ProjectVisual';
 import { TechTag } from '../components/TechTag';
 import { getProject, projects } from '../data/projects';
 import { useI18n } from '../i18n/I18nProvider';
-import { localizeProjectDetail, projectDetailUi } from '../i18n/projectDetailTranslations';
+import { glyphoraEcosystemCopy, localizeProjectDetail, projectDetailUi } from '../i18n/projectDetailTranslations';
 
 function localizedCategory(category: string, language: 'en' | 'zh-CN' | 'zh-TW') {
   if (language === 'zh-CN') {
@@ -53,6 +53,7 @@ export function ProjectDetailPage() {
   const ui = projectDetailUi(language);
   const projectCategory = localizedCategory(project.category, language);
   const projectStatus = localizedStatus(project.status, language);
+  const ecosystem = project.slug === 'glyphora' ? glyphoraEcosystemCopy(language) : null;
 
   const index = projects.indexOf(sourceProject);
   const prev = projects[(index - 1 + projects.length) % projects.length];
@@ -105,6 +106,19 @@ export function ProjectDetailPage() {
           </p>
           <h2>{project.summary}</h2>
           <p className="overview-description">{project.overview}</p>
+
+          {ecosystem && (
+            <aside className="ecosystem-statement" aria-label={ecosystem.eyebrow}>
+              <span className="ecosystem-statement-eyebrow">{ecosystem.eyebrow}</span>
+              <strong>{ecosystem.title}</strong>
+              <p>{ecosystem.description}</p>
+              <div className="ecosystem-tags">
+                {ecosystem.tags.map((tag) => (
+                  <span key={tag}>{tag}</span>
+                ))}
+              </div>
+            </aside>
+          )}
 
           <dl className="overview-metrics" aria-label={ui.snapshot}>
             <div>
