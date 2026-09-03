@@ -14,7 +14,7 @@ import {
   Sparkles,
   UsersRound,
 } from 'lucide-react';
-import type { Language } from '../i18n/types';
+import type { AppLocale } from '../i18n/types';
 
 type FeatureMeta = {
   kind:
@@ -34,6 +34,23 @@ type FeatureMeta = {
   icon: LucideIcon;
   tone: 'lime' | 'sky' | 'violet' | 'amber' | 'mint';
 };
+
+const vietnameseCopy = {
+  verified: 'Đã xác minh',
+  publishing: ['Xuất bản', 'Luồng tạo nội dung và đăng phương tiện đã được xác minh trong kho mã.', ['Nội dung', 'Phương tiện']],
+  engagement: ['Tương tác', 'Các bề mặt tương tác và khám phá giúp cộng đồng luôn kết nối.', ['Xã hội', 'Khám phá']],
+  communication: ['Giao tiếp', 'Luồng trò chuyện cho nhắn tin trực tiếp và hoạt động thời gian thực.', ['Thời gian thực', 'Tin nhắn']],
+  collaboration: ['Cộng tác', 'Chỉnh sửa chia sẻ và nội dung có cấu trúc cho nhu cầu cộng tác.', ['Rich text', 'Chia sẻ']],
+  operations: ['Vận hành', 'Hồ sơ, khám phá, kiểm duyệt và quản trị quanh sản phẩm cốt lõi.', ['Danh tính', 'Quản trị']],
+  commerce: ['Thương mại', 'Luồng phía khách hàng và vận hành xuyên suốt trải nghiệm mua sắm.', ['Thương mại', 'Quy trình']],
+  payments: ['Thanh toán', 'Xử lý thanh toán được tích hợp vào luồng giao dịch đầu-cuối.', ['Thanh toán', 'Backend']],
+  language: ['Hệ sinh thái ngôn ngữ', 'Không gian dành cho cộng đồng ngôn ngữ, hệ chữ và việc mở rộng tới nhiều ngôn ngữ ít tài nguyên hơn.', ['Ngôn ngữ', 'Cộng đồng']],
+  input: ['Nhập liệu', 'Xử lý nhập và tổ hợp ký tự trên thiết bị như một năng lực sản phẩm.', ['Nhập liệu', 'Di động']],
+  data: ['Dữ liệu', 'Truy cập, chuyển đổi hoặc xuất dữ liệu có cấu trúc để hỗ trợ hệ thống tính năng.', ['Dữ liệu', 'Pipeline']],
+  discovery: ['Khám phá', 'Tìm kiếm và duyệt giúp người dùng di chuyển nhanh trong sản phẩm.', ['Tìm kiếm', 'UX']],
+  developer: ['Công cụ lập trình', 'Quy trình phát triển hoặc năng lực hiểu mã được xác minh từ kho mã.', ['Developer', 'Tooling']],
+  fallback: ['Năng lực đã xác minh', 'Một năng lực sản phẩm có thể kiểm chứng từ triển khai hiện tại.', ['Đã xác minh', 'Sản phẩm']],
+} as const;
 
 const copy = {
   en: {
@@ -84,6 +101,8 @@ const copy = {
     developer: ['開發者工具', '基於儲存庫實作的開發工作流程或程式碼智慧能力。', ['開發', '工具']],
     fallback: ['已驗證能力', '目前實作中可從儲存庫驗證的產品能力。', ['已驗證', '產品']],
   },
+  'vi-Latn': vietnameseCopy,
+  'vi-Hani': vietnameseCopy,
 } as const;
 
 function resolveFeatureMeta(feature: string): FeatureMeta {
@@ -112,7 +131,7 @@ export function FeatureShowcase({
 }: {
   features: string[];
   displayFeatures?: string[];
-  language?: Language;
+  language?: AppLocale;
 }) {
   const dictionary = copy[language];
 
