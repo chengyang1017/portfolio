@@ -34,6 +34,16 @@ html[data-script='hani'] :is(h1, h2, h3, h4, strong, .eyebrow):not(pre *, code *
   font-weight: 400;
 }
 
+/* The overview headline has a more specific Manrope rule in overview.css.
+   Override it explicitly in Chữ Nôm mode so this one block uses the same
+   Hán-Nôm font as the rest of the page instead of falling back through Manrope. */
+html[data-script='hani'] .overview-redesign .overview-main h2 {
+  font-family: var(--nom-font);
+  font-weight: 400;
+  font-synthesis: none;
+  letter-spacing: -0.015em;
+}
+
 html[data-script='hani'] .eyebrow {
   letter-spacing: 0.08em;
 }
