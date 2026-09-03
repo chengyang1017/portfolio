@@ -1,0 +1,37 @@
+@font-face {
+  font-family: 'Minh Nguyen';
+  src: url('https://raw.githubusercontent.com/TKYKmori/Minh-Nguyen/9f6510f3a658b741664dd270267aa6a1a7084dc3/Minh%20Nguyen%20Regular.ttf') format('truetype');
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Minh Nguyen';
+  src: url('https://raw.githubusercontent.com/TKYKmori/Minh-Nguyen/9f6510f3a658b741664dd270267aa6a1a7084dc3/Minh%20Nguyen%20SemiBold.ttf') format('truetype');
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+}
+
+html[data-script='hani'] {
+  --nom-font: 'Minh Nguyen', 'Noto Serif CJK TC', 'Noto Serif CJK SC', serif;
+  font-family: var(--nom-font);
+}
+
+html[data-script='hani'] body,
+html[data-script='hani'] button,
+html[data-script='hani'] input,
+html[data-script='hani'] select,
+html[data-script='hani'] textarea,
+html[data-script='hani'] :is(h1, h2, h3, h4, h5, h6, p, a, span, small, strong, label, li, dt, dd):not(pre *, code *) {
+  font-family: var(--nom-font);
+}
+
+html[data-script='hani'] :is(h1, h2, h3, h4, strong, .eyebrow):not(pre *, code *) {
+  font-weight: 600;
+}
+
+html[data-script='hani'] .eyebrow {
+  letter-spacing: 0.08em;
+}
