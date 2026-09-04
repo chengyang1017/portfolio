@@ -28,6 +28,11 @@ import {
   publishProjectTranslationCatalog,
   translateProjectAllLocales,
 } from '../admin/projectTranslationManager';
+import {
+  runProjectAgent,
+  type AgentMessage,
+  type ProjectAgentProposal,
+} from '../admin/projectAgent';
 import { getAdminUiCopy } from '../admin/adminUiCopy';
 import { LanguageSwitcher } from '../components/LanguageSwitcher';
 import { useI18n } from '../i18n/I18nProvider';
@@ -166,6 +171,11 @@ export function AdminPage() {
   const [accessMessage, setAccessMessage] = useState('');
   const [publishState, setPublishState] = useState<'idle' | 'saving' | 'success' | 'error'>('idle');
   const [publishMessage, setPublishMessage] = useState('');
+  const [agentInstruction, setAgentInstruction] = useState('');
+  const [agentState, setAgentState] = useState<'idle' | 'loading' | 'error'>('idle');
+  const [agentStatus, setAgentStatus] = useState('');
+  const [agentMessages, setAgentMessages] = useState<Record<string, AgentMessage[]>>({});
+  const [agentProposal, setAgentProposal] = useState<ProjectAgentProposal | null>(null);
 
   const selectedProject = useMemo(
     () => projectDrafts.find((project) => project.slug === selectedSlug),
@@ -181,6 +191,17 @@ export function AdminPage() {
     if (!selectedProject || contentLocale === 'en') return null;
     return translationDrafts[selectedProject.slug]?.[contentLocale] ?? emptyProjectTranslation();
   }, [contentLocale, selectedProject, translationDrafts]);
+
+  const currentAgentMessages = useMemo(
+    () => (selectedProject ? agentMessages[selectedProject.slug] ?? [] : []),
+    [agentMessages, selectedProject],
+  );
+
+  useEffect(() => {
+    setAgentProposal(null);
+    setAgentState('idle');
+    setAgentStatus('');
+  }, [selectedSlug]);
 
   async function handleUnlock() {
     const cleanPassword = password.trim();
@@ -291,6 +312,86 @@ export function AdminPage() {
       setTranslationState('error');
       setTranslationMessage(error instanceof Error ? error.message : ui.translationFailed);
     }
+  }
+
+  async function handleAgentSubmit(prefill?: string) {
+    if (!selectedProject || agentState === 'loading') return;
+
+    const instruction = (prefill ?? agentInstruction).trim();
+    if (!instruction) return;
+
+    const projectSlug = selectedProject.slug;
+    const userMessage: AgentMessage = { role: 'user', content: instruction };
+    setAgentMessages((current) => ({
+      ...current,
+      [projectSlug]: [...(current[projectSlug] ?? []), userMessage].slice(-12),
+    }));
+    if (!prefill) setAgentInstruction('');
+    setAgentProposal(null);
+    setAgentState('loading');
+    setAgentStatus(ui.agentThinking);
+
+    try {
+      const proposal = await runProjectAgent({
+        instruction,
+        project: selectedProject,
+        translations: translationDrafts[selectedProject.slug] ?? {},
+        activeLocale: contentLocale,
+        history: currentAgentMessages.slice(-10),
+      });
+
+      const assistantMessage: AgentMessage = {
+        role: 'assistant',
+        content: proposal.message,
+      };
+      setAgentMessages((current) => ({
+        ...current,
+        [projectSlug]: [...(current[projectSlug] ?? []), assistantMessage].slice(-12),
+      }));
+      setAgentProposal(proposal);
+      setAgentState('idle');
+      setAgentStatus(
+        proposal.changedFields.length > 0 ? ui.agentReviewBeforeApply : ui.agentNoChanges,
+      );
+    } catch (error) {
+      setAgentState('error');
+      setAgentStatus(error instanceof Error ? error.message : ui.agentFailed);
+    }
+  }
+
+  function applyAgentProposal() {
+    if (!selectedProject || !agentProposal) return;
+
+    if (agentProposal.projectPatch && Object.keys(agentProposal.projectPatch).length > 0) {
+      updateProject(agentProposal.projectPatch);
+      if (Array.isArray(agentProposal.projectPatch.technologies)) {
+        setTechnologyDrafts((current) =>
+          mergeTechnologyNames(current, agentProposal.projectPatch?.technologies ?? []),
+        );
+      }
+    }
+
+    if (agentProposal.translationsPatch) {
+      setTranslationDrafts((current) => {
+        const nextProjectTranslations = { ...(current[selectedProject.slug] ?? {}) };
+        for (const locale of PROJECT_TRANSLATION_LOCALES) {
+          const patch = agentProposal.translationsPatch?.[locale];
+          if (!patch) continue;
+          nextProjectTranslations[locale] = {
+            ...(nextProjectTranslations[locale] ?? emptyProjectTranslation()),
+            ...patch,
+          };
+        }
+        return {
+          ...current,
+          [selectedProject.slug]: nextProjectTranslations,
+        };
+      });
+    }
+
+    setAgentProposal(null);
+    setAgentState('idle');
+    setAgentStatus(ui.agentApplied);
   }
 
   function updateTechnology(
@@ -628,6 +729,118 @@ export function AdminPage() {
                   );
                 })}
               </div>
+
+              <section className="admin-project-agent" aria-label={ui.agentTitle}>
+                <div className="admin-agent-header">
+                  <div>
+                    <span className="admin-agent-kicker">AI AGENT</span>
+                    <strong>{ui.agentTitle}</strong>
+                  </div>
+                  <small>{ui.agentDraftOnly}</small>
+                </div>
+
+                {currentAgentMessages.length > 0 && (
+                  <div className="admin-agent-thread">
+                    {currentAgentMessages.map((message, index) => (
+                      <div
+                        className={`admin-agent-message ${message.role}`}
+                        key={`${selectedProject.slug}-${index}-${message.role}`}
+                      >
+                        <span>{message.role === 'user' ? ui.agentYou : 'AI'}</span>
+                        <p>{message.content}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                <div className="admin-agent-quick-actions">
+                  <button
+                    type="button"
+                    className="secondary"
+                    onClick={() => void handleAgentSubmit('Fill any empty portfolio fields for this project. Keep existing non-empty content unless a small consistency correction is necessary. Do not invent facts.')}
+                    disabled={agentState === 'loading'}
+                  >
+                    {ui.agentFillEmpty}
+                  </button>
+                  <button
+                    type="button"
+                    className="secondary"
+                    onClick={() => void handleAgentSubmit('Translate the complete current English project content into all four non-English locales. Do not change the English project fields.')}
+                    disabled={agentState === 'loading'}
+                  >
+                    {ui.agentTranslateAll}
+                  </button>
+                  <button
+                    type="button"
+                    className="secondary"
+                    onClick={() => void handleAgentSubmit(`Improve only the currently selected locale (${contentLocale}) for clarity and natural portfolio writing. Do not change other locales or unrelated fields.`)}
+                    disabled={agentState === 'loading'}
+                  >
+                    {ui.agentImproveCurrent}
+                  </button>
+                  <button
+                    type="button"
+                    className="secondary"
+                    onClick={() => void handleAgentSubmit('Check the public GitHub repository linked to this project and propose only evidence-backed corrections or missing technologies and features. Do not invent anything.')}
+                    disabled={agentState === 'loading' || !selectedProject.github}
+                  >
+                    {ui.agentCheckRepository}
+                  </button>
+                </div>
+
+                <div className="admin-agent-compose">
+                  <textarea
+                    value={agentInstruction}
+                    onChange={(event) => setAgentInstruction(event.target.value)}
+                    onKeyDown={(event) => {
+                      if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
+                        event.preventDefault();
+                        void handleAgentSubmit();
+                      }
+                    }}
+                    placeholder={ui.agentPlaceholder}
+                    disabled={agentState === 'loading'}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => void handleAgentSubmit()}
+                    disabled={agentState === 'loading' || !agentInstruction.trim()}
+                  >
+                    {agentState === 'loading' ? ui.agentThinking : ui.agentSend}
+                  </button>
+                </div>
+
+                {agentStatus && (
+                  <p className={agentState === 'error' ? 'admin-message error' : 'admin-message'}>
+                    {agentStatus}
+                  </p>
+                )}
+
+                {agentProposal && agentProposal.changedFields.length > 0 && (
+                  <div className="admin-agent-proposal">
+                    <div className="admin-agent-proposal-heading">
+                      <strong>{ui.agentProposedChanges}</strong>
+                      <span>{agentProposal.changedFields.length} {ui.agentFields}</span>
+                    </div>
+                    <div className="admin-chip-row">
+                      {agentProposal.changedFields.map((field) => <span key={field}>{field}</span>)}
+                    </div>
+                    <div className="admin-actions">
+                      <button type="button" onClick={applyAgentProposal}>{ui.agentApply}</button>
+                      <button
+                        type="button"
+                        className="secondary"
+                        onClick={() => {
+                          setAgentProposal(null);
+                          setAgentStatus(ui.agentDiscarded);
+                        }}
+                      >
+                        {ui.agentDiscard}
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </section>
 
               {translationMessage && (
                 <p className={translationState === 'error' ? 'admin-message error' : 'admin-message'}>

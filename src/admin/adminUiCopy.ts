@@ -20,6 +20,25 @@ export interface AdminUiCopy {
   analyzerMode: string;
   lockAdmin: string;
   translationCenter: string;
+  agentTitle: string;
+  agentDraftOnly: string;
+  agentYou: string;
+  agentFillEmpty: string;
+  agentTranslateAll: string;
+  agentImproveCurrent: string;
+  agentCheckRepository: string;
+  agentPlaceholder: string;
+  agentSend: string;
+  agentThinking: string;
+  agentReviewBeforeApply: string;
+  agentNoChanges: string;
+  agentFailed: string;
+  agentProposedChanges: string;
+  agentFields: string;
+  agentApply: string;
+  agentDiscard: string;
+  agentApplied: string;
+  agentDiscarded: string;
   repositoryAssistant: string;
   repositoryDraft: string;
   repositoryAssistantDescription: string;
@@ -127,6 +146,25 @@ const en: AdminUiCopy = {
   analyzerMode: 'REPO ANALYZER MODE',
   lockAdmin: 'Lock admin',
   translationCenter: 'AI translations',
+  agentTitle: 'Project AI agent',
+  agentDraftOnly: 'Draft only · you decide what gets applied',
+  agentYou: 'YOU',
+  agentFillEmpty: 'Fill empty fields',
+  agentTranslateAll: 'Translate all locales',
+  agentImproveCurrent: 'Improve current language',
+  agentCheckRepository: 'Check GitHub evidence',
+  agentPlaceholder: 'Tell the agent what to change in this project…',
+  agentSend: 'Ask agent',
+  agentThinking: 'Agent is working…',
+  agentReviewBeforeApply: 'Draft ready. Review the proposed fields before applying.',
+  agentNoChanges: 'The agent answered without proposing field changes.',
+  agentFailed: 'Project agent failed.',
+  agentProposedChanges: 'Proposed changes',
+  agentFields: 'fields',
+  agentApply: 'Apply changes',
+  agentDiscard: 'Discard',
+  agentApplied: 'Agent changes applied to the draft. They are not published yet.',
+  agentDiscarded: 'Agent proposal discarded.',
   repositoryAssistant: 'REPOSITORY ASSISTANT',
   repositoryDraft: 'GitHub → portfolio draft',
   repositoryAssistantDescription: 'Paste a repository URL. The assistant reads repository metadata, languages, root files, and package dependencies. If the AI endpoint is configured, the same evidence is also used for richer copy and feature suggestions.',
@@ -235,6 +273,25 @@ const zhCN: AdminUiCopy = {
   analyzerMode: '仓库分析模式',
   lockAdmin: '锁定后台',
   translationCenter: 'AI 多语言翻译',
+  agentTitle: '项目 AI Agent',
+  agentDraftOnly: '只修改草稿 · 是否应用由你决定',
+  agentYou: '你',
+  agentFillEmpty: '补齐空白字段',
+  agentTranslateAll: '翻译全部语言',
+  agentImproveCurrent: '优化当前语言',
+  agentCheckRepository: '检查 GitHub 证据',
+  agentPlaceholder: '直接告诉 Agent 这个项目要怎么改……',
+  agentSend: '发送给 Agent',
+  agentThinking: 'Agent 正在处理…',
+  agentReviewBeforeApply: '修改草稿已生成，请先检查再应用。',
+  agentNoChanges: 'Agent 已回复，但没有提出字段修改。',
+  agentFailed: '项目 Agent 执行失败。',
+  agentProposedChanges: '建议修改',
+  agentFields: '个字段',
+  agentApply: '应用修改',
+  agentDiscard: '丢弃',
+  agentApplied: 'Agent 修改已应用到草稿，尚未发布。',
+  agentDiscarded: '已丢弃 Agent 修改。',
   repositoryAssistant: '仓库助手',
   repositoryDraft: 'GitHub → 作品集草稿',
   repositoryAssistantDescription: '粘贴 GitHub 仓库网址。助手会读取仓库信息、编程语言、根目录文件和依赖；若 AI 接口可用，还会基于这些证据生成更完整的项目介绍与功能建议。',
@@ -343,6 +400,25 @@ const zhTW: AdminUiCopy = {
   analyzerMode: '儲存庫分析模式',
   lockAdmin: '鎖定後台',
   translationCenter: 'AI 多語言翻譯',
+  agentTitle: '專案 AI Agent',
+  agentDraftOnly: '只修改草稿 · 是否套用由你決定',
+  agentYou: '你',
+  agentFillEmpty: '補齊空白欄位',
+  agentTranslateAll: '翻譯全部語言',
+  agentImproveCurrent: '優化目前語言',
+  agentCheckRepository: '檢查 GitHub 證據',
+  agentPlaceholder: '直接告訴 Agent 這個專案要怎麼改……',
+  agentSend: '傳送給 Agent',
+  agentThinking: 'Agent 正在處理…',
+  agentReviewBeforeApply: '修改草稿已產生，請先檢查再套用。',
+  agentNoChanges: 'Agent 已回覆，但沒有提出欄位修改。',
+  agentFailed: '專案 Agent 執行失敗。',
+  agentProposedChanges: '建議修改',
+  agentFields: '個欄位',
+  agentApply: '套用修改',
+  agentDiscard: '捨棄',
+  agentApplied: 'Agent 修改已套用到草稿，尚未發佈。',
+  agentDiscarded: '已捨棄 Agent 修改。',
   repositoryAssistant: '儲存庫助手',
   repositoryDraft: 'GitHub → 作品集草稿',
   repositoryAssistantDescription: '貼上 GitHub 儲存庫網址。助手會讀取儲存庫資訊、程式語言、根目錄檔案與相依套件；若 AI 介面可用，還會依據這些證據產生更完整的專案介紹與功能建議。',
@@ -450,6 +526,25 @@ const viLatn: AdminUiCopy = {
   analyzerMode: 'CHẾ ĐỘ PHÂN TÍCH REPO',
   lockAdmin: 'Khóa quản trị',
   translationCenter: 'AI dịch đa ngôn ngữ',
+  agentTitle: 'AI Agent cho dự án',
+  agentDraftOnly: 'Chỉ sửa bản nháp · bạn quyết định có áp dụng hay không',
+  agentYou: 'BẠN',
+  agentFillEmpty: 'Điền các trường trống',
+  agentTranslateAll: 'Dịch tất cả ngôn ngữ',
+  agentImproveCurrent: 'Cải thiện ngôn ngữ hiện tại',
+  agentCheckRepository: 'Kiểm tra bằng chứng GitHub',
+  agentPlaceholder: 'Nói trực tiếp với Agent bạn muốn sửa gì trong dự án này…',
+  agentSend: 'Gửi cho Agent',
+  agentThinking: 'Agent đang xử lý…',
+  agentReviewBeforeApply: 'Bản nháp thay đổi đã sẵn sàng. Hãy kiểm tra trước khi áp dụng.',
+  agentNoChanges: 'Agent đã trả lời nhưng không đề xuất thay đổi trường dữ liệu.',
+  agentFailed: 'Project Agent thất bại.',
+  agentProposedChanges: 'Thay đổi đề xuất',
+  agentFields: 'trường',
+  agentApply: 'Áp dụng thay đổi',
+  agentDiscard: 'Bỏ',
+  agentApplied: 'Đã áp dụng thay đổi của Agent vào bản nháp, chưa xuất bản.',
+  agentDiscarded: 'Đã bỏ đề xuất của Agent.',
   repositoryAssistant: 'TRỢ LÝ KHO MÃ',
   repositoryDraft: 'GitHub → bản nháp portfolio',
   repositoryAssistantDescription: 'Dán URL kho GitHub. Trợ lý đọc metadata, ngôn ngữ, tệp gốc và dependencies; khi AI khả dụng, các bằng chứng này cũng được dùng để tạo mô tả và gợi ý tính năng đầy đủ hơn.',
