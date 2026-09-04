@@ -12,6 +12,8 @@ import {
   createProjectFromAnalysis,
   mergeTechnologyNames,
   publishPortfolioContent,
+  verifyPortfolioAccess,
+  type PortfolioAccess,
   type RepositoryAnalysis,
 } from '../admin/githubPortfolio';
 
@@ -19,6 +21,24 @@ const GROUPS: Array<{ id: TechnologyGroupId; label: string }> = [
   { id: 'client', label: 'Client / Languages' },
   { id: 'backend', label: 'Backend / Data' },
   { id: 'platform', label: 'Platforms / Tools' },
+];
+
+const PROJECT_TONES: Project['tone'][] = [
+  'lime',
+  'blue',
+  'sand',
+  'lavender',
+  'slate',
+  'coral',
+];
+
+const PROJECT_MOCKUPS: Project['mockup'][] = [
+  'morphology',
+  'commerce',
+  'language',
+  'keyboard',
+  'ide',
+  'inflection',
 ];
 
 function cloneProjects() {
@@ -47,6 +67,36 @@ function listFromText(value: string) {
     .filter(Boolean);
 }
 
+function pairLines(value: string) {
+  return value
+    .split('\n')
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((line) => {
+      const [left, ...right] = line.split('|');
+      return [left.trim(), right.join('|').trim()] as const;
+    })
+    .filter(([left]) => Boolean(left));
+}
+
+function challengesToText(project: Project) {
+  return project.challenges
+    .map((item) => `${item.title} | ${item.description}`)
+    .join('\n');
+}
+
+function architectureToText(project: Project) {
+  return project.architecture
+    .map((item) => `${item.label} | ${item.detail}`)
+    .join('\n');
+}
+
+function galleryToText(project: Project) {
+  return project.gallery
+    .map((item) => `${item.title} | ${item.caption}`)
+    .join('\n');
+}
+
 export function AdminPage() {
   const [projectDrafts, setProjectDrafts] = useState<Project[]>(cloneProjects);
   const [technologyDrafts, setTechnologyDrafts] = useState<TechnologyCatalog>(
@@ -59,6 +109,11 @@ export function AdminPage() {
   const [analysisError, setAnalysisError] = useState('');
   const [token, setToken] = useState('');
   const [branch, setBranch] = useState('main');
+  const [accessState, setAccessState] = useState<'locked' | 'checking' | 'granted' | 'error'>(
+    'locked',
+  );
+  const [accessInfo, setAccessInfo] = useState<PortfolioAccess | null>(null);
+  const [accessMessage, setAccessMessage] = useState('');
   const [publishState, setPublishState] = useState<'idle' | 'saving' | 'success' | 'error'>('idle');
   const [publishMessage, setPublishMessage] = useState('');
 
@@ -71,6 +126,40 @@ export function AdminPage() {
     () => Object.values(technologyDrafts).flat().map((technology) => technology.name),
     [technologyDrafts],
   );
+
+  async function handleUnlock() {
+    setAccessState('checking');
+    setAccessMessage('Checking write access to chengyang1017/portfolio…');
+
+    try {
+      const result = await verifyPortfolioAccess(token);
+      setAccessInfo(result);
+      setBranch(result.defaultBranch || 'main');
+      setAccessState('granted');
+      setAccessMessage('');
+    } catch (error) {
+      setAccessState('error');
+      setAccessMessage(error instanceof Error ? error.message : 'Unable to verify GitHub access.');
+    }
+  }
+
+  function lockAdmin() {
+    setToken('');
+    setAccessInfo(null);
+    setAccessState('locked');
+    setAccessMessage('');
+    setPublishMessage('');
+  }
+
+  function resetDrafts() {
+    const nextProjects = cloneProjects();
+    setProjectDrafts(nextProjects);
+    setTechnologyDrafts(cloneTechnologyCatalog());
+    setSelectedSlug(nextProjects[0]?.slug ?? '');
+    setAnalysis(null);
+    setPublishState('idle');
+    setPublishMessage('Drafts reset to the version loaded with this deployment.');
+  }
 
   function updateProject(patch: Partial<Project>) {
     setProjectDrafts((current) =>
@@ -118,7 +207,7 @@ export function AdminPage() {
     setAnalysisError('');
 
     try {
-      const result = await analyzeRepository(repositoryUrl);
+      const result = await analyzeRepository(repositoryUrl, token.trim());
       setAnalysis(result);
       setAnalysisState('idle');
     } catch (error) {
@@ -139,8 +228,7 @@ export function AdminPage() {
       technologies: Array.from(
         new Set([...selectedProject.technologies, ...analysis.technologies]),
       ),
-      features:
-        analysis.features.length > 0 ? analysis.features : selectedProject.features,
+      features: analysis.features.length > 0 ? analysis.features : selectedProject.features,
     });
 
     setTechnologyDrafts((current) => mergeTechnologyNames(current, analysis.technologies));
@@ -196,12 +284,6 @@ export function AdminPage() {
   }
 
   async function handlePublish() {
-    if (!token.trim()) {
-      setPublishState('error');
-      setPublishMessage('Enter a fine-grained GitHub token with Contents: Read and write for this repository.');
-      return;
-    }
-
     setPublishState('saving');
     setPublishMessage('Publishing project and technology data to GitHub…');
 
@@ -212,6 +294,7 @@ export function AdminPage() {
         projects: projectDrafts,
         technologyCatalog: technologyDrafts,
       });
+
       setPublishState('success');
       setPublishMessage(
         `Published. ${result.projectCommitUrl ?? ''} ${result.technologyCommitUrl ?? ''}`.trim(),
@@ -220,6 +303,54 @@ export function AdminPage() {
       setPublishState('error');
       setPublishMessage(error instanceof Error ? error.message : 'Publishing failed.');
     }
+  }
+
+  if (accessState !== 'granted') {
+    return (
+      <main className="admin-page shell">
+        <section className="admin-access-shell">
+          <div className="admin-access-card">
+            <p className="eyebrow">PORTFOLIO CONTROL</p>
+            <h1>Admin access</h1>
+            <p>
+              Unlock this dashboard with a fine-grained GitHub token that can write to
+              chengyang1017/portfolio. The token stays in memory only and is cleared when you lock
+              the dashboard or reload the page.
+            </p>
+
+            <label className="admin-access-field">
+              <span>GitHub token</span>
+              <input
+                type="password"
+                value={token}
+                autoComplete="off"
+                placeholder="github_pat_…"
+                onChange={(event) => setToken(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' && accessState !== 'checking') {
+                    void handleUnlock();
+                  }
+                }}
+              />
+            </label>
+
+            <button
+              type="button"
+              onClick={() => void handleUnlock()}
+              disabled={accessState === 'checking' || !token.trim()}
+            >
+              {accessState === 'checking' ? 'Checking access…' : 'Unlock admin'}
+            </button>
+
+            {accessMessage && (
+              <p className={`admin-message ${accessState === 'error' ? 'error' : ''}`}>
+                {accessMessage}
+              </p>
+            )}
+          </div>
+        </section>
+      </main>
+    );
   }
 
   return (
@@ -233,12 +364,19 @@ export function AdminPage() {
             edited source data back to GitHub.
           </p>
         </div>
+
         <div className="admin-hero-status">
           <span>{String(projectDrafts.length).padStart(2, '0')} PROJECTS</span>
           <span>{String(allTechnologyNames.length).padStart(2, '0')} TECHNOLOGIES</span>
+          <span>{accessInfo?.repository ?? 'GITHUB CONNECTED'}</span>
           <span>
-            {import.meta.env.VITE_PORTFOLIO_AI_ENDPOINT ? 'AI ENDPOINT CONNECTED' : 'REPO ANALYZER MODE'}
+            {import.meta.env.VITE_PORTFOLIO_AI_ENDPOINT
+              ? 'AI ENDPOINT CONNECTED'
+              : 'REPO ANALYZER MODE'}
           </span>
+          <button type="button" className="secondary admin-lock-button" onClick={lockAdmin}>
+            Lock admin
+          </button>
         </div>
       </header>
 
@@ -249,9 +387,9 @@ export function AdminPage() {
             <h2>GitHub → portfolio draft</h2>
           </div>
           <p>
-            Paste a repository URL. The assistant detects languages and tooling. If
-            VITE_PORTFOLIO_AI_ENDPOINT is configured, repository metadata is sent to that server-side
-            AI endpoint for richer project copy and feature suggestions.
+            Paste a repository URL. The assistant reads repository metadata, languages, root files,
+            and package dependencies. If VITE_PORTFOLIO_AI_ENDPOINT is configured, that evidence is
+            also sent to the server-side AI endpoint for richer copy and feature suggestions.
           </p>
         </div>
 
@@ -261,7 +399,7 @@ export function AdminPage() {
             onChange={(event) => setRepositoryUrl(event.target.value)}
             placeholder="https://github.com/owner/repository"
           />
-          <button type="button" onClick={handleAnalyze} disabled={analysisState === 'loading'}>
+          <button type="button" onClick={() => void handleAnalyze()} disabled={analysisState === 'loading'}>
             {analysisState === 'loading' ? 'Analyzing…' : 'Analyze repository'}
           </button>
         </div>
@@ -271,15 +409,19 @@ export function AdminPage() {
         {analysis && (
           <article className="admin-analysis-card">
             <div>
-              <span className="admin-analysis-source">{analysis.source === 'ai' ? 'AI' : 'REPOSITORY'}</span>
+              <span className="admin-analysis-source">
+                {analysis.source === 'ai' ? 'AI' : 'REPOSITORY'}
+              </span>
               <h3>{analysis.title}</h3>
               <p>{analysis.summary}</p>
             </div>
+
             <div className="admin-chip-row">
               {analysis.technologies.map((technology) => (
                 <span key={technology}>{technology}</span>
               ))}
             </div>
+
             <div className="admin-actions">
               <button type="button" onClick={applyAnalysisToSelected} disabled={!selectedProject}>
                 Apply to selected project
@@ -298,9 +440,16 @@ export function AdminPage() {
             <p className="eyebrow">02 / PROJECTS</p>
             <h2>Project content</h2>
           </div>
+
           <div className="admin-actions">
             <button type="button" onClick={addBlankProject}>Add project</button>
-            <button type="button" className="danger" onClick={removeSelectedProject} disabled={!selectedProject}>
+            <button type="button" className="secondary" onClick={resetDrafts}>Reset drafts</button>
+            <button
+              type="button"
+              className="danger"
+              onClick={removeSelectedProject}
+              disabled={!selectedProject}
+            >
               Delete selected
             </button>
           </div>
@@ -325,12 +474,18 @@ export function AdminPage() {
             <div className="admin-form-grid">
               <label>
                 <span>Title</span>
-                <input value={selectedProject.title} onChange={(event) => updateProject({ title: event.target.value })} />
+                <input
+                  value={selectedProject.title}
+                  onChange={(event) => updateProject({ title: event.target.value })}
+                />
               </label>
 
               <label>
                 <span>Short title</span>
-                <input value={selectedProject.shortTitle} onChange={(event) => updateProject({ shortTitle: event.target.value })} />
+                <input
+                  value={selectedProject.shortTitle}
+                  onChange={(event) => updateProject({ shortTitle: event.target.value })}
+                />
               </label>
 
               <label>
@@ -351,10 +506,20 @@ export function AdminPage() {
               </label>
 
               <label>
+                <span>Project number</span>
+                <input
+                  value={selectedProject.number}
+                  onChange={(event) => updateProject({ number: event.target.value })}
+                />
+              </label>
+
+              <label>
                 <span>Category</span>
                 <select
                   value={selectedProject.category}
-                  onChange={(event) => updateProject({ category: event.target.value as ProjectCategory })}
+                  onChange={(event) =>
+                    updateProject({ category: event.target.value as ProjectCategory })
+                  }
                 >
                   <option value="Language">Language</option>
                   <option value="AI & Developer Tools">AI & Developer Tools</option>
@@ -364,29 +529,74 @@ export function AdminPage() {
 
               <label>
                 <span>Status</span>
-                <input value={selectedProject.status} onChange={(event) => updateProject({ status: event.target.value })} />
+                <input
+                  value={selectedProject.status}
+                  onChange={(event) => updateProject({ status: event.target.value })}
+                />
               </label>
 
               <label>
+                <span>Tone</span>
+                <select
+                  value={selectedProject.tone}
+                  onChange={(event) =>
+                    updateProject({ tone: event.target.value as Project['tone'] })
+                  }
+                >
+                  {PROJECT_TONES.map((tone) => (
+                    <option key={tone} value={tone}>{tone}</option>
+                  ))}
+                </select>
+              </label>
+
+              <label>
+                <span>Mockup</span>
+                <select
+                  value={selectedProject.mockup}
+                  onChange={(event) =>
+                    updateProject({ mockup: event.target.value as Project['mockup'] })
+                  }
+                >
+                  {PROJECT_MOCKUPS.map((mockup) => (
+                    <option key={mockup} value={mockup}>{mockup}</option>
+                  ))}
+                </select>
+              </label>
+
+              <label className="wide">
                 <span>GitHub URL</span>
-                <input value={selectedProject.github ?? ''} onChange={(event) => updateProject({ github: event.target.value || undefined })} />
+                <input
+                  value={selectedProject.github ?? ''}
+                  onChange={(event) =>
+                    updateProject({ github: event.target.value || undefined })
+                  }
+                />
               </label>
 
               <label className="wide">
                 <span>Summary</span>
-                <textarea value={selectedProject.summary} onChange={(event) => updateProject({ summary: event.target.value })} />
+                <textarea
+                  value={selectedProject.summary}
+                  onChange={(event) => updateProject({ summary: event.target.value })}
+                />
               </label>
 
               <label className="wide">
                 <span>Overview</span>
-                <textarea className="large" value={selectedProject.overview} onChange={(event) => updateProject({ overview: event.target.value })} />
+                <textarea
+                  className="large"
+                  value={selectedProject.overview}
+                  onChange={(event) => updateProject({ overview: event.target.value })}
+                />
               </label>
 
               <label className="wide">
                 <span>Technologies · comma or new line separated</span>
                 <textarea
                   value={selectedProject.technologies.join(', ')}
-                  onChange={(event) => updateProject({ technologies: listFromText(event.target.value) })}
+                  onChange={(event) =>
+                    updateProject({ technologies: listFromText(event.target.value) })
+                  }
                 />
               </label>
 
@@ -395,7 +605,57 @@ export function AdminPage() {
                 <textarea
                   className="large"
                   value={selectedProject.features.join('\n')}
-                  onChange={(event) => updateProject({ features: listFromText(event.target.value) })}
+                  onChange={(event) =>
+                    updateProject({ features: listFromText(event.target.value) })
+                  }
+                />
+              </label>
+
+              <label className="wide">
+                <span>Challenges · title | description</span>
+                <textarea
+                  className="large"
+                  value={challengesToText(selectedProject)}
+                  onChange={(event) =>
+                    updateProject({
+                      challenges: pairLines(event.target.value).map(([title, description]) => ({
+                        title,
+                        description,
+                      })),
+                    })
+                  }
+                />
+              </label>
+
+              <label className="wide">
+                <span>Architecture · label | detail</span>
+                <textarea
+                  className="large"
+                  value={architectureToText(selectedProject)}
+                  onChange={(event) =>
+                    updateProject({
+                      architecture: pairLines(event.target.value).map(([label, detail]) => ({
+                        label,
+                        detail,
+                      })),
+                    })
+                  }
+                />
+              </label>
+
+              <label className="wide">
+                <span>Gallery · title | caption</span>
+                <textarea
+                  className="large"
+                  value={galleryToText(selectedProject)}
+                  onChange={(event) =>
+                    updateProject({
+                      gallery: pairLines(event.target.value).map(([title, caption]) => ({
+                        title,
+                        caption,
+                      })),
+                    })
+                  }
                 />
               </label>
             </div>
@@ -412,8 +672,9 @@ export function AdminPage() {
             <h2>Languages & tools</h2>
           </div>
           <p>
-            This catalog powers the Technology section on the home page. Colors can use official
-            brand colors such as Dart #0175C2 and TypeScript #3178C6.
+            This catalog powers the Technology section on the home page. Repository detection now
+            puts known technologies into the right group and uses their established brand colors
+            instead of assigning every new item the portfolio lime color.
           </p>
         </div>
 
@@ -434,21 +695,38 @@ export function AdminPage() {
                     <input
                       value={technology.name}
                       aria-label="Technology name"
-                      onChange={(event) => updateTechnology(group.id, index, { name: event.target.value })}
+                      onChange={(event) =>
+                        updateTechnology(group.id, index, { name: event.target.value })
+                      }
                     />
                     <input
                       value={technology.color}
                       aria-label="Brand color"
-                      onChange={(event) => updateTechnology(group.id, index, { color: event.target.value })}
+                      onChange={(event) =>
+                        updateTechnology(group.id, index, { color: event.target.value })
+                      }
                     />
                     <input
                       value={technology.logo ?? ''}
                       aria-label="Logo URL"
                       placeholder="Logo URL"
-                      onChange={(event) => updateTechnology(group.id, index, { logo: event.target.value || undefined })}
+                      onChange={(event) =>
+                        updateTechnology(group.id, index, {
+                          logo: event.target.value || undefined,
+                        })
+                      }
                     />
-                    <span className="admin-color-preview" style={{ background: technology.color }} aria-hidden="true" />
-                    <button type="button" className="icon danger" onClick={() => removeTechnology(group.id, index)} aria-label={`Remove ${technology.name}`}>
+                    <span
+                      className="admin-color-preview"
+                      style={{ background: technology.color }}
+                      aria-hidden="true"
+                    />
+                    <button
+                      type="button"
+                      className="icon danger"
+                      onClick={() => removeTechnology(group.id, index)}
+                      aria-label={`Remove ${technology.name}`}
+                    >
                       ×
                     </button>
                   </div>
@@ -466,27 +744,41 @@ export function AdminPage() {
             <h2>Write changes to GitHub</h2>
           </div>
           <p>
-            The token stays only in this page state and is sent directly to GitHub. Use a fine-grained
-            token restricted to chengyang1017/portfolio with Contents read/write permission.
+            The verified token remains only in this page session. Publishing updates
+            src/data/projects.ts and src/data/technologyCatalog.ts on the selected branch.
           </p>
         </div>
 
-        <div className="admin-publish-grid">
-          <label>
-            <span>GitHub token</span>
-            <input type="password" value={token} autoComplete="off" onChange={(event) => setToken(event.target.value)} />
-          </label>
+        <div className="admin-publish-grid admin-publish-grid-verified">
+          <div className="admin-verified-repository">
+            <span>Verified repository</span>
+            <strong>{accessInfo?.repository}</strong>
+          </div>
+
           <label>
             <span>Branch</span>
             <input value={branch} onChange={(event) => setBranch(event.target.value)} />
           </label>
-          <button type="button" onClick={handlePublish} disabled={publishState === 'saving'}>
+
+          <button
+            type="button"
+            onClick={() => void handlePublish()}
+            disabled={publishState === 'saving'}
+          >
             {publishState === 'saving' ? 'Publishing…' : 'Publish to GitHub'}
           </button>
         </div>
 
         {publishMessage && (
-          <p className={`admin-message ${publishState === 'error' ? 'error' : publishState === 'success' ? 'success' : ''}`}>
+          <p
+            className={`admin-message ${
+              publishState === 'error'
+                ? 'error'
+                : publishState === 'success'
+                  ? 'success'
+                  : ''
+            }`}
+          >
             {publishMessage}
           </p>
         )}
