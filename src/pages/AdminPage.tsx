@@ -16,11 +16,7 @@ import {
   type PortfolioAccess,
   type RepositoryAnalysis,
 } from '../admin/githubPortfolio';
-import {
-  forgetAdminToken,
-  readSavedAdminToken,
-  saveAdminToken,
-} from '../admin/adminCredentialStore';
+import { getAdminSession, loginAdmin, logoutAdmin } from '../admin/adminSession';
 
 const GROUPS: Array<{ id: TechnologyGroupId; label: string }> = [
   { id: 'client', label: 'Client / Languages' },
@@ -112,7 +108,7 @@ export function AdminPage() {
   const [analysis, setAnalysis] = useState<RepositoryAnalysis | null>(null);
   const [analysisState, setAnalysisState] = useState<'idle' | 'loading' | 'error'>('idle');
   const [analysisError, setAnalysisError] = useState('');
-  const [token, setToken] = useState(readSavedAdminToken);
+  const [password, setPassword] = useState('');
   const [branch, setBranch] = useState('main');
   const [accessState, setAccessState] = useState<'locked' | 'checking' | 'granted' | 'error'>(
     'locked',
@@ -132,40 +128,58 @@ export function AdminPage() {
     [technologyDrafts],
   );
 
-  async function unlockWithToken(candidateToken: string, persist = true) {
-    const cleanToken = candidateToken.trim();
-    if (!cleanToken) return;
+  async function handleUnlock() {
+    const cleanPassword = password.trim();
+    if (!cleanPassword) return;
 
     setAccessState('checking');
-    setAccessMessage('Checking write access to chengyang1017/portfolio…');
+    setAccessMessage('Checking admin access…');
 
     try {
-      const result = await verifyPortfolioAccess(cleanToken);
-      setToken(cleanToken);
-      if (persist) saveAdminToken(cleanToken);
+      const result = await loginAdmin(cleanPassword);
       setAccessInfo(result);
       setBranch(result.defaultBranch || 'main');
+      setPassword('');
       setAccessState('granted');
       setAccessMessage('');
     } catch (error) {
       setAccessState('error');
-      setAccessMessage(error instanceof Error ? error.message : 'Unable to verify GitHub access.');
+      setAccessMessage(error instanceof Error ? error.message : 'Unable to verify admin access.');
     }
   }
 
-  async function handleUnlock() {
-    await unlockWithToken(token);
-  }
-
   useEffect(() => {
-    const savedToken = readSavedAdminToken();
-    if (!savedToken) return;
-    void unlockWithToken(savedToken, false);
+    let active = true;
+    setAccessState('checking');
+    setAccessMessage('Restoring admin session…');
+
+    void getAdminSession()
+      .then((session) => {
+        if (!active) return;
+        if (!session) {
+          setAccessState('locked');
+          setAccessMessage('');
+          return;
+        }
+        setAccessInfo(session);
+        setBranch(session.defaultBranch || 'main');
+        setAccessState('granted');
+        setAccessMessage('');
+      })
+      .catch((error) => {
+        if (!active) return;
+        setAccessState('error');
+        setAccessMessage(error instanceof Error ? error.message : 'Unable to restore admin session.');
+      });
+
+    return () => {
+      active = false;
+    };
   }, []);
 
   function lockAdmin() {
-    forgetAdminToken();
-    setToken('');
+    void logoutAdmin();
+    setPassword('');
     setAccessInfo(null);
     setAccessState('locked');
     setAccessMessage('');
@@ -228,7 +242,7 @@ export function AdminPage() {
     setAnalysisError('');
 
     try {
-      const result = await analyzeRepository(repositoryUrl, token.trim());
+      const result = await analyzeRepository(repositoryUrl);
       setAnalysis(result);
       setAnalysisState('idle');
     } catch (error) {
@@ -310,7 +324,6 @@ export function AdminPage() {
 
     try {
       const result = await publishPortfolioContent({
-        token: token.trim(),
         branch: branch.trim() || 'main',
         projects: projectDrafts,
         technologyCatalog: technologyDrafts,
@@ -334,20 +347,19 @@ export function AdminPage() {
             <p className="eyebrow">PORTFOLIO CONTROL</p>
             <h1>Admin access</h1>
             <p>
-              Unlock this dashboard with a fine-grained GitHub token that can write to
-              chengyang1017/portfolio. After successful verification, the token is remembered only
-              in this browser so reloads and future visits can unlock automatically. Use Lock admin
-              to sign out and forget the saved token.
+              Sign in with your portfolio admin password. GitHub write credentials stay on the
+              Cloudflare Worker and are never sent to or stored by this browser. A secure session
+              cookie keeps you signed in until you choose Lock admin or the session expires.
             </p>
 
             <label className="admin-access-field">
-              <span>GitHub token</span>
+              <span>Admin password</span>
               <input
                 type="password"
-                value={token}
+                value={password}
                 autoComplete="off"
-                placeholder="github_pat_…"
-                onChange={(event) => setToken(event.target.value)}
+                placeholder="Enter admin password"
+                onChange={(event) => setPassword(event.target.value)}
                 onKeyDown={(event) => {
                   if (event.key === 'Enter' && accessState !== 'checking') {
                     void handleUnlock();
@@ -359,7 +371,7 @@ export function AdminPage() {
             <button
               type="button"
               onClick={() => void handleUnlock()}
-              disabled={accessState === 'checking' || !token.trim()}
+              disabled={accessState === 'checking' || !password.trim()}
             >
               {accessState === 'checking' ? 'Checking access…' : 'Unlock admin'}
             </button>

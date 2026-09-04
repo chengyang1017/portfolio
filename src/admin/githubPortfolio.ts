@@ -280,10 +280,9 @@ export async function verifyPortfolioAccess(token: string): Promise<PortfolioAcc
 
 export async function analyzeRepository(
   repositoryUrl: string,
-  token?: string,
 ): Promise<RepositoryAnalysis> {
   const { owner, repo } = parseRepositoryUrl(repositoryUrl);
-  const headers = githubHeaders(token);
+  const headers = githubHeaders();
 
   const [repoResponse, languagesResponse, contentsResponse] = await Promise.all([
     fetch(`https://api.github.com/repos/${owner}/${repo}`, { headers }),
@@ -304,8 +303,8 @@ export async function analyzeRepository(
     : [];
 
   const [packageTechnologies, evidence] = await Promise.all([
-    maybeReadPackageJson(rootItems, token),
-    collectRepositoryEvidence(rootItems, token),
+    maybeReadPackageJson(rootItems),
+    collectRepositoryEvidence(rootItems),
   ]);
 
   const languageTechnologies = Object.keys(languages).flatMap(
@@ -341,9 +340,9 @@ export async function analyzeRepository(
   try {
     const aiResponse = await fetch(aiEndpoint, {
       method: 'POST',
+      credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
       body: JSON.stringify({
         repository,
@@ -469,41 +468,38 @@ export function serializeTechnologyCatalog(catalog: TechnologyCatalog) {
 }
 
 export async function publishPortfolioContent({
-  token,
   branch,
   projects,
   technologyCatalog,
 }: {
-  token: string;
   branch: string;
   projects: Project[];
   technologyCatalog: TechnologyCatalog;
 }) {
-  const projectsFile = await getGitHubFile(token, 'src/data/projects.ts', branch);
-  const nextProjectsSource = replaceProjectsArray(
-    decodeGitHubContent(projectsFile.content),
-    projects,
-  );
-
-  const projectUpdate = await updateGitHubFile({
-    token,
-    path: 'src/data/projects.ts',
-    branch,
-    message: 'Update portfolio projects from admin',
-    content: nextProjectsSource,
+  const response = await fetch('/api/admin/publish-portfolio', {
+    method: 'POST',
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ branch, projects, technologyCatalog }),
   });
 
-  const technologyUpdate = await updateGitHubFile({
-    token,
-    path: 'src/data/technologyCatalog.ts',
-    branch,
-    message: 'Update portfolio technology catalog from admin',
-    content: serializeTechnologyCatalog(technologyCatalog),
-  });
+  const payload = (await response.json().catch(() => null)) as
+    | {
+        projectCommitUrl?: string;
+        technologyCommitUrl?: string;
+        error?: string;
+      }
+    | null;
+
+  if (!response.ok) {
+    throw new Error(payload?.error || `Portfolio publish failed (${response.status}).`);
+  }
 
   return {
-    projectCommitUrl: projectUpdate.commit?.html_url,
-    technologyCommitUrl: technologyUpdate.commit?.html_url,
+    projectCommitUrl: payload?.projectCommitUrl,
+    technologyCommitUrl: payload?.technologyCommitUrl,
   };
 }
 

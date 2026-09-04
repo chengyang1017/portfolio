@@ -9,11 +9,7 @@ import {
 } from '../data/projectTranslationCatalog';
 import { projects } from '../data/projects';
 import { verifyPortfolioAccess } from '../admin/githubPortfolio';
-import {
-  forgetAdminToken,
-  readSavedAdminToken,
-  saveAdminToken,
-} from '../admin/adminCredentialStore';
+import { getAdminSession, loginAdmin, logoutAdmin } from '../admin/adminSession';
 import {
   mergeProjectTranslations,
   publishProjectTranslationCatalog,
@@ -40,8 +36,7 @@ function listFromText(value: string) {
 }
 
 export function AdminTranslationsPage() {
-  const [tokenInput, setTokenInput] = useState(readSavedAdminToken);
-  const [token, setToken] = useState('');
+  const [password, setPassword] = useState('');
   const [branch, setBranch] = useState('main');
   const [accessState, setAccessState] = useState<'locked' | 'checking' | 'ready' | 'error'>('locked');
   const [accessMessage, setAccessMessage] = useState('');
@@ -64,47 +59,62 @@ export function AdminTranslationsPage() {
     (locale) => Boolean(selectedTranslations[locale]),
   ).length;
 
-  async function unlockWithToken(candidateToken: string, persist = true) {
-    const cleanToken = candidateToken.trim();
-    if (!cleanToken) return;
+  async function unlock() {
+    const cleanPassword = password.trim();
+    if (!cleanPassword) return;
 
     setAccessState('checking');
-    setAccessMessage('Checking GitHub write access…');
+    setAccessMessage('Checking admin access…');
 
     try {
-      const access = await verifyPortfolioAccess(cleanToken);
-      setToken(cleanToken);
-      if (persist) saveAdminToken(cleanToken);
+      const access = await loginAdmin(cleanPassword);
       setBranch(access.defaultBranch || 'main');
-      setTokenInput('');
+      setPassword('');
       setAccessState('ready');
       setAccessMessage(`Verified ${access.repository} · ${access.defaultBranch}`);
     } catch (error) {
       setAccessState('error');
-      setAccessMessage(error instanceof Error ? error.message : 'Unable to verify GitHub access.');
+      setAccessMessage(error instanceof Error ? error.message : 'Unable to verify admin access.');
     }
   }
 
-  async function unlock() {
-    await unlockWithToken(tokenInput);
-  }
-
   useEffect(() => {
-    const savedToken = readSavedAdminToken();
-    if (!savedToken) return;
-    void unlockWithToken(savedToken, false);
+    let active = true;
+    setAccessState('checking');
+    setAccessMessage('Restoring admin session…');
+
+    void getAdminSession()
+      .then((session) => {
+        if (!active) return;
+        if (!session) {
+          setAccessState('locked');
+          setAccessMessage('');
+          return;
+        }
+        setBranch(session.defaultBranch || 'main');
+        setAccessState('ready');
+        setAccessMessage(`Verified ${session.repository} · ${session.defaultBranch}`);
+      })
+      .catch((error) => {
+        if (!active) return;
+        setAccessState('error');
+        setAccessMessage(error instanceof Error ? error.message : 'Unable to restore admin session.');
+      });
+
+    return () => {
+      active = false;
+    };
   }, []);
 
   function lock() {
-    forgetAdminToken();
-    setToken('');
-    setTokenInput('');
+    void logoutAdmin();
+    setPassword('');
     setAccessState('locked');
     setAccessMessage('');
   }
 
   async function generateAllTranslations() {
-    if (!selectedProject || !token) return;
+    if (!selectedProject) return;
 
     setTranslationState('loading');
     setTranslationMessage('Translating every project field into all four locales…');
@@ -112,7 +122,6 @@ export function AdminTranslationsPage() {
     try {
       const translations = await translateProjectAllLocales({
         project: selectedProject,
-        token,
       });
       setCatalog((current) => mergeProjectTranslations(current, selectedProject.slug, translations));
       setTranslationState('idle');
@@ -124,13 +133,11 @@ export function AdminTranslationsPage() {
   }
 
   async function publish() {
-    if (!token) return;
-
     setPublishState('saving');
     setPublishMessage('Publishing multilingual project content to GitHub…');
 
     try {
-      const commitUrl = await publishProjectTranslationCatalog({ token, branch, catalog });
+      const commitUrl = await publishProjectTranslationCatalog({ branch, catalog });
       setPublishState('success');
       setPublishMessage(commitUrl ? `Published: ${commitUrl}` : 'Published project translations.');
     } catch (error) {
@@ -161,15 +168,15 @@ export function AdminTranslationsPage() {
           <p className="eyebrow">PORTFOLIO CONTROL</p>
           <h1>Translation access</h1>
           <p>
-            Use the same fine-grained GitHub token as the main admin. Once verified, it is remembered in this browser and reused automatically until you sign out.
+            Use the same portfolio admin password as the main dashboard. GitHub credentials remain on the Cloudflare Worker; this browser receives only a secure admin session cookie.
           </p>
           <label>
-            <span>GitHub token</span>
+            <span>Admin password</span>
             <input
               type="password"
-              value={tokenInput}
-              onChange={(event) => setTokenInput(event.target.value)}
-              placeholder="github_pat_…"
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              placeholder="Enter admin password"
               autoComplete="off"
             />
           </label>

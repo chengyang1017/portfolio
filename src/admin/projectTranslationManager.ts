@@ -116,10 +116,8 @@ function validateTranslation(
 
 export async function translateProjectAllLocales({
   project,
-  token,
 }: {
   project: Project;
-  token: string;
 }): Promise<ProjectTranslationBundle> {
   const source = projectSource(project);
   const endpoint =
@@ -128,8 +126,8 @@ export async function translateProjectAllLocales({
 
   const response = await fetch(endpoint, {
     method: 'POST',
+    credentials: 'include',
     headers: {
-      Authorization: `Bearer ${token}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
@@ -212,46 +210,28 @@ async function getGitHubFile(
 }
 
 export async function publishProjectTranslationCatalog({
-  token,
   branch,
   catalog,
 }: {
-  token: string;
   branch: string;
   catalog: ProjectTranslationCatalog;
 }) {
-  const path = 'src/data/projectTranslationCatalog.ts';
-  const current = await getGitHubFile(token, path, branch);
-
-  const response = await fetch(
-    `https://api.github.com/repos/chengyang1017/portfolio/contents/${path}`,
-    {
-      method: 'PUT',
-      headers: {
-        Accept: 'application/vnd.github+json',
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
-        'X-GitHub-Api-Version': '2022-11-28',
-      },
-      body: JSON.stringify({
-        message: 'Update project translations from admin',
-        content: encodeBase64(serializeProjectTranslationCatalog(catalog)),
-        sha: current.sha,
-        branch,
-      }),
+  const response = await fetch('/api/admin/publish-translations', {
+    method: 'POST',
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
     },
-  );
+    body: JSON.stringify({ branch, catalog }),
+  });
+
+  const payload = (await response.json().catch(() => null)) as
+    | { commitUrl?: string; error?: string }
+    | null;
 
   if (!response.ok) {
-    const payload = (await response.json().catch(() => null)) as
-      | { message?: string }
-      | null;
-    throw new Error(payload?.message || 'Unable to publish project translations.');
+    throw new Error(payload?.error || `Translation publish failed (${response.status}).`);
   }
 
-  const payload = (await response.json()) as {
-    commit?: { html_url?: string };
-  };
-
-  return payload.commit?.html_url;
+  return payload?.commitUrl;
 }
