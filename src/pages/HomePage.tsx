@@ -4,14 +4,13 @@ import { Link } from 'react-router-dom';
 import { Hero } from '../components/Hero';
 import { SectionHeader } from '../components/SectionHeader';
 import { projects, type Project } from '../data/projects';
+import { technologyCatalog, type TechnologyItem } from '../data/technologyCatalog';
 import { homeCategory, homeCopy, homeProjectDescription, homeStatus } from '../i18n/homeTranslations';
 import { useI18n } from '../i18n/I18nProvider';
 import type { AppLocale } from '../i18n/types';
 import '../styles/technology-stack.css';
 import '../styles/home-icons.css';
 import '../styles/home-work-redesign.css';
-
-const SIMPLE_ICONS = 'https://cdn.jsdelivr.net/gh/simple-icons/simple-icons@develop/icons';
 
 function HomeWorkFeaturedProject({
   project,
@@ -137,13 +136,6 @@ function stackDetailCopy(language: AppLocale) {
   return values[language];
 }
 
-type BrandTechnology = {
-  name: string;
-  logo?: string;
-  wideLogo?: boolean;
-  color: string;
-};
-
 export function HomePage() {
   const { language } = useI18n();
   const copy = homeCopy(language);
@@ -154,56 +146,28 @@ export function HomePage() {
     tone: 'client' | 'backend' | 'platform';
     icon: LucideIcon;
     description: string;
-    technologies: BrandTechnology[];
+    technologies: TechnologyItem[];
   }> = [
     {
       label: copy.stack.client,
       tone: 'client',
       icon: Monitor,
       description: stackDetails.client,
-      technologies: [
-        { name: 'Flutter', logo: `${SIMPLE_ICONS}/flutter.svg`, color: '#54C5F8' },
-        { name: 'Dart', logo: `${SIMPLE_ICONS}/dart.svg`, color: '#40C4FF' },
-        { name: 'Android', logo: `${SIMPLE_ICONS}/android.svg`, color: '#3DDC84' },
-        { name: 'Kotlin', logo: `${SIMPLE_ICONS}/kotlin.svg`, color: '#A97BFF' },
-        { name: 'React', logo: `${SIMPLE_ICONS}/react.svg`, color: '#61DAFB' },
-        { name: 'TypeScript', logo: `${SIMPLE_ICONS}/typescript.svg`, color: '#3178C6' },
-        { name: 'Vite', logo: `${SIMPLE_ICONS}/vite.svg`, color: '#8B8FFF' },
-        { name: 'Electron', logo: `${SIMPLE_ICONS}/electron.svg`, color: '#9FEAF9' },
-      ],
+      technologies: technologyCatalog.client,
     },
     {
       label: copy.stack.backend,
       tone: 'backend',
       icon: Server,
       description: stackDetails.backend,
-      technologies: [
-        { name: 'Node.js', logo: `${SIMPLE_ICONS}/nodedotjs.svg`, color: '#5FA04E' },
-        { name: 'Express', logo: `${SIMPLE_ICONS}/express.svg`, color: '#B8C0BD' },
-        { name: 'Prisma', logo: `${SIMPLE_ICONS}/prisma.svg`, color: '#7C8BA1' },
-        { name: 'PostgreSQL', logo: `${SIMPLE_ICONS}/postgresql.svg`, color: '#6FA8DC' },
-        { name: 'Python', logo: `${SIMPLE_ICONS}/python.svg`, color: '#4B8BBE' },
-        { name: 'Flask', logo: `${SIMPLE_ICONS}/flask.svg`, color: '#D7DDDA' },
-        { name: 'SQLite', logo: `${SIMPLE_ICONS}/sqlite.svg`, color: '#4CA5D8' },
-      ],
+      technologies: technologyCatalog.backend,
     },
     {
       label: copy.stack.platform,
       tone: 'platform',
       icon: Cloud,
       description: stackDetails.platform,
-      technologies: [
-        { name: 'Firebase', logo: `${SIMPLE_ICONS}/firebase.svg`, color: '#FFCA28' },
-        { name: 'Stripe', logo: `${SIMPLE_ICONS}/stripe.svg`, color: '#7A73FF' },
-        {
-          name: 'Serverpod',
-          logo: 'https://raw.githubusercontent.com/serverpod/serverpod/main/examples/legacy/chat/chat_server/web/static/serverpod-logo.svg',
-          wideLogo: true,
-          color: '#6EA8FE',
-        },
-        { name: 'Monaco Editor', color: '#5DADE2' },
-        { name: 'Pandas', logo: `${SIMPLE_ICONS}/pandas.svg`, color: '#8D7AC7' },
-      ],
+      technologies: technologyCatalog.platform,
     },
   ];
 
