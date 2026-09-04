@@ -24,6 +24,19 @@ jobs:
       - name: Apply multilingual project editor migration
         run: python scripts/integrate-project-locales.py
 
+      - name: Fix locale readiness narrowing
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('src/pages/AdminPage.tsx')
+          text = p.read_text(encoding='utf-8')
+          text = text.replace(
+              "locale.id !== 'en' && translationDrafts[selectedProject.slug]?.[locale.id],",
+              "translationDrafts[selectedProject.slug]?.[locale.id],",
+          )
+          p.write_text(text, encoding='utf-8')
+          PY
+
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
