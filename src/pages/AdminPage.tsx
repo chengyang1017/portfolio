@@ -19,7 +19,6 @@ import {
   createProjectFromAnalysis,
   mergeTechnologyNames,
   publishPortfolioContent,
-  verifyPortfolioAccess,
   type PortfolioAccess,
   type RepositoryAnalysis,
 } from '../admin/githubPortfolio';

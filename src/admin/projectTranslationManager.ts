@@ -11,17 +11,6 @@ export type ProjectTranslationBundle = Record<
   ProjectTranslation
 >;
 
-function encodeBase64(value: string) {
-  const bytes = new TextEncoder().encode(value);
-  let binary = '';
-
-  bytes.forEach((byte) => {
-    binary += String.fromCharCode(byte);
-  });
-
-  return btoa(binary);
-}
-
 function projectSource(project: Project): ProjectTranslation {
   return {
     title: project.title,
@@ -174,39 +163,6 @@ export function mergeProjectTranslations(
       ...translations,
     },
   };
-}
-
-export function serializeProjectTranslationCatalog(
-  catalog: ProjectTranslationCatalog,
-) {
-  return `import type { Project } from './projects';\n\nexport const PROJECT_TRANSLATION_LOCALES = [\n  'zh-CN',\n  'zh-TW',\n  'vi-Latn',\n  'vi-Hani',\n] as const;\n\nexport type ProjectTranslationLocale =\n  (typeof PROJECT_TRANSLATION_LOCALES)[number];\n\nexport type ProjectTranslation = Pick<\n  Project,\n  | 'title'\n  | 'shortTitle'\n  | 'summary'\n  | 'overview'\n  | 'features'\n  | 'challenges'\n  | 'architecture'\n  | 'gallery'\n>;\n\nexport type ProjectTranslationCatalog = Record<\n  string,\n  Partial<Record<ProjectTranslationLocale, ProjectTranslation>>\n>;\n\nexport const projectTranslationCatalog: ProjectTranslationCatalog = ${JSON.stringify(
-    catalog,
-    null,
-    2,
-  )};\n`;
-}
-
-async function getGitHubFile(
-  token: string,
-  path: string,
-  branch: string,
-) {
-  const response = await fetch(
-    `https://api.github.com/repos/chengyang1017/portfolio/contents/${path}?ref=${encodeURIComponent(branch)}`,
-    {
-      headers: {
-        Accept: 'application/vnd.github+json',
-        Authorization: `Bearer ${token}`,
-        'X-GitHub-Api-Version': '2022-11-28',
-      },
-    },
-  );
-
-  if (!response.ok) {
-    throw new Error(`Unable to read ${path} from GitHub (${response.status}).`);
-  }
-
-  return (await response.json()) as { sha: string };
 }
 
 export async function publishProjectTranslationCatalog({

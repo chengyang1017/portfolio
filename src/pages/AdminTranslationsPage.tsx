@@ -8,7 +8,6 @@ import {
   type ProjectTranslationLocale,
 } from '../data/projectTranslationCatalog';
 import { projects } from '../data/projects';
-import { verifyPortfolioAccess } from '../admin/githubPortfolio';
 import { getAdminSession, loginAdmin, logoutAdmin } from '../admin/adminSession';
 import { getAdminUiCopy } from '../admin/adminUiCopy';
 import { LanguageSwitcher } from '../components/LanguageSwitcher';
