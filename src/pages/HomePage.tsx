@@ -145,7 +145,10 @@ export function HomePage() {
   const { language } = useI18n();
   const copy = homeCopy(language);
   const stackDetails = stackDetailCopy(language);
-  const selectedProjects = projects.slice(-4).reverse();
+  const featuredProjectSlugs = ['glyphora', 'shopping-app', 'ai-code-tutor', 'flutter-ui-playground'];
+  const selectedProjects = featuredProjectSlugs
+    .map((slug) => projects.find((project) => project.slug === slug))
+    .filter((project): project is Project => Boolean(project));
   const technologyGroups: Array<{
     label: string;
     tone: 'client' | 'backend' | 'platform';

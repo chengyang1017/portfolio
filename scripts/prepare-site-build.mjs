@@ -3,8 +3,14 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises';
 const portfolioSeed = JSON.parse(
   await readFile(new URL('../src/data/portfolioSeed.json', import.meta.url), 'utf8'),
 );
-const portfolioContentVersion = portfolioSeed.version;
-const portfolioProjectsJson = JSON.stringify(portfolioSeed.projects)
+const portfolioSeedExtra = JSON.parse(
+  await readFile(new URL('../src/data/portfolioSeedExtra.json', import.meta.url), 'utf8'),
+);
+const portfolioContentVersion = `${portfolioSeed.version}-${portfolioSeedExtra.version}`;
+const portfolioProjectsJson = JSON.stringify([
+  ...portfolioSeed.projects,
+  ...portfolioSeedExtra.projects,
+])
   .replace(/`/g, '\\`')
   .replace(/\$\{/g, '\\${');
 
