@@ -1,0 +1,51 @@
+name: Add Direct Portfolio Content API
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - scripts/add-direct-content-api.py
+      - .github/workflows/add-direct-content-api.yml
+
+permissions:
+  contents: write
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Add direct content API
+        run: python scripts/add-direct-content-api.py
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build portfolio
+        run: npm run build
+
+      - name: Verify generated Worker
+        run: |
+          node --check dist/server/index.js
+          grep -q "'/api/agent/content'" dist/server/index.js
+          grep -q "PORTFOLIO_AGENT_TOKEN" dist/server/index.js
+          grep -q "CONTENT_VERSION_CONFLICT" dist/server/index.js
+
+      - name: Commit content API and cleanup
+        run: |
+          rm -f scripts/add-direct-content-api.py .github/workflows/add-direct-content-api.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add scripts/prepare-site-build.mjs scripts/add-direct-content-api.py .github/workflows/add-direct-content-api.yml
+          git commit -m "Add authenticated direct portfolio content API"
+          git push origin HEAD:main
