@@ -187,11 +187,10 @@ export function HomePage() {
         <div className="home-work-header">
           <div className="home-work-header-main">
             <p className="eyebrow">01 / {copy.work.eyebrow}</p>
-            <h2>{copy.work.title}</h2>
+            <h2>Project</h2>
           </div>
 
           <div className="home-work-header-side">
-            <p>{copy.work.description}</p>
             <Link className="text-link" to="/projects">{copy.work.allProjects}</Link>
           </div>
         </div>
