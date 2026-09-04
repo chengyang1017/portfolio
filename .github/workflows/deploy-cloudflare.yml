@@ -2,6 +2,7 @@
 # Homepage project showcase deploys the newest published projects first.
 # Admin drafts persist locally across navigation until they are saved live or reset.
 # Admin project content and public project cards now share the same content source.
+# Project screenshots are uploaded and served through the portfolio Worker.
 name: Deploy Portfolio to Cloudflare
 
 on:
