@@ -1,0 +1,103 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Lim Cheng Yang Portfolio Content API",
+    "version": "1.0.0",
+    "description": "Authenticated API for reading and updating live portfolio content stored in Cloudflare. Content writes do not modify GitHub and do not trigger a deployment."
+  },
+  "servers": [
+    {
+      "url": "https://lim-cheng-yang-portfolio.chengyang1017.workers.dev"
+    }
+  ],
+  "paths": {
+    "/api/agent/content": {
+      "get": {
+        "operationId": "getPortfolioContent",
+        "summary": "Read current live portfolio content",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Current Cloudflare portfolio content and its optimistic-concurrency timestamp."
+          },
+          "401": {
+            "description": "Missing or invalid authorization."
+          }
+        }
+      },
+      "patch": {
+        "operationId": "updatePortfolioContent",
+        "summary": "Update live portfolio content without GitHub or redeployment",
+        "description": "Read first, then send expectedUpdatedAt from the GET response to prevent overwriting newer edits. Only projects, technologyCatalog, and projectTranslationCatalog are writable.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["patch"],
+                "properties": {
+                  "expectedUpdatedAt": {
+                    "type": ["string", "null"],
+                    "description": "updatedAt returned by the most recent GET."
+                  },
+                  "patch": {
+                    "type": "object",
+                    "properties": {
+                      "projects": {
+                        "type": "array",
+                        "items": {
+                          "type": "object"
+                        }
+                      },
+                      "technologyCatalog": {
+                        "type": "object"
+                      },
+                      "projectTranslationCatalog": {
+                        "type": "object"
+                      }
+                    },
+                    "additionalProperties": false
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Content stored immediately in Cloudflare."
+          },
+          "400": {
+            "description": "Invalid patch."
+          },
+          "401": {
+            "description": "Missing or invalid authorization."
+          },
+          "409": {
+            "description": "Content changed after it was read; fetch again before writing."
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "Use PORTFOLIO_AGENT_TOKEN when configured; otherwise the existing ADMIN_PASSWORD is accepted. Never place the secret in repository files or URLs."
+      }
+    }
+  }
+}
