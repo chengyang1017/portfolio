@@ -1,0 +1,42 @@
+name: Verify Live Portfolio Content
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/verify-live-portfolio-content.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Load live portfolio data
+        run: |
+          curl --fail --silent --show-error --retry 8 --retry-delay 2 \
+            https://lim-cheng-yang-portfolio.chengyang1017.workers.dev/api/portfolio-data \
+            -o /tmp/portfolio.json
+
+      - name: Verify refreshed content
+        run: |
+          python - <<'PY'
+          import json
+          with open('/tmp/portfolio.json', encoding='utf-8') as f:
+              data = json.load(f)
+          version = data.get('contentVersion', '')
+          projects = data.get('projects', [])
+          by_slug = {p.get('slug'): p for p in projects if isinstance(p, dict)}
+          assert 'github-refresh-2026-09-05' in version, version
+          assert 'flutter-playground-2026-09-05' in version, version
+          for slug in ['glyphora', 'shopping-app', 'ai-code-tutor', 'ai-code-tutor-vscode', 'flutter-ui-playground']:
+              assert slug in by_slug, slug
+          assert by_slug['shopping-app'].get('github') == 'https://github.com/chengyang1017/fullstack-commerce-platform'
+          assert by_slug['flutter-ui-playground'].get('github') == 'https://github.com/chengyang1017/flutter-dart-fullstack-enviroment'
+          print('contentVersion:', version)
+          print('projectCount:', len(projects))
+          print('verified:', ', '.join(sorted(by_slug)))
+          PY
