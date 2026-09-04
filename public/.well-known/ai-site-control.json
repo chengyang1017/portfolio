@@ -16,6 +16,7 @@
     "trigger": "push-to-main"
   },
   "liveContent": {
+    "apiVersion": 1,
     "provider": "cloudflare-durable-object",
     "readEndpoint": "/api/agent/content",
     "writeEndpoint": "/api/agent/content",
