@@ -18,9 +18,7 @@ export async function getAdminSession(): Promise<AdminSessionInfo | null> {
   const response = await fetch('/api/admin/session', {
     method: 'GET',
     credentials: 'include',
-    headers: {
-      Accept: 'application/json',
-    },
+    headers: { Accept: 'application/json' },
   });
 
   if (response.status === 401) return null;
@@ -40,25 +38,8 @@ export async function getAdminSession(): Promise<AdminSessionInfo | null> {
   };
 }
 
-export async function loginAdmin(password: string): Promise<AdminSessionInfo> {
-  const response = await fetch('/api/admin/login', {
-    method: 'POST',
-    credentials: 'include',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ password }),
-  });
-
-  const payload = await readJson(response);
-  if (!response.ok || !payload?.repository || !payload.defaultBranch) {
-    throw new Error(payload?.error || `Admin login failed (${response.status}).`);
-  }
-
-  return {
-    repository: payload.repository,
-    defaultBranch: payload.defaultBranch,
-  };
+export function startGitHubAdminLogin() {
+  window.location.assign('/api/admin/github/start');
 }
 
 export async function logoutAdmin() {
@@ -66,12 +47,4 @@ export async function logoutAdmin() {
     method: 'POST',
     credentials: 'include',
   }).catch(() => undefined);
-
-  if (typeof window !== 'undefined') {
-    try {
-      window.localStorage.removeItem('portfolio-admin-github-token');
-    } catch {
-      // Ignore cleanup failures in hardened browser contexts.
-    }
-  }
 }
