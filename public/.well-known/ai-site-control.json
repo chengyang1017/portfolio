@@ -1,0 +1,33 @@
+{
+  "schema": "https://example.invalid/ai-site-control/v1",
+  "site": {
+    "name": "Lim Cheng Yang Portfolio",
+    "productionOrigin": "https://lim-cheng-yang-portfolio.chengyang1017.workers.dev",
+    "adminPath": "/admin"
+  },
+  "source": {
+    "provider": "github",
+    "repository": "chengyang1017/portfolio",
+    "defaultBranch": "main"
+  },
+  "deployment": {
+    "provider": "cloudflare-workers",
+    "workflow": ".github/workflows/deploy-cloudflare.yml",
+    "trigger": "push-to-main"
+  },
+  "editableAreas": {
+    "projects": "src/data/projects.ts",
+    "projectTranslations": "src/data/projectTranslationCatalog.ts",
+    "technologyCatalog": "src/data/technologyCatalog.ts",
+    "admin": "src/pages/AdminPage.tsx",
+    "adminStyles": "src/styles/admin.css",
+    "workerBuild": "scripts/prepare-site-build.mjs"
+  },
+  "assistantWorkflow": {
+    "inspectProductionFirst": true,
+    "editRepositoryDirectlyWhenAuthorized": true,
+    "validateBuildBeforeCompletion": true,
+    "verifyDeploymentAfterPush": true,
+    "neverStoreSecretsInRepository": true
+  }
+}
