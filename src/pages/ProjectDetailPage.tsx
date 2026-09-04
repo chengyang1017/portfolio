@@ -6,7 +6,8 @@ import { ProjectVisual } from '../components/ProjectVisual';
 import { TechTag } from '../components/TechTag';
 import { getProject, projects } from '../data/projects';
 import { useI18n } from '../i18n/I18nProvider';
-import { glyphoraEcosystemCopy, localizeProjectDetail, projectDetailUi } from '../i18n/projectDetailTranslations';
+import { localizeProject } from '../i18n/localizeProject';
+import { glyphoraEcosystemCopy, projectDetailUi } from '../i18n/projectDetailTranslations';
 import type { AppLocale } from '../i18n/types';
 
 function localizedCategory(category: string, language: AppLocale) {
@@ -63,7 +64,7 @@ export function ProjectDetailPage() {
 
   if (!sourceProject) return <Navigate to="/projects" replace />;
 
-  const project = localizeProjectDetail(sourceProject, language);
+  const project = localizeProject(sourceProject, language);
   const ui = projectDetailUi(language);
   const projectCategory = localizedCategory(project.category, language);
   const projectStatus = localizedStatus(project.status, language);
@@ -72,6 +73,8 @@ export function ProjectDetailPage() {
   const index = projects.indexOf(sourceProject);
   const prev = projects[(index - 1 + projects.length) % projects.length];
   const next = projects[(index + 1) % projects.length];
+  const localizedPrev = localizeProject(prev, language);
+  const localizedNext = localizeProject(next, language);
 
   return (
     <main className="case-study">
@@ -231,15 +234,15 @@ export function ProjectDetailPage() {
       <nav className="project-pagination shell" aria-label="Adjacent projects">
         <Link className="project-pagination-card" to={`/projects/${prev.slug}`}>
           <small>{ui.previousProject}</small>
-          <strong>{prev.shortTitle}</strong>
+          <strong>{localizedPrev.shortTitle}</strong>
           <span>{localizedCategory(prev.category, language)}</span>
-          <p>{prev.summary}</p>
+          <p>{localizedPrev.summary}</p>
         </Link>
         <Link className="project-pagination-card project-pagination-next" to={`/projects/${next.slug}`}>
           <small>{ui.nextProject}</small>
-          <strong>{next.shortTitle}</strong>
+          <strong>{localizedNext.shortTitle}</strong>
           <span>{localizedCategory(next.category, language)}</span>
-          <p>{next.summary}</p>
+          <p>{localizedNext.summary}</p>
         </Link>
       </nav>
     </main>

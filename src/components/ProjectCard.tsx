@@ -13,6 +13,7 @@ import {
   projectsCopy,
 } from '../i18n/projectsTranslations';
 import { useI18n } from '../i18n/I18nProvider';
+import { localizeProject } from '../i18n/localizeProject';
 
 const categoryIcons: Record<ProjectCategory, LucideIcon> = {
   Language: Languages,
@@ -23,6 +24,7 @@ const categoryIcons: Record<ProjectCategory, LucideIcon> = {
 export function ProjectCard({ project }: { project: Project }) {
   const { language } = useI18n();
   const copy = projectsCopy(language);
+  const localizedProject = localizeProject(project, language);
 
   const CategoryIcon = categoryIcons[project.category];
 
@@ -31,7 +33,7 @@ export function ProjectCard({ project }: { project: Project }) {
       className="project-card"
       data-tone={project.tone}
       to={`/projects/${project.slug}`}
-      aria-label={`${copy.viewProject}: ${project.title}`}
+      aria-label={`${copy.viewProject}: ${localizedProject.title}`}
     >
       <div className="project-card-head">
         <span className="project-card-icon" aria-hidden="true">
@@ -56,13 +58,13 @@ export function ProjectCard({ project }: { project: Project }) {
       </div>
 
       <div className="project-card-body">
-        <h3>{project.title}</h3>
+        <h3>{localizedProject.title}</h3>
 
         <p>
           {projectSummary(
             project.slug,
             language,
-            project.summary,
+            localizedProject.summary,
           )}
         </p>
       </div>
