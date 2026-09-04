@@ -1,4 +1,5 @@
 import portfolioSeed from './portfolioSeed.json';
+import portfolioSeedExtra from './portfolioSeedExtra.json';
 
 export type ProjectCategory = 'Language' | 'AI & Developer Tools' | 'Product';
 
@@ -21,8 +22,11 @@ export interface Project {
   mockup: 'morphology' | 'commerce' | 'language' | 'keyboard' | 'ide' | 'inflection';
 }
 
-export const portfolioContentVersion = portfolioSeed.version;
-export const projects = portfolioSeed.projects as Project[];
+export const portfolioContentVersion = `${portfolioSeed.version}-${portfolioSeedExtra.version}`;
+export const projects = [
+  ...portfolioSeed.projects,
+  ...portfolioSeedExtra.projects,
+] as Project[];
 
 export function getProject(slug: string) {
   return projects.find((project) => project.slug === slug);
