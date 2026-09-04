@@ -1,0 +1,50 @@
+{
+  "version": "flutter-playground-2026-09-05",
+  "projects": [
+    {
+      "slug": "flutter-ui-playground",
+      "title": "Flutter UI Playground",
+      "shortTitle": "Flutter Playground",
+      "category": "AI & Developer Tools",
+      "status": "Active development",
+      "number": "12",
+      "summary": "A restricted Flutter and Dart learning environment with a custom widget-syntax parser, live rendering, lessons, project import, workspace tools, runner workflows and export support.",
+      "overview": "Flutter UI Playground is a safe, restricted Flutter widget-syntax environment built as a Flutter application. The repository is organized into app, core, shared and feature layers, with dedicated features for lessons, a playground, project import, workspace management, running code and exporting results. The playground itself separates configuration, controllers, syntax highlighting, models, parsing, rendering, screens and widgets. Its package uses the Dart analyzer alongside custom parsing/rendering infrastructure, Hive for local persistence, an embedded code editor/highlighter, archive support and HTTP. The goal is to let learners understand and experiment with Flutter UI structure without treating arbitrary source code as an unrestricted runtime.",
+      "technologies": ["Flutter", "Dart", "Dart Analyzer", "Hive", "re_editor", "re_highlight", "HTTP", "Archive"],
+      "features": [
+        "Restricted Flutter widget-syntax playground",
+        "Separated parser and renderer pipeline",
+        "Syntax highlighting and embedded code editing",
+        "Structured lessons and answer assets",
+        "Project import and workspace features",
+        "Runner workflows for experimenting with code",
+        "Export support",
+        "Local persistence with Hive"
+      ],
+      "challenges": [
+        {
+          "title": "Safe executable subset",
+          "description": "The environment has to recognize and render a useful subset of Flutter-style widget syntax while keeping parsing and rendering under application control instead of executing arbitrary Dart source directly."
+        },
+        {
+          "title": "Learning and tooling in one workspace",
+          "description": "Lessons, the editor, parsing, rendering, project import, running and export are split into feature modules so the learning workflow can grow without collapsing into one large screen."
+        }
+      ],
+      "architecture": [
+        {"label": "Playground", "detail": "Editor, highlighting, controllers and interactive UI"},
+        {"label": "Parser", "detail": "Restricted widget-syntax parsing"},
+        {"label": "Renderer", "detail": "Transforms parsed models into controlled Flutter UI"},
+        {"label": "Workspace", "detail": "Lessons, imports, runner and export workflows"}
+      ],
+      "gallery": [
+        {"title": "Code playground", "caption": "Edit restricted Flutter-style UI syntax with highlighting and immediate feedback."},
+        {"title": "Learning workflow", "caption": "Structured lessons and answer assets connect explanation to hands-on practice."},
+        {"title": "Project workspace", "caption": "Import, run and export workflows extend the playground beyond isolated snippets."}
+      ],
+      "github": "https://github.com/chengyang1017/flutter-dart-fullstack-enviroment",
+      "tone": "blue",
+      "mockup": "ide"
+    }
+  ]
+}
