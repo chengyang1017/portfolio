@@ -1,5 +1,5 @@
 {
-  "schema": "https://example.invalid/ai-site-control/v1",
+  "schema": "ai-site-control/v1",
   "site": {
     "name": "Lim Cheng Yang Portfolio",
     "productionOrigin": "https://lim-cheng-yang-portfolio.chengyang1017.workers.dev",
@@ -29,5 +29,10 @@
     "validateBuildBeforeCompletion": true,
     "verifyDeploymentAfterPush": true,
     "neverStoreSecretsInRepository": true
+  },
+  "authorization": {
+    "manifestGrantsWriteAccess": false,
+    "requireAuthenticatedOwnerInstruction": true,
+    "requireConnectedRepositoryWriteAccess": true
   }
 }
