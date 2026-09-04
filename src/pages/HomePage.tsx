@@ -5,7 +5,7 @@ import { Hero } from '../components/Hero';
 import { SectionHeader } from '../components/SectionHeader';
 import { projects, type Project } from '../data/projects';
 import { technologyCatalog, type TechnologyItem } from '../data/technologyCatalog';
-import { homeCategory, homeCopy, homeProjectDescription, homeStatus } from '../i18n/homeTranslations';
+import { homeCategory, homeCopy, homeStatus } from '../i18n/homeTranslations';
 import { useI18n } from '../i18n/I18nProvider';
 import { localizeProject } from '../i18n/localizeProject';
 import type { AppLocale } from '../i18n/types';
@@ -44,7 +44,7 @@ function HomeWorkFeaturedProject({
 
       <div className="home-work-card-body">
         <h3>{localizedProject.title}</h3>
-        <p>{homeProjectDescription(project.slug, language, localizedProject.summary)}</p>
+        <p>{localizedProject.summary}</p>
       </div>
 
       <div className="home-work-card-stack">
@@ -87,7 +87,7 @@ function HomeWorkProjectCard({
 
       <div className="home-work-card-body">
         <h3>{localizedProject.title}</h3>
-        <p>{homeProjectDescription(project.slug, language, localizedProject.summary)}</p>
+        <p>{localizedProject.summary}</p>
       </div>
 
       <div className="home-work-card-stack">

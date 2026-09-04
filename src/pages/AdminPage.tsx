@@ -36,6 +36,7 @@ import {
 import { getAdminUiCopy } from '../admin/adminUiCopy';
 import { LanguageSwitcher } from '../components/LanguageSwitcher';
 import { useI18n } from '../i18n/I18nProvider';
+import { localizeProjectDetail as legacyLocalizeProjectDetail } from '../i18n/projectDetailTranslations';
 
 type ContentLocale = 'en' | ProjectTranslationLocale;
 
@@ -140,8 +141,60 @@ function cloneTechnologyCatalog(): TechnologyCatalog {
   };
 }
 
+function toProjectTranslation(project: Project): ProjectTranslation {
+  return {
+    title: project.title,
+    shortTitle: project.shortTitle,
+    summary: project.summary,
+    overview: project.overview,
+    features: project.features.map((item) => item),
+    challenges: project.challenges.map((item) => ({ ...item })),
+    architecture: project.architecture.map((item) => ({ ...item })),
+    gallery: project.gallery.map((item) => ({ ...item })),
+  };
+}
+
 function cloneProjectTranslations(): ProjectTranslationCatalog {
-  return JSON.parse(JSON.stringify(projectTranslationCatalog)) as ProjectTranslationCatalog;
+  const next = JSON.parse(JSON.stringify(projectTranslationCatalog)) as ProjectTranslationCatalog;
+
+  for (const project of initialProjects) {
+    const locales = { ...(next[project.slug] ?? {}) };
+    const english = toProjectTranslation(project);
+
+    for (const locale of PROJECT_TRANSLATION_LOCALES) {
+      if (locales[locale]) continue;
+
+      const localized = toProjectTranslation(legacyLocalizeProjectDetail(project, locale));
+      if (JSON.stringify(localized) !== JSON.stringify(english)) {
+        locales[locale] = localized;
+      }
+    }
+
+    if (Object.keys(locales).length > 0) next[project.slug] = locales;
+  }
+
+  return next;
+}
+
+function syncPublishedPortfolioData(
+  nextProjects: Project[],
+  nextTechnologyCatalog: TechnologyCatalog,
+  nextTranslations: ProjectTranslationCatalog,
+) {
+  const projectCopies = JSON.parse(JSON.stringify(nextProjects)) as Project[];
+  initialProjects.splice(0, initialProjects.length, ...projectCopies);
+
+  initialTechnologyCatalog.client = nextTechnologyCatalog.client.map((item) => ({ ...item }));
+  initialTechnologyCatalog.backend = nextTechnologyCatalog.backend.map((item) => ({ ...item }));
+  initialTechnologyCatalog.platform = nextTechnologyCatalog.platform.map((item) => ({ ...item }));
+
+  for (const slug of Object.keys(projectTranslationCatalog)) {
+    delete projectTranslationCatalog[slug];
+  }
+  Object.assign(
+    projectTranslationCatalog,
+    JSON.parse(JSON.stringify(nextTranslations)) as ProjectTranslationCatalog,
+  );
 }
 
 function emptyProjectTranslation(): ProjectTranslation {
@@ -204,9 +257,20 @@ export function AdminPage() {
   const [technologyDrafts, setTechnologyDrafts] = useState<TechnologyCatalog>(
     () => initialDraftSnapshot?.technologyCatalog ?? cloneTechnologyCatalog(),
   );
-  const [translationDrafts, setTranslationDrafts] = useState<ProjectTranslationCatalog>(
-    () => initialDraftSnapshot?.translations ?? cloneProjectTranslations(),
-  );
+  const [translationDrafts, setTranslationDrafts] = useState<ProjectTranslationCatalog>(() => {
+    const baseline = cloneProjectTranslations();
+    if (!initialDraftSnapshot?.translations) return baseline;
+
+    const restored = JSON.parse(
+      JSON.stringify(initialDraftSnapshot.translations),
+    ) as ProjectTranslationCatalog;
+
+    for (const [slug, locales] of Object.entries(baseline)) {
+      restored[slug] = { ...locales, ...(restored[slug] ?? {}) };
+    }
+
+    return restored;
+  });
   const [contentLocale, setContentLocale] = useState<ContentLocale>(
     () => initialDraftSnapshot?.contentLocale ?? 'en',
   );
@@ -647,6 +711,11 @@ export function AdminPage() {
         catalog: translationDrafts,
       });
 
+      // Keep the already-running SPA in sync with the data just saved to Cloudflare.
+      // Without this, navigating to Home/Projects before a hard refresh still showed
+      // the old in-memory project array.
+      syncPublishedPortfolioData(projectDrafts, technologyDrafts, translationDrafts);
+
       if (typeof window !== 'undefined') window.localStorage.removeItem(ADMIN_DRAFT_STORAGE_KEY);
       setDraftMessage('');
       setPublishState('success');
@@ -796,6 +865,13 @@ export function AdminPage() {
 
           <div className="admin-actions">
             <button type="button" onClick={addBlankProject}>{ui.addProject}</button>
+            <button
+              type="button"
+              onClick={() => void handlePublish()}
+              disabled={publishState === 'saving'}
+            >
+              {publishState === 'saving' ? ui.publishing : ui.publishToGitHub}
+            </button>
             <button type="button" className="secondary" onClick={saveDrafts}>{ui.saveDraft}</button>
             <button
               type="button"

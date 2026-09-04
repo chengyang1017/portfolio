@@ -9,7 +9,6 @@ import type { Project, ProjectCategory } from '../data/projects';
 import {
   projectCategoryLabel,
   projectStatusLabel,
-  projectSummary,
   projectsCopy,
 } from '../i18n/projectsTranslations';
 import { useI18n } from '../i18n/I18nProvider';
@@ -60,13 +59,7 @@ export function ProjectCard({ project }: { project: Project }) {
       <div className="project-card-body">
         <h3>{localizedProject.title}</h3>
 
-        <p>
-          {projectSummary(
-            project.slug,
-            language,
-            localizedProject.summary,
-          )}
-        </p>
+        <p>{localizedProject.summary}</p>
       </div>
 
       <div className="project-card-bottom">
