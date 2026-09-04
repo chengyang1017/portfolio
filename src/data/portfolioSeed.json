@@ -1,0 +1,318 @@
+{
+  "version": "github-refresh-2026-09-05",
+  "projects": [
+    {
+      "slug": "glyphora",
+      "title": "Glyphora",
+      "shortTitle": "Glyphora",
+      "category": "Product",
+      "status": "Production readiness",
+      "number": "01",
+      "summary": "A multilingual community platform built around language ecosystems, with Chữ Nôm support, script-aware localization, social features, moderation, and production-readiness work across mobile and backend services.",
+      "overview": "Glyphora (万文社) is a multilingual community platform that treats languages and writing systems as part of the product structure rather than an add-on translation layer. The current Flutter application includes posts, discovery, profiles, friends and follows, real-time chat, shared rich-text notes, administration and moderation. Recent production-readiness work added account and blocking flows, moderation coverage, Android release signing, desktop branding, a full ARB/gen_l10n migration, a completed vi_Hani Chữ Nôm interface locale, and a midnight theme across the remaining Flutter screens. The backend combines Node.js, Express, Prisma and PostgreSQL with Firebase authentication, Firestore, Realtime Database and Storage services.",
+      "technologies": ["Flutter", "Dart", "BLoC / Cubit", "Provider", "Node.js", "Express", "Prisma", "PostgreSQL", "Firebase", "ARB / gen_l10n"],
+      "features": ["Text and image posts, categories, comments and feeds", "Friends, follows, profiles and real-time private chat", "Shared rich-text notes inside conversation spaces", "Language-learning categories with writing-system subcategories", "Seven interface languages plus a dedicated vi_Hani Chữ Nôm script locale", "Account security, blocking, reporting, moderation and administration", "Midnight theme and production Android release-signing setup"],
+      "challenges": [
+        {"title": "Hybrid service boundaries", "description": "Business data and scheduled jobs span Node.js, Prisma and PostgreSQL while authentication, realtime chat, structured community data and media continue to use Firebase services."},
+        {"title": "Script-aware localization", "description": "The Flutter UI now uses ARB and gen_l10n while Vietnamese can be represented as Quốc ngữ or vi_Hani Chữ Nôm; hard-coded UI-string audits help keep the multilingual interface complete."}
+      ],
+      "architecture": [
+        {"label": "Flutter", "detail": "Feature-oriented mobile and desktop client with BLoC/Cubit UI state"},
+        {"label": "Node.js API", "detail": "Express services, Prisma access and scheduled cleanup jobs"},
+        {"label": "PostgreSQL", "detail": "Server-side application and business data"},
+        {"label": "Firebase", "detail": "Authentication, Firestore, Realtime Database and media storage"}
+      ],
+      "gallery": [
+        {"title": "Multilingual community", "caption": "Posts, discovery, profiles and language-aware community spaces."},
+        {"title": "Realtime communication", "caption": "Friends, follows, private chat, message lifecycle handling and shared notes."},
+        {"title": "Production-ready interface", "caption": "ARB localization, Chữ Nôm script support, midnight theme, moderation and account flows."}
+      ],
+      "github": "https://github.com/chengyang1017/glyphora",
+      "tone": "lime",
+      "mockup": "language"
+    },
+    {
+      "slug": "shopping-app",
+      "title": "Commerce Platform",
+      "shortTitle": "Commerce",
+      "category": "Product",
+      "status": "Active development",
+      "number": "02",
+      "summary": "A full-stack commerce monorepo with a Flutter customer app, React administration dashboard, shared Node.js API, inventory workflows, PostgreSQL data, and Stripe payments.",
+      "overview": "Commerce Platform is the current monorepo for the former ShoppingApp project. It combines a Flutter customer application, a React and Vite administration dashboard, and a shared Node.js and Express REST API. The customer app covers authentication, products, categories, cart, checkout, addresses, orders, Stripe payments, localization and light/dark/system themes. The administration side adds protected authentication, product and category management, order workflows, inventory tracking and inventory movement history. Prisma connects the API to PostgreSQL, and the backend remains authoritative for final payment status.",
+      "technologies": ["Flutter", "Dart", "BLoC / Cubit", "React", "TypeScript", "Vite", "Axios", "Node.js", "Express", "Prisma", "PostgreSQL", "Stripe", "Firebase"],
+      "features": ["Customer authentication, products, categories and product details", "Cart, checkout, addresses, order history and order details", "Stripe payment integration with backend-authoritative status", "React admin dashboard with protected routes and refresh sessions", "Product, category, order and inventory administration", "Inventory movement history and stock adjustments", "English / Chinese localization and light / dark / system themes"],
+      "challenges": [
+        {"title": "One business domain, two clients", "description": "Flutter customer flows and the React administration dashboard share the same Express API and PostgreSQL business data while keeping separate authentication and presentation concerns."},
+        {"title": "Payment authority", "description": "The client can submit payment work, but the backend remains the source of truth for the final payment result instead of trusting a client-side success state."}
+      ],
+      "architecture": [
+        {"label": "Flutter", "detail": "Customer application with BLoC/Cubit state"},
+        {"label": "React", "detail": "TypeScript/Vite administration dashboard"},
+        {"label": "Express API", "detail": "Shared Node.js business and authentication layer"},
+        {"label": "Prisma", "detail": "PostgreSQL persistence with Stripe integration"}
+      ],
+      "gallery": [
+        {"title": "Customer experience", "caption": "Product browsing, cart, checkout, addresses, payments and orders in Flutter."},
+        {"title": "Administration", "caption": "Protected React tools for catalog, orders, inventory and movement history."},
+        {"title": "Shared commerce API", "caption": "Express, Prisma, PostgreSQL and Stripe behind both applications."}
+      ],
+      "github": "https://github.com/chengyang1017/fullstack-commerce-platform",
+      "tone": "coral",
+      "mockup": "commerce"
+    },
+    {
+      "slug": "language-platform",
+      "title": "Language Platform",
+      "shortTitle": "Language Platform",
+      "category": "Language",
+      "status": "In Development",
+      "number": "03",
+      "summary": "A language platform in development using ASP.NET Core, Entity Framework Core, and PostgreSQL.",
+      "overview": "This project remains listed as an in-development language platform. No matching public GitHub repository is currently available on the linked profile, so the portfolio keeps only the previously verified stack instead of inventing newer implementation details.",
+      "technologies": ["ASP.NET Core", "Entity Framework Core", "PostgreSQL"],
+      "features": [],
+      "challenges": [],
+      "architecture": [
+        {"label": "ASP.NET Core", "detail": "Application backend"},
+        {"label": "EF Core", "detail": "Data access"},
+        {"label": "PostgreSQL", "detail": "Database"}
+      ],
+      "gallery": [],
+      "tone": "blue",
+      "mockup": "language"
+    },
+    {
+      "slug": "nom-input-method",
+      "title": "Nôm Input Method",
+      "shortTitle": "Nôm IME",
+      "category": "Language",
+      "status": "Public repository",
+      "number": "04",
+      "summary": "An offline Android input method for composing Vietnamese Chữ Nôm with Kotlin, local dictionary data, Telex processing and ranked candidates.",
+      "overview": "The chu-nom-ime repository is a native Android project written in Kotlin. The current portfolio keeps its source-backed focus on an Android InputMethodService, Vietnamese Telex processing, local SQLite-backed Nôm data, sentence candidate generation and ranking, bundled Nôm font support, and offline-first input behavior.",
+      "technologies": ["Android", "Kotlin", "SQLite", "InputMethodService", "Telex"],
+      "features": ["Android Chữ Nôm keyboard service", "Telex composition and Vietnamese tone handling", "Local SQLite dictionary", "Sentence segmentation and ranked candidates", "Bundled Nôm fonts", "Offline operation"],
+      "challenges": [
+        {"title": "Local candidate pipeline", "description": "Input parsing, phrase segmentation, dictionary lookup, candidate generation and ranking have to work locally inside an Android IME interaction loop."},
+        {"title": "Nôm font coverage", "description": "The app needs reliable rendering across uncommon Hán-Nôm characters and variation behavior while remaining usable as a system keyboard."}
+      ],
+      "architecture": [
+        {"label": "Android IME", "detail": "Kotlin InputMethodService"},
+        {"label": "Input engine", "detail": "Telex and sentence processing"},
+        {"label": "Ranker", "detail": "Candidate scoring and ordering"},
+        {"label": "SQLite", "detail": "Offline Nôm dictionary data"}
+      ],
+      "gallery": [
+        {"title": "Input method", "caption": "Native Android keyboard service and input controller."},
+        {"title": "Candidate engine", "caption": "Vietnamese input is segmented and converted into ranked Nôm candidates."},
+        {"title": "Offline language data", "caption": "Bundled dictionary and font assets keep core input available locally."}
+      ],
+      "github": "https://github.com/chengyang1017/chu-nom-ime",
+      "tone": "sand",
+      "mockup": "keyboard"
+    },
+    {
+      "slug": "ai-code-tutor",
+      "title": "AI Code Tutor IDE",
+      "shortTitle": "Code Tutor IDE",
+      "category": "AI & Developer Tools",
+      "status": "Active development",
+      "number": "05",
+      "summary": "An Electron and Monaco learning IDE that combines real project editing, Dart semantic navigation, an animated AI tutor, persistent code notes, code-reading workflows, and collaborative learning features.",
+      "overview": "AI Code Tutor IDE is a TypeScript desktop editor built with Electron, Vite and Monaco. It opens and saves real project files, uses the Dart Analysis Server for semantic navigation, and places an animated tutor directly in the code view. The project has expanded beyond the original desktop prototype with project-level persistent code notes, image notes and appearance controls, dedicated reading and dictation surfaces, Android/GitHub workspace work, a public collaboration server, cross-device account login, persistent friend relationships and real-time shared dictation. The current repository therefore represents both a teaching-oriented IDE and an experimental collaborative code-reading environment.",
+      "technologies": ["Electron", "Vite", "TypeScript", "Monaco Editor", "Dart Analysis Server", "WebSocket", "Capacitor", "PostgreSQL"],
+      "features": ["Open and edit real project files with Ctrl+S disk writes", "Dart definition, references and call-hierarchy navigation", "Animated tutor that can move across a real semantic code path", "Persistent inline and gutter code notes with images", "Windows native TTS, session restore and encrypted API-key storage", "Dedicated code reader and code-dictation workflows", "Android GitHub workspace work and cross-device account login", "Friends, public collaboration server and real-time shared dictation"],
+      "challenges": [
+        {"title": "Semantic teaching paths", "description": "Tutor movement and explanations must stay anchored to real definitions, references and call hierarchy returned by the Dart Analysis Server rather than invented file jumps."},
+        {"title": "Cross-device learning state", "description": "Reader sessions, notes, accounts, friends and shared dictation introduce synchronization concerns beyond a normal single-user Electron editor."}
+      ],
+      "architecture": [
+        {"label": "Electron", "detail": "Desktop process, filesystem access, persistence and native integrations"},
+        {"label": "Monaco", "detail": "Editing, navigation, highlighting and note anchors"},
+        {"label": "Dart Analysis", "detail": "Semantic definitions, references and call hierarchy"},
+        {"label": "Collaboration", "detail": "WebSocket/server-backed reader and shared-learning features"}
+      ],
+      "gallery": [
+        {"title": "Real project editing", "caption": "Monaco editing, disk writes and semantic Dart navigation."},
+        {"title": "In-editor tutor", "caption": "Animated teaching steps move through real code and can be combined with voice guidance."},
+        {"title": "Learning workspace", "caption": "Persistent notes, reader/dictation modes and collaborative learning features."}
+      ],
+      "github": "https://github.com/chengyang1017/ai-ide",
+      "tone": "slate",
+      "mockup": "ide"
+    },
+    {
+      "slug": "kyrgyz-inflection-generator",
+      "title": "Kyrgyz Inflection Generator",
+      "shortTitle": "Kyrgyz Forms",
+      "category": "Language",
+      "status": "Public repository",
+      "number": "06",
+      "summary": "A rule-based Python generator for Kyrgyz noun and verb inflection with vowel harmony, consonant behavior, tests, batch processing and structured dataset exports.",
+      "overview": "Kyrgyz Inflection Generator encodes Kyrgyz morphological rules as executable Python instead of manually storing every surface form. It generates noun plural, case and possessive forms as well as multiple verb person, tense and negative patterns. The grammar layer uses the last vowel, vowel harmony, final-consonant classes and special forms to choose suffixes and apply stem changes. Generated datasets can be exported through Pandas to CSV, JSON, Excel and SQLite for dictionaries, language-learning tools and NLP experiments.",
+      "technologies": ["Python", "Pandas", "Pytest", "SQLite", "CSV", "JSON", "Excel"],
+      "features": ["Noun plural, case and possessive generation", "Verb person, tense, negative and imperative forms", "Vowel harmony and consonant-sensitive suffix selection", "Stem changes such as consonant softening where required", "Batch processing of noun and verb vocabularies", "CSV, JSON, Excel and SQLite export", "Automated grammar tests"],
+      "challenges": [
+        {"title": "Rule-based suffix selection", "description": "The generator chooses allomorphs from vowel harmony, final-consonant class, stem behavior and explicit special forms rather than using one fixed suffix."},
+        {"title": "Structured dataset generation", "description": "Generated noun and verb paradigms are normalized into Pandas data structures and exported to several formats for reuse by other language tools."}
+      ],
+      "architecture": [
+        {"label": "Vocabulary", "detail": "JSON/TXT noun and verb source data"},
+        {"label": "Grammar", "detail": "Kyrgyz noun and verb rule modules"},
+        {"label": "Generator", "detail": "Inflected surface forms"},
+        {"label": "Exports", "detail": "CSV, JSON, Excel and SQLite datasets"}
+      ],
+      "gallery": [
+        {"title": "Noun morphology", "caption": "Plural, case and possessive generation driven by phonological context."},
+        {"title": "Verb morphology", "caption": "Person, tense, progressive, negative and imperative patterns."},
+        {"title": "Dataset pipeline", "caption": "Generated forms exported for dictionaries and downstream language software."}
+      ],
+      "github": "https://github.com/chengyang1017/kyrgyz-inflection-generator",
+      "tone": "lavender",
+      "mockup": "inflection"
+    },
+    {
+      "slug": "multilanguage-dictionary",
+      "title": "Multilanguage Dictionary",
+      "shortTitle": "Dictionary",
+      "category": "Language",
+      "status": "Public repository",
+      "number": "07",
+      "summary": "A Chinese-centric multilingual lexical database and dictionary architecture designed to scale across 100+ languages with language-specific schemas.",
+      "overview": "Multilanguage Dictionary uses Flask and SQLite to provide a Chinese-centric search system across many languages. Each language can have an independent SQLite database and a language-specific schema that describes parts of speech and fields instead of forcing every language into one universal entry model. Excel remains the editable source format, Python scripts convert source dictionaries into SQLite, and the HTML/CSS/JavaScript interface renders search results dynamically from the language schema. The long-term goal is a reusable multilingual lexical database rather than a collection of isolated dictionary pages.",
+      "technologies": ["Python", "Flask", "SQLite", "Pandas", "HTML", "CSS", "JavaScript", "Excel"],
+      "features": ["Chinese and target-language vocabulary search", "Architecture intended for 100+ languages", "Independent SQLite databases per language", "Language-specific part-of-speech and field schemas", "Dynamic result rendering from language schemas", "Excel-to-SQLite conversion pipeline", "Whole-dataset or single-language update commands", "Responsive web interface"],
+      "challenges": [
+        {"title": "Language-specific schemas", "description": "Russian, Vietnamese, English and other languages can expose different grammatical fields without forcing one rigid database shape onto every language."},
+        {"title": "Dictionary data pipeline", "description": "Editable Excel sources must be transformed consistently into the SQLite databases queried by the Flask service while still allowing one language to be updated independently."}
+      ],
+      "architecture": [
+        {"label": "Excel", "detail": "Editable dictionary source files"},
+        {"label": "Python", "detail": "Schema-aware conversion and update scripts"},
+        {"label": "SQLite", "detail": "Per-language searchable lexical data"},
+        {"label": "Flask", "detail": "Search API and web interface"}
+      ],
+      "gallery": [
+        {"title": "Dictionary search", "caption": "Chinese or target-language queries across independent language datasets."},
+        {"title": "Language schemas", "caption": "Different languages can define different parts of speech and grammatical fields."},
+        {"title": "Data conversion", "caption": "Excel lexical sources are converted into the SQLite databases used by the web app."}
+      ],
+      "github": "https://github.com/chengyang1017/multilanguage-dictionary",
+      "tone": "blue",
+      "mockup": "language"
+    },
+    {
+      "slug": "morphology-engine",
+      "title": "Multilingual Morphology Engine",
+      "shortTitle": "Morphology Engine",
+      "category": "Language",
+      "status": "v0.1",
+      "number": "08",
+      "summary": "A reusable rule-based morphology engine that separates phonological analysis, allomorph selection, language modules and human-readable rule tracing.",
+      "overview": "Multilingual Morphology Engine is designed as reusable linguistic infrastructure for dictionaries, language applications and NLP pipelines. The core separates phonological analysis, morphological rule selection, morphophonological exceptions, result generation and trace output. Version 0.1 focuses on Kyrgyz nominal morphology with plural and dative generation, vowel harmony, consonant assimilation and an explicit exception table. Language-specific behavior lives outside the core so additional languages can be added without turning the engine into a giant surface-form lookup table.",
+      "technologies": ["Python", "Pytest", "CLI"],
+      "features": ["Kyrgyz plural noun formation", "Kyrgyz dative case", "Vowel-harmony analysis", "Consonant-sensitive allomorph selection", "Human-readable generation traces", "Explicit exception table", "Reusable core / language-module separation"],
+      "challenges": [
+        {"title": "Reusable language modules", "description": "The core engine has to stay language-agnostic while each language module controls its own phonology and morphology realization."},
+        {"title": "Explainable output", "description": "The CLI reports phonological features, allomorph decisions and the final suffix so generated forms can be inspected instead of treated as opaque output."}
+      ],
+      "architecture": [
+        {"label": "Core", "detail": "Models and shared phonological abstractions"},
+        {"label": "Language module", "detail": "Kyrgyz-specific phonology and noun rules"},
+        {"label": "Engine", "detail": "Generation and trace orchestration"},
+        {"label": "CLI", "detail": "Command-line interface for forms and explanations"}
+      ],
+      "gallery": [
+        {"title": "Plural generation", "caption": "Kyrgyz plural allomorph selection from phonological features."},
+        {"title": "Dative generation", "caption": "Dative forms with harmony and consonant-sensitive onset selection."},
+        {"title": "Rule trace", "caption": "Human-readable explanations of how each surface form was chosen."}
+      ],
+      "github": "https://github.com/chengyang1017/morphology-engine",
+      "tone": "lime",
+      "mockup": "inflection"
+    },
+    {
+      "slug": "nestless",
+      "title": "nestless_flutter",
+      "shortTitle": "Nestless",
+      "category": "AI & Developer Tools",
+      "status": "Public repository",
+      "number": "09",
+      "summary": "A Flutter UI package that keeps common build methods shallow by combining semantic layout widgets with short wrapper-modifier chains while preserving normal Flutter runtime widgets.",
+      "overview": "nestless_flutter reduces wrapper-heavy Flutter source without replacing the Widget tree. Semantic layouts such as NColumn, NRow, NBox and NScrollColumn cover common compositions, while short modifiers such as nAlign, nPadAll, nWidth and nExpanded handle one-to-three simple wrappers. The package is intentionally designed to mix with standard Flutter widgets and keep DevTools output understandable rather than introducing a separate UI runtime.",
+      "technologies": ["Flutter", "Dart"],
+      "features": ["NColumn and NRow semantic layouts", "NBox layout wrapper", "NScrollColumn for common scrolling compositions", "Short widget modifier chains", "nExpanded and common sizing / alignment helpers", "Mix-and-match compatibility with ordinary Flutter widgets", "Normal Flutter runtime and DevTools output"],
+      "challenges": [
+        {"title": "Source readability without a new runtime", "description": "The package reduces visible nesting while preserving ordinary Flutter widgets so debugging and framework behavior remain familiar."}
+      ],
+      "architecture": [
+        {"label": "Flutter widgets", "detail": "Normal runtime widget tree"},
+        {"label": "Nestless layouts", "detail": "Semantic combinations for common UI structures"},
+        {"label": "Modifiers", "detail": "Short chains for simple wrappers"}
+      ],
+      "gallery": [
+        {"title": "Semantic layouts", "caption": "NColumn, NRow, NBox and scrollable compositions reduce wrapper depth."},
+        {"title": "Modifier chains", "caption": "Short helpers cover common alignment, padding, sizing and expansion wrappers."}
+      ],
+      "github": "https://github.com/chengyang1017/nestless",
+      "tone": "slate",
+      "mockup": "ide"
+    },
+    {
+      "slug": "shipin-serverpod",
+      "title": "shipin-serverpod",
+      "shortTitle": "Shipin Serverpod",
+      "category": "Product",
+      "status": "Archived",
+      "number": "10",
+      "summary": "Archived Serverpod backend source retained after the Shipin backend moved into the main Shipin monorepo.",
+      "overview": "This repository is no longer the active Shipin backend. It remains in the portfolio as historical Serverpod and PostgreSQL backend work after the active backend moved into the main Shipin codebase.",
+      "technologies": ["Dart", "Serverpod", "PostgreSQL"],
+      "features": ["Serverpod backend structure", "Dart server code", "PostgreSQL persistence"],
+      "challenges": [
+        {"title": "Repository lifecycle", "description": "The standalone backend repository is intentionally archived because the active implementation moved into a broader monorepo."}
+      ],
+      "architecture": [
+        {"label": "Serverpod", "detail": "Dart backend framework"},
+        {"label": "PostgreSQL", "detail": "Server-side data storage"}
+      ],
+      "gallery": [
+        {"title": "Serverpod backend", "caption": "Historical Dart server implementation retained for reference."}
+      ],
+      "github": "https://github.com/chengyang1017/shipin-serverpod",
+      "tone": "blue",
+      "mockup": "language"
+    },
+    {
+      "slug": "ai-code-tutor-vscode",
+      "title": "AI Code Tutor",
+      "shortTitle": "Tutor Extension",
+      "category": "AI & Developer Tools",
+      "status": "V0.5",
+      "number": "11",
+      "summary": "A VS Code extension prototype where an animated AI programming tutor explains selected code, points at exact ranges, guides continuous voice walkthroughs, and accepts contextual interruptions.",
+      "overview": "AI Code Tutor is the editor-extension counterpart to the standalone IDE project. Its Tutor Core is intentionally editor-independent, while the first adapter targets VS Code. The extension reads the active editor context, sends source-backed requests to the OpenAI Responses API, consumes structured explanation steps with real line ranges, highlights and scrolls to the code being discussed, drives an animated tutor Webview and supports continuous TTS-guided explanations. V0.5 adds contextual questions that can interrupt the current lesson, preserve the current step and highlights, answer using nearby code and lesson context, and then resume the original walkthrough. API keys are stored with VS Code SecretStorage rather than source code or settings files.",
+      "technologies": ["TypeScript", "VS Code Extension API", "Webview", "OpenAI Responses API", "Structured Outputs", "TTS"],
+      "features": ["Explain selected code or the current line with structured AI output", "Exact range highlighting, scrolling and code-pointing interactions", "Animated tutor Webview with step navigation", "Continuous voice-guided explanations with pause, resume and replay", "Contextual follow-up questions without reselecting code", "Resume the original lesson after an interruption", "VS Code SecretStorage for the OpenAI API key", "Editor-independent Tutor Core prepared for future adapters"],
+      "challenges": [
+        {"title": "Keep AI grounded in the editor", "description": "Structured outputs are converted into bounded CodeRange values so explanations, highlights and tutor gestures stay attached to the code the user actually selected."},
+        {"title": "Interruptible teaching state", "description": "Questions can pause TTS and the main explanation, reuse current code and lesson context, and then restore the exact teaching step without losing the original walkthrough."}
+      ],
+      "architecture": [
+        {"label": "Tutor Core", "detail": "Editor-independent explanation and question services"},
+        {"label": "VS Code adapter", "detail": "Editor context, ranges, scrolling and SecretStorage"},
+        {"label": "OpenAI provider", "detail": "Responses API with structured explanation output"},
+        {"label": "Tutor Webview", "detail": "Animation, controls, TTS and contextual question UI"}
+      ],
+      "gallery": [
+        {"title": "Code explanation", "caption": "Structured AI steps map back to exact lines in the active editor."},
+        {"title": "Guided tutor", "caption": "The animated tutor points at code while continuous TTS walks through each step."},
+        {"title": "Contextual questions", "caption": "Interrupt the lesson, ask a follow-up and continue from the preserved step."}
+      ],
+      "github": "https://github.com/chengyang1017/ai-code-tutor",
+      "tone": "lavender",
+      "mockup": "ide"
+    }
+  ]
+}
