@@ -1,24 +1,5 @@
 import type { CSSProperties } from 'react';
-import {
-  Atom,
-  Boxes,
-  Braces,
-  Cloud,
-  Code2,
-  CreditCard,
-  Database,
-  Flame,
-  FlaskConical,
-  Laptop,
-  Monitor,
-  Network,
-  Server,
-  Smartphone,
-  Table2,
-  Terminal,
-  Workflow,
-  Zap,
-} from 'lucide-react';
+import { Cloud, Monitor, Server, Terminal, type LucideIcon } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Hero } from '../components/Hero';
 import { SectionHeader } from '../components/SectionHeader';
@@ -27,6 +8,8 @@ import { homeCategory, homeCopy, homeProjectDescription, homeStatus } from '../i
 import { useI18n } from '../i18n/I18nProvider';
 import type { AppLocale } from '../i18n/types';
 import '../styles/technology-stack.css';
+
+const SIMPLE_ICONS = 'https://cdn.jsdelivr.net/gh/simple-icons/simple-icons@develop/icons';
 
 function ProjectIndexRow({ project, language, action }: { project: Project; language: AppLocale; action: string }) {
   return (
@@ -95,26 +78,38 @@ function stackDetailCopy(language: AppLocale) {
   return values[language];
 }
 
+type BrandTechnology = {
+  name: string;
+  logo?: string;
+  wideLogo?: boolean;
+};
+
 export function HomePage() {
   const { language } = useI18n();
   const copy = homeCopy(language);
   const stackDetails = stackDetailCopy(language);
   const selectedProjects = projects.slice(0, 5);
-  const technologyGroups = [
+  const technologyGroups: Array<{
+    label: string;
+    tone: 'client' | 'backend' | 'platform';
+    icon: LucideIcon;
+    description: string;
+    technologies: BrandTechnology[];
+  }> = [
     {
       label: copy.stack.client,
       tone: 'client',
       icon: Monitor,
       description: stackDetails.client,
       technologies: [
-        { name: 'Flutter', icon: Smartphone, color: '#027DFD' },
-        { name: 'Dart', icon: Braces, color: '#0175C2' },
-        { name: 'Android', icon: Smartphone, color: '#3DDC84' },
-        { name: 'Kotlin', icon: Code2, color: '#7F52FF' },
-        { name: 'React', icon: Atom, color: '#61DAFB' },
-        { name: 'TypeScript', icon: Braces, color: '#3178C6' },
-        { name: 'Vite', icon: Zap, color: '#646CFF' },
-        { name: 'Electron', icon: Laptop, color: '#47848F' },
+        { name: 'Flutter', logo: `${SIMPLE_ICONS}/flutter.svg` },
+        { name: 'Dart', logo: `${SIMPLE_ICONS}/dart.svg` },
+        { name: 'Android', logo: `${SIMPLE_ICONS}/android.svg` },
+        { name: 'Kotlin', logo: `${SIMPLE_ICONS}/kotlin.svg` },
+        { name: 'React', logo: `${SIMPLE_ICONS}/react.svg` },
+        { name: 'TypeScript', logo: `${SIMPLE_ICONS}/typescript.svg` },
+        { name: 'Vite', logo: `${SIMPLE_ICONS}/vite.svg` },
+        { name: 'Electron', logo: `${SIMPLE_ICONS}/electron.svg` },
       ],
     },
     {
@@ -123,15 +118,15 @@ export function HomePage() {
       icon: Server,
       description: stackDetails.backend,
       technologies: [
-        { name: 'Node.js', icon: Server, color: '#5FA04E' },
-        { name: 'Express', icon: Network, color: '#F2F2F2' },
-        { name: 'Prisma', icon: Workflow, color: '#2D3748' },
-        { name: 'PostgreSQL', icon: Database, color: '#4169E1' },
-        { name: 'Python', icon: Code2, color: '#3776AB' },
-        { name: 'Flask', icon: FlaskConical, color: '#F2F2F2' },
-        { name: 'SQLite', icon: Database, color: '#003B57' },
-        { name: 'ASP.NET Core', icon: Boxes, color: '#512BD4' },
-        { name: 'EF Core', icon: Workflow, color: '#512BD4' },
+        { name: 'Node.js', logo: `${SIMPLE_ICONS}/nodedotjs.svg` },
+        { name: 'Express', logo: `${SIMPLE_ICONS}/express.svg` },
+        { name: 'Prisma', logo: `${SIMPLE_ICONS}/prisma.svg` },
+        { name: 'PostgreSQL', logo: `${SIMPLE_ICONS}/postgresql.svg` },
+        { name: 'Python', logo: `${SIMPLE_ICONS}/python.svg` },
+        { name: 'Flask', logo: `${SIMPLE_ICONS}/flask.svg` },
+        { name: 'SQLite', logo: `${SIMPLE_ICONS}/sqlite.svg` },
+        { name: 'ASP.NET Core', logo: `${SIMPLE_ICONS}/dotnet.svg` },
+        { name: 'EF Core', logo: `${SIMPLE_ICONS}/dotnet.svg` },
       ],
     },
     {
@@ -140,11 +135,15 @@ export function HomePage() {
       icon: Cloud,
       description: stackDetails.platform,
       technologies: [
-        { name: 'Firebase', icon: Flame, color: '#FFCA28' },
-        { name: 'Stripe', icon: CreditCard, color: '#635BFF' },
-        { name: 'Serverpod', icon: Cloud, color: '#4B6BFB' },
-        { name: 'Monaco Editor', icon: Terminal, color: '#007ACC' },
-        { name: 'Pandas', icon: Table2, color: '#150458' },
+        { name: 'Firebase', logo: `${SIMPLE_ICONS}/firebase.svg` },
+        { name: 'Stripe', logo: `${SIMPLE_ICONS}/stripe.svg` },
+        {
+          name: 'Serverpod',
+          logo: 'https://raw.githubusercontent.com/serverpod/serverpod/main/examples/legacy/chat/chat_server/web/static/serverpod-logo.svg',
+          wideLogo: true,
+        },
+        { name: 'Monaco Editor' },
+        { name: 'Pandas', logo: `${SIMPLE_ICONS}/pandas.svg` },
       ],
     },
   ];
@@ -215,13 +214,21 @@ export function HomePage() {
 
                 <div className="home-stack-items">
                   {group.technologies.map((technology) => {
-                    const TechnologyIcon = technology.icon;
-                    const technologyStyle = { '--tech-color': technology.color } as CSSProperties;
+                    const brandStyle = technology.logo
+                      ? ({ '--brand-logo': `url("${technology.logo}")` } as CSSProperties)
+                      : undefined;
 
                     return (
-                      <div className="home-stack-item" key={technology.name} style={technologyStyle}>
+                      <div className="home-stack-item" key={technology.name}>
                         <span className="home-stack-item-icon" aria-hidden="true">
-                          <TechnologyIcon />
+                          {technology.logo ? (
+                            <span
+                              className={`home-stack-brand-logo${technology.wideLogo ? ' is-wide' : ''}`}
+                              style={brandStyle}
+                            />
+                          ) : (
+                            <Terminal className="home-stack-fallback-logo" />
+                          )}
                         </span>
                         <span className="home-stack-item-name">{technology.name}</span>
                       </div>
