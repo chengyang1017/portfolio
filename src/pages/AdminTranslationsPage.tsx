@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   PROJECT_TRANSLATION_LOCALES,
@@ -9,6 +9,11 @@ import {
 } from '../data/projectTranslationCatalog';
 import { projects } from '../data/projects';
 import { verifyPortfolioAccess } from '../admin/githubPortfolio';
+import {
+  forgetAdminToken,
+  readSavedAdminToken,
+  saveAdminToken,
+} from '../admin/adminCredentialStore';
 import {
   mergeProjectTranslations,
   publishProjectTranslationCatalog,
@@ -35,7 +40,7 @@ function listFromText(value: string) {
 }
 
 export function AdminTranslationsPage() {
-  const [tokenInput, setTokenInput] = useState('');
+  const [tokenInput, setTokenInput] = useState(readSavedAdminToken);
   const [token, setToken] = useState('');
   const [branch, setBranch] = useState('main');
   const [accessState, setAccessState] = useState<'locked' | 'checking' | 'ready' | 'error'>('locked');
@@ -59,13 +64,17 @@ export function AdminTranslationsPage() {
     (locale) => Boolean(selectedTranslations[locale]),
   ).length;
 
-  async function unlock() {
+  async function unlockWithToken(candidateToken: string, persist = true) {
+    const cleanToken = candidateToken.trim();
+    if (!cleanToken) return;
+
     setAccessState('checking');
     setAccessMessage('Checking GitHub write access…');
 
     try {
-      const access = await verifyPortfolioAccess(tokenInput.trim());
-      setToken(tokenInput.trim());
+      const access = await verifyPortfolioAccess(cleanToken);
+      setToken(cleanToken);
+      if (persist) saveAdminToken(cleanToken);
       setBranch(access.defaultBranch || 'main');
       setTokenInput('');
       setAccessState('ready');
@@ -76,7 +85,18 @@ export function AdminTranslationsPage() {
     }
   }
 
+  async function unlock() {
+    await unlockWithToken(tokenInput);
+  }
+
+  useEffect(() => {
+    const savedToken = readSavedAdminToken();
+    if (!savedToken) return;
+    void unlockWithToken(savedToken, false);
+  }, []);
+
   function lock() {
+    forgetAdminToken();
     setToken('');
     setTokenInput('');
     setAccessState('locked');
@@ -141,7 +161,7 @@ export function AdminTranslationsPage() {
           <p className="eyebrow">PORTFOLIO CONTROL</p>
           <h1>Translation access</h1>
           <p>
-            Use the same fine-grained GitHub token as the main admin. The token stays in memory only.
+            Use the same fine-grained GitHub token as the main admin. Once verified, it is remembered in this browser and reused automatically until you sign out.
           </p>
           <label>
             <span>GitHub token</span>
