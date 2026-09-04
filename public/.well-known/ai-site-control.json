@@ -15,6 +15,20 @@
     "workflow": ".github/workflows/deploy-cloudflare.yml",
     "trigger": "push-to-main"
   },
+  "liveContent": {
+    "provider": "cloudflare-durable-object",
+    "readEndpoint": "/api/agent/content",
+    "writeEndpoint": "/api/agent/content",
+    "openapi": "/.well-known/portfolio-agent-openapi.json",
+    "writesRequireGitHub": false,
+    "writesRequireDeployment": false,
+    "optimisticConcurrency": "expectedUpdatedAt",
+    "writableTopLevelFields": [
+      "projects",
+      "technologyCatalog",
+      "projectTranslationCatalog"
+    ]
+  },
   "editableAreas": {
     "projects": "src/data/projects.ts",
     "projectTranslations": "src/data/projectTranslationCatalog.ts",
@@ -24,15 +38,25 @@
     "workerBuild": "scripts/prepare-site-build.mjs"
   },
   "assistantWorkflow": {
+    "contentChanges": "Use the authenticated liveContent API when available so content changes are immediate and do not touch GitHub.",
+    "codeChanges": "Use the connected GitHub repository for React, CSS, Worker, build, and deployment changes.",
     "inspectProductionFirst": true,
-    "editRepositoryDirectlyWhenAuthorized": true,
-    "validateBuildBeforeCompletion": true,
-    "verifyDeploymentAfterPush": true,
+    "readBeforeWrite": true,
+    "validateBuildBeforeCompletionForCodeChanges": true,
+    "verifyDeploymentAfterPushForCodeChanges": true,
     "neverStoreSecretsInRepository": true
   },
   "authorization": {
     "manifestGrantsWriteAccess": false,
     "requireAuthenticatedOwnerInstruction": true,
-    "requireConnectedRepositoryWriteAccess": true
+    "contentApi": {
+      "scheme": "bearer",
+      "preferredSecret": "PORTFOLIO_AGENT_TOKEN",
+      "fallbackSecret": "ADMIN_PASSWORD",
+      "secretIsNeverPublished": true
+    },
+    "repositoryWrites": {
+      "requireConnectedRepositoryWriteAccess": true
+    }
   }
 }
