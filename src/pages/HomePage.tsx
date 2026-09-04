@@ -7,6 +7,7 @@ import { projects, type Project } from '../data/projects';
 import { technologyCatalog, type TechnologyItem } from '../data/technologyCatalog';
 import { homeCategory, homeCopy, homeProjectDescription, homeStatus } from '../i18n/homeTranslations';
 import { useI18n } from '../i18n/I18nProvider';
+import { localizeProject } from '../i18n/localizeProject';
 import type { AppLocale } from '../i18n/types';
 import '../styles/technology-stack.css';
 import '../styles/home-icons.css';
@@ -21,12 +22,14 @@ function HomeWorkFeaturedProject({
   language: AppLocale;
   action: string;
 }) {
+  const localizedProject = localizeProject(project, language);
+
   return (
     <Link
       className="home-work-featured-card"
       data-tone={project.tone}
       to={`/projects/${project.slug}`}
-      aria-label={`${action}: ${project.title}`}
+      aria-label={`${action}: ${localizedProject.title}`}
     >
       <div className="home-work-card-top">
         <span className="home-work-card-number">{project.number}</span>
@@ -40,8 +43,8 @@ function HomeWorkFeaturedProject({
       </div>
 
       <div className="home-work-card-body">
-        <h3>{project.title}</h3>
-        <p>{homeProjectDescription(project.slug, language, project.summary)}</p>
+        <h3>{localizedProject.title}</h3>
+        <p>{homeProjectDescription(project.slug, language, localizedProject.summary)}</p>
       </div>
 
       <div className="home-work-card-stack">
@@ -62,12 +65,14 @@ function HomeWorkProjectCard({
   language: AppLocale;
   action: string;
 }) {
+  const localizedProject = localizeProject(project, language);
+
   return (
     <Link
       className="home-work-mini-card"
       data-tone={project.tone}
       to={`/projects/${project.slug}`}
-      aria-label={`${action}: ${project.title}`}
+      aria-label={`${action}: ${localizedProject.title}`}
     >
       <div className="home-work-card-top">
         <span className="home-work-card-number">{project.number}</span>
@@ -81,8 +86,8 @@ function HomeWorkProjectCard({
       </div>
 
       <div className="home-work-card-body">
-        <h3>{project.title}</h3>
-        <p>{homeProjectDescription(project.slug, language, project.summary)}</p>
+        <h3>{localizedProject.title}</h3>
+        <p>{homeProjectDescription(project.slug, language, localizedProject.summary)}</p>
       </div>
 
       <div className="home-work-card-stack">
