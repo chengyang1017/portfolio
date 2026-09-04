@@ -80,14 +80,20 @@ if class_marker not in text:
 text = text.replace(class_marker, helper + class_marker, 1)
 prepare.write_text(text, encoding='utf-8')
 
-deploy = Path('.github/workflows/deploy-cloudflare.yml')
-deploy_text = deploy.read_text(encoding='utf-8')
-if 'Warm portfolio data' not in deploy_text:
-    marker = "      - name: Deploy to Cloudflare Workers\n        run: npx wrangler deploy --config dist/server/wrangler.json\n        env:\n          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}\n          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}"
-    replacement = marker + "\n\n      - name: Warm portfolio data\n        run: curl --fail --silent --show-error --retry 5 --retry-delay 2 https://lim-cheng-yang-portfolio.chengyang1017.workers.dev/api/portfolio-data > /dev/null"
-    if marker not in deploy_text:
-        raise SystemExit('deploy workflow marker not found')
-    deploy_text = deploy_text.replace(marker, replacement, 1)
-    deploy.write_text(deploy_text, encoding='utf-8')
+admin = Path('src/pages/AdminPage.tsx')
+admin_text = admin.read_text(encoding='utf-8')
+old_admin_import = "import { projects as initialProjects } from '../data/projects';"
+new_admin_import = "import { portfolioContentVersion, projects as initialProjects } from '../data/projects';"
+if old_admin_import in admin_text:
+    admin_text = admin_text.replace(old_admin_import, new_admin_import, 1)
+elif new_admin_import not in admin_text:
+    raise SystemExit('Admin project import marker not found')
 
-# Retry marker: the project lookup helper has been restored before this run.
+old_key = "const ADMIN_DRAFT_STORAGE_KEY = 'portfolio-admin-draft-v1';"
+new_key = "const ADMIN_DRAFT_STORAGE_KEY = `portfolio-admin-draft-${portfolioContentVersion}`;"
+if old_key in admin_text:
+    admin_text = admin_text.replace(old_key, new_key, 1)
+elif new_key not in admin_text:
+    raise SystemExit('Admin draft key marker not found')
+
+admin.write_text(admin_text, encoding='utf-8')

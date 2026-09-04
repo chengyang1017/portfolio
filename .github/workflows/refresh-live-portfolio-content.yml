@@ -37,14 +37,13 @@ jobs:
         run: |
           grep -q "github-refresh-2026-09-05" src/data/portfolioSeed.json
           grep -q "ensurePortfolioSeed" scripts/prepare-site-build.mjs
-          grep -q "Warm portfolio data" .github/workflows/deploy-cloudflare.yml
+          grep -q "portfolio-admin-draft-" src/pages/AdminPage.tsx
           node --check dist/server/index.js
 
-      - name: Commit implementation and cleanup
+      - name: Commit runtime content refresh
         run: |
           git config user.name "portfolio-refresh-bot"
           git config user.email "portfolio-refresh-bot@users.noreply.github.com"
-          git rm scripts/apply-github-portfolio-refresh.py .github/workflows/refresh-live-portfolio-content.yml
-          git add src/data/portfolioSeed.json src/data/projects.ts scripts/prepare-site-build.mjs .github/workflows/deploy-cloudflare.yml
-          git commit -m "Refresh live portfolio from current GitHub projects"
+          git add scripts/prepare-site-build.mjs src/pages/AdminPage.tsx
+          git commit -m "Apply GitHub-backed portfolio content refresh"
           git push origin main
