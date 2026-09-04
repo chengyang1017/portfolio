@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import type { Project, ProjectCategory } from '../data/projects';
 import { projects as initialProjects } from '../data/projects';
 import {
@@ -17,6 +18,9 @@ import {
   type RepositoryAnalysis,
 } from '../admin/githubPortfolio';
 import { getAdminSession, loginAdmin, logoutAdmin } from '../admin/adminSession';
+import { getAdminUiCopy } from '../admin/adminUiCopy';
+import { LanguageSwitcher } from '../components/LanguageSwitcher';
+import { useI18n } from '../i18n/I18nProvider';
 
 const GROUPS: Array<{ id: TechnologyGroupId; label: string }> = [
   { id: 'client', label: 'Client / Languages' },
@@ -99,6 +103,8 @@ function galleryToText(project: Project) {
 }
 
 export function AdminPage() {
+  const { language } = useI18n();
+  const ui = getAdminUiCopy(language);
   const [projectDrafts, setProjectDrafts] = useState<Project[]>(cloneProjects);
   const [technologyDrafts, setTechnologyDrafts] = useState<TechnologyCatalog>(
     cloneTechnologyCatalog,
@@ -133,7 +139,7 @@ export function AdminPage() {
     if (!cleanPassword) return;
 
     setAccessState('checking');
-    setAccessMessage('Checking admin access…');
+    setAccessMessage(ui.checkingAdminAccess);
 
     try {
       const result = await loginAdmin(cleanPassword);
@@ -144,14 +150,14 @@ export function AdminPage() {
       setAccessMessage('');
     } catch (error) {
       setAccessState('error');
-      setAccessMessage(error instanceof Error ? error.message : 'Unable to verify admin access.');
+      setAccessMessage(error instanceof Error ? error.message : ui.unableVerifyAdmin);
     }
   }
 
   useEffect(() => {
     let active = true;
     setAccessState('checking');
-    setAccessMessage('Restoring admin session…');
+    setAccessMessage(ui.restoringAdminSession);
 
     void getAdminSession()
       .then((session) => {
@@ -169,7 +175,7 @@ export function AdminPage() {
       .catch((error) => {
         if (!active) return;
         setAccessState('error');
-        setAccessMessage(error instanceof Error ? error.message : 'Unable to restore admin session.');
+        setAccessMessage(error instanceof Error ? error.message : ui.unableRestoreSession);
       });
 
     return () => {
@@ -193,7 +199,7 @@ export function AdminPage() {
     setSelectedSlug(nextProjects[0]?.slug ?? '');
     setAnalysis(null);
     setPublishState('idle');
-    setPublishMessage('Drafts reset to the version loaded with this deployment.');
+    setPublishMessage(ui.resetComplete);
   }
 
   function updateProject(patch: Partial<Project>) {
@@ -230,7 +236,7 @@ export function AdminPage() {
       [group]: [
         ...current[group],
         {
-          name: 'New technology',
+          name: ui.newTechnology,
           color: '#C7FF4A',
         },
       ],
@@ -247,7 +253,7 @@ export function AdminPage() {
       setAnalysisState('idle');
     } catch (error) {
       setAnalysisState('error');
-      setAnalysisError(error instanceof Error ? error.message : 'Repository analysis failed.');
+      setAnalysisError(error instanceof Error ? error.message : ui.repositoryAnalysisFailed);
     }
   }
 
@@ -290,10 +296,10 @@ export function AdminPage() {
     const slug = `project-${index + 1}`;
     const project: Project = {
       slug,
-      title: 'New project',
-      shortTitle: 'New project',
+      title: ui.newProject,
+      shortTitle: ui.newProject,
       category: 'Product',
-      status: 'In Development',
+      status: ui.inDevelopment,
       number: String(index + 1).padStart(2, '0'),
       summary: '',
       overview: '',
@@ -320,7 +326,7 @@ export function AdminPage() {
 
   async function handlePublish() {
     setPublishState('saving');
-    setPublishMessage('Publishing project and technology data to GitHub…');
+    setPublishMessage(ui.publishingPortfolio);
 
     try {
       const result = await publishPortfolioContent({
@@ -331,11 +337,11 @@ export function AdminPage() {
 
       setPublishState('success');
       setPublishMessage(
-        `Published. ${result.projectCommitUrl ?? ''} ${result.technologyCommitUrl ?? ''}`.trim(),
+        `${ui.published} ${result.projectCommitUrl ?? ''} ${result.technologyCommitUrl ?? ''}`.trim(),
       );
     } catch (error) {
       setPublishState('error');
-      setPublishMessage(error instanceof Error ? error.message : 'Publishing failed.');
+      setPublishMessage(error instanceof Error ? error.message : ui.publishingFailed);
     }
   }
 
@@ -344,21 +350,20 @@ export function AdminPage() {
       <main className="admin-page shell">
         <section className="admin-access-shell">
           <div className="admin-access-card">
+            <div className="admin-access-language"><LanguageSwitcher /></div>
             <p className="eyebrow">PORTFOLIO CONTROL</p>
-            <h1>Admin access</h1>
+            <h1>{ui.adminAccessTitle}</h1>
             <p>
-              Sign in with your portfolio admin password. GitHub write credentials stay on the
-              Cloudflare Worker and are never sent to or stored by this browser. A secure session
-              cookie keeps you signed in until you choose Lock admin or the session expires.
+              {ui.adminAccessDescription}
             </p>
 
             <label className="admin-access-field">
-              <span>Admin password</span>
+              <span>{ui.adminPassword}</span>
               <input
                 type="password"
                 value={password}
                 autoComplete="off"
-                placeholder="Enter admin password"
+                placeholder={ui.enterAdminPassword}
                 onChange={(event) => setPassword(event.target.value)}
                 onKeyDown={(event) => {
                   if (event.key === 'Enter' && accessState !== 'checking') {
@@ -373,7 +378,7 @@ export function AdminPage() {
               onClick={() => void handleUnlock()}
               disabled={accessState === 'checking' || !password.trim()}
             >
-              {accessState === 'checking' ? 'Checking access…' : 'Unlock admin'}
+              {accessState === 'checking' ? ui.checkingAccess : ui.unlockAdmin}
             </button>
 
             {accessMessage && (
@@ -392,24 +397,25 @@ export function AdminPage() {
       <header className="admin-hero">
         <div>
           <p className="eyebrow">PORTFOLIO CONTROL</p>
-          <h1>Admin</h1>
+          <h1>{ui.adminTitle}</h1>
           <p>
-            Manage projects, programming languages, frameworks, and tools. Publishing writes the
-            edited source data back to GitHub.
+            {ui.adminDescription}
           </p>
         </div>
 
         <div className="admin-hero-status">
-          <span>{String(projectDrafts.length).padStart(2, '0')} PROJECTS</span>
-          <span>{String(allTechnologyNames.length).padStart(2, '0')} TECHNOLOGIES</span>
-          <span>{accessInfo?.repository ?? 'GITHUB CONNECTED'}</span>
+          <LanguageSwitcher />
+          <Link className="admin-translation-link" to="/admin/translations">{ui.translationCenter}</Link>
+          <span>{String(projectDrafts.length).padStart(2, '0')} {ui.projects}</span>
+          <span>{String(allTechnologyNames.length).padStart(2, '0')} {ui.technologies}</span>
+          <span>{accessInfo?.repository ?? ui.githubConnected}</span>
           <span>
             {import.meta.env.VITE_PORTFOLIO_AI_ENDPOINT
-              ? 'AI ENDPOINT CONNECTED'
-              : 'REPO ANALYZER MODE'}
+              ? ui.aiConnected
+              : ui.analyzerMode}
           </span>
           <button type="button" className="secondary admin-lock-button" onClick={lockAdmin}>
-            Lock admin
+            {ui.lockAdmin}
           </button>
         </div>
       </header>
@@ -417,13 +423,11 @@ export function AdminPage() {
       <section className="admin-panel admin-ai-panel">
         <div className="admin-panel-heading">
           <div>
-            <p className="eyebrow">01 / REPOSITORY ASSISTANT</p>
-            <h2>GitHub → portfolio draft</h2>
+            <p className="eyebrow">01 / {ui.repositoryAssistant}</p>
+            <h2>{ui.repositoryDraft}</h2>
           </div>
           <p>
-            Paste a repository URL. The assistant reads repository metadata, languages, root files,
-            and package dependencies. If VITE_PORTFOLIO_AI_ENDPOINT is configured, that evidence is
-            also sent to the server-side AI endpoint for richer copy and feature suggestions.
+            {ui.repositoryAssistantDescription}
           </p>
         </div>
 
@@ -434,7 +438,7 @@ export function AdminPage() {
             placeholder="https://github.com/owner/repository"
           />
           <button type="button" onClick={() => void handleAnalyze()} disabled={analysisState === 'loading'}>
-            {analysisState === 'loading' ? 'Analyzing…' : 'Analyze repository'}
+            {analysisState === 'loading' ? ui.analyzing : ui.analyzeRepository}
           </button>
         </div>
 
@@ -458,10 +462,10 @@ export function AdminPage() {
 
             <div className="admin-actions">
               <button type="button" onClick={applyAnalysisToSelected} disabled={!selectedProject}>
-                Apply to selected project
+                {ui.applyToSelectedProject}
               </button>
               <button type="button" className="secondary" onClick={addAnalysisAsProject}>
-                Add as new project
+                {ui.addAsNewProject}
               </button>
             </div>
           </article>
@@ -472,25 +476,25 @@ export function AdminPage() {
         <div className="admin-panel-heading">
           <div>
             <p className="eyebrow">02 / PROJECTS</p>
-            <h2>Project content</h2>
+            <h2>{ui.projectContent}</h2>
           </div>
 
           <div className="admin-actions">
-            <button type="button" onClick={addBlankProject}>Add project</button>
-            <button type="button" className="secondary" onClick={resetDrafts}>Reset drafts</button>
+            <button type="button" onClick={addBlankProject}>{ui.addProject}</button>
+            <button type="button" className="secondary" onClick={resetDrafts}>{ui.resetDrafts}</button>
             <button
               type="button"
               className="danger"
               onClick={removeSelectedProject}
               disabled={!selectedProject}
             >
-              Delete selected
+              {ui.deleteSelected}
             </button>
           </div>
         </div>
 
         <div className="admin-project-layout">
-          <nav className="admin-project-list" aria-label="Projects">
+          <nav className="admin-project-list" aria-label={ui.projectList}>
             {projectDrafts.map((project) => (
               <button
                 type="button"
@@ -507,7 +511,7 @@ export function AdminPage() {
           {selectedProject ? (
             <div className="admin-form-grid">
               <label>
-                <span>Title</span>
+                <span>{ui.title}</span>
                 <input
                   value={selectedProject.title}
                   onChange={(event) => updateProject({ title: event.target.value })}
@@ -515,7 +519,7 @@ export function AdminPage() {
               </label>
 
               <label>
-                <span>Short title</span>
+                <span>{ui.shortTitle}</span>
                 <input
                   value={selectedProject.shortTitle}
                   onChange={(event) => updateProject({ shortTitle: event.target.value })}
@@ -523,7 +527,7 @@ export function AdminPage() {
               </label>
 
               <label>
-                <span>Slug</span>
+                <span>{ui.slug}</span>
                 <input
                   value={selectedProject.slug}
                   onChange={(event) => {
@@ -540,7 +544,7 @@ export function AdminPage() {
               </label>
 
               <label>
-                <span>Project number</span>
+                <span>{ui.projectNumber}</span>
                 <input
                   value={selectedProject.number}
                   onChange={(event) => updateProject({ number: event.target.value })}
@@ -548,7 +552,7 @@ export function AdminPage() {
               </label>
 
               <label>
-                <span>Category</span>
+                <span>{ui.category}</span>
                 <select
                   value={selectedProject.category}
                   onChange={(event) =>
@@ -562,7 +566,7 @@ export function AdminPage() {
               </label>
 
               <label>
-                <span>Status</span>
+                <span>{ui.status}</span>
                 <input
                   value={selectedProject.status}
                   onChange={(event) => updateProject({ status: event.target.value })}
@@ -570,7 +574,7 @@ export function AdminPage() {
               </label>
 
               <label>
-                <span>Tone</span>
+                <span>{ui.tone}</span>
                 <select
                   value={selectedProject.tone}
                   onChange={(event) =>
@@ -584,7 +588,7 @@ export function AdminPage() {
               </label>
 
               <label>
-                <span>Mockup</span>
+                <span>{ui.mockup}</span>
                 <select
                   value={selectedProject.mockup}
                   onChange={(event) =>
@@ -598,7 +602,7 @@ export function AdminPage() {
               </label>
 
               <label className="wide">
-                <span>GitHub URL</span>
+                <span>{ui.githubUrl}</span>
                 <input
                   value={selectedProject.github ?? ''}
                   onChange={(event) =>
@@ -608,7 +612,7 @@ export function AdminPage() {
               </label>
 
               <label className="wide">
-                <span>Summary</span>
+                <span>{ui.summary}</span>
                 <textarea
                   value={selectedProject.summary}
                   onChange={(event) => updateProject({ summary: event.target.value })}
@@ -616,7 +620,7 @@ export function AdminPage() {
               </label>
 
               <label className="wide">
-                <span>Overview</span>
+                <span>{ui.overview}</span>
                 <textarea
                   className="large"
                   value={selectedProject.overview}
@@ -625,7 +629,7 @@ export function AdminPage() {
               </label>
 
               <label className="wide">
-                <span>Technologies · comma or new line separated</span>
+                <span>{ui.technologiesHint}</span>
                 <textarea
                   value={selectedProject.technologies.join(', ')}
                   onChange={(event) =>
@@ -635,7 +639,7 @@ export function AdminPage() {
               </label>
 
               <label className="wide">
-                <span>Features · one per line</span>
+                <span>{ui.featuresHint}</span>
                 <textarea
                   className="large"
                   value={selectedProject.features.join('\n')}
@@ -646,7 +650,7 @@ export function AdminPage() {
               </label>
 
               <label className="wide">
-                <span>Challenges · title | description</span>
+                <span>{ui.challengesHint}</span>
                 <textarea
                   className="large"
                   value={challengesToText(selectedProject)}
@@ -662,7 +666,7 @@ export function AdminPage() {
               </label>
 
               <label className="wide">
-                <span>Architecture · label | detail</span>
+                <span>{ui.architectureHint}</span>
                 <textarea
                   className="large"
                   value={architectureToText(selectedProject)}
@@ -678,7 +682,7 @@ export function AdminPage() {
               </label>
 
               <label className="wide">
-                <span>Gallery · title | caption</span>
+                <span>{ui.galleryHint}</span>
                 <textarea
                   className="large"
                   value={galleryToText(selectedProject)}
@@ -694,7 +698,7 @@ export function AdminPage() {
               </label>
             </div>
           ) : (
-            <p className="admin-message">No project selected.</p>
+            <p className="admin-message">{ui.noProjectSelected}</p>
           )}
         </div>
       </section>
@@ -703,12 +707,10 @@ export function AdminPage() {
         <div className="admin-panel-heading">
           <div>
             <p className="eyebrow">03 / TECHNOLOGY</p>
-            <h2>Languages & tools</h2>
+            <h2>{ui.languagesTools}</h2>
           </div>
           <p>
-            This catalog powers the Technology section on the home page. Repository detection now
-            puts known technologies into the right group and uses their established brand colors
-            instead of assigning every new item the portfolio lime color.
+            {ui.technologyDescription}
           </p>
         </div>
 
@@ -718,9 +720,9 @@ export function AdminPage() {
               <header>
                 <div>
                   <span>{group.id.toUpperCase()}</span>
-                  <h3>{group.label}</h3>
+                  <h3>{group.id === 'client' ? ui.clientLanguages : group.id === 'backend' ? ui.backendData : ui.platformsTools}</h3>
                 </div>
-                <button type="button" onClick={() => addTechnology(group.id)}>Add</button>
+                <button type="button" onClick={() => addTechnology(group.id)}>{ui.add}</button>
               </header>
 
               <div className="admin-tech-list">
@@ -728,22 +730,22 @@ export function AdminPage() {
                   <div className="admin-tech-row" key={`${group.id}-${index}`}>
                     <input
                       value={technology.name}
-                      aria-label="Technology name"
+                      aria-label={ui.technologyName}
                       onChange={(event) =>
                         updateTechnology(group.id, index, { name: event.target.value })
                       }
                     />
                     <input
                       value={technology.color}
-                      aria-label="Brand color"
+                      aria-label={ui.brandColor}
                       onChange={(event) =>
                         updateTechnology(group.id, index, { color: event.target.value })
                       }
                     />
                     <input
                       value={technology.logo ?? ''}
-                      aria-label="Logo URL"
-                      placeholder="Logo URL"
+                      aria-label={ui.logoUrl}
+                      placeholder={ui.logoUrl}
                       onChange={(event) =>
                         updateTechnology(group.id, index, {
                           logo: event.target.value || undefined,
@@ -759,7 +761,7 @@ export function AdminPage() {
                       type="button"
                       className="icon danger"
                       onClick={() => removeTechnology(group.id, index)}
-                      aria-label={`Remove ${technology.name}`}
+                      aria-label={`${ui.remove} ${technology.name}`}
                     >
                       ×
                     </button>
@@ -775,22 +777,21 @@ export function AdminPage() {
         <div className="admin-panel-heading">
           <div>
             <p className="eyebrow">04 / PUBLISH</p>
-            <h2>Write changes to GitHub</h2>
+            <h2>{ui.writeChanges}</h2>
           </div>
           <p>
-            The verified token remains only in this page session. Publishing updates
-            src/data/projects.ts and src/data/technologyCatalog.ts on the selected branch.
+            {ui.publishDescription}
           </p>
         </div>
 
         <div className="admin-publish-grid admin-publish-grid-verified">
           <div className="admin-verified-repository">
-            <span>Verified repository</span>
+            <span>{ui.verifiedRepository}</span>
             <strong>{accessInfo?.repository}</strong>
           </div>
 
           <label>
-            <span>Branch</span>
+            <span>{ui.branch}</span>
             <input value={branch} onChange={(event) => setBranch(event.target.value)} />
           </label>
 
@@ -799,7 +800,7 @@ export function AdminPage() {
             onClick={() => void handlePublish()}
             disabled={publishState === 'saving'}
           >
-            {publishState === 'saving' ? 'Publishing…' : 'Publish to GitHub'}
+            {publishState === 'saving' ? ui.publishing : ui.publishToGitHub}
           </button>
         </div>
 

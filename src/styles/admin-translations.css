@@ -372,3 +372,10 @@
     grid-template-columns: 1fr;
   }
 }
+
+
+.translation-access-language {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 18px;
+}
