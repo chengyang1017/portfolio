@@ -1,0 +1,52 @@
+name: Fix Admin Content Source
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - scripts/fix-admin-content-source.py
+      - .github/workflows/fix-admin-content-source.yml
+
+permissions:
+  contents: write
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Apply admin/content fixes
+        run: python scripts/fix-admin-content-source.py
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build portfolio
+        run: npm run build
+
+      - name: Verify fixes
+        run: |
+          grep -q "syncPublishedPortfolioData(projectDrafts, technologyDrafts, translationDrafts)" src/pages/AdminPage.tsx
+          grep -q "legacyLocalizeProjectDetail" src/pages/AdminPage.tsx
+          grep -q "ui.publishToGitHub" src/pages/AdminPage.tsx
+          ! grep -q "homeProjectDescription(" src/pages/HomePage.tsx
+          ! grep -q "projectSummary(" src/components/ProjectCard.tsx
+
+      - name: Commit fix and cleanup
+        run: |
+          rm -f scripts/fix-admin-content-source.py .github/workflows/fix-admin-content-source.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/pages/AdminPage.tsx src/pages/HomePage.tsx src/components/ProjectCard.tsx src/admin/adminUiCopy.ts scripts/fix-admin-content-source.py .github/workflows/fix-admin-content-source.yml
+          git commit -m "Unify admin and live portfolio content"
+          git push origin HEAD:main
