@@ -1,0 +1,47 @@
+name: Globalize Portfolio AI Agent
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - scripts/globalize-portfolio-agent.py
+      - .github/workflows/globalize-portfolio-agent.yml
+
+permissions:
+  contents: write
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Apply global agent migration
+        run: python scripts/globalize-portfolio-agent.py
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build portfolio
+        run: npm run build
+
+      - name: Verify generated Worker
+        run: node --check dist/server/index.js
+
+      - name: Commit global agent integration and cleanup
+        run: |
+          rm -f scripts/globalize-portfolio-agent.py .github/workflows/globalize-portfolio-agent.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/pages/AdminPage.tsx src/admin/adminUiCopy.ts src/admin/projectAgent.ts src/styles/admin.css scripts/prepare-site-build.mjs scripts/globalize-portfolio-agent.py .github/workflows/globalize-portfolio-agent.yml
+          git commit -m "Make portfolio AI agent global"
+          git push origin HEAD:main
