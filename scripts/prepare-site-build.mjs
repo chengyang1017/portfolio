@@ -1,6 +1,6 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 
-const workerSource = String.raw`function json(data, status = 200) {
+const workerSource = `function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
     headers: {
@@ -54,12 +54,14 @@ function extractOutputText(response) {
 }
 
 function parseJsonText(text) {
-  const cleaned = text
-    .replace(/^\\s*\\`\\`\\`(?:json)?/i, '')
-    .replace(/\\`\\`\\`\\s*$/, '')
-    .trim();
+  const firstBrace = text.indexOf('{');
+  const lastBrace = text.lastIndexOf('}');
 
-  return JSON.parse(cleaned);
+  if (firstBrace === -1 || lastBrace < firstBrace) {
+    throw new Error('No JSON object found.');
+  }
+
+  return JSON.parse(text.slice(firstBrace, lastBrace + 1));
 }
 
 function stringArray(value, limit = 16) {
