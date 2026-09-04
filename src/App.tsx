@@ -3,6 +3,7 @@ import { useEffect } from 'react';
 import { Footer } from './components/Footer';
 import { Navbar } from './components/Navbar';
 import { AboutPage } from './pages/AboutPage';
+import { AdminPage } from './pages/AdminPage';
 import { HomePage } from './pages/HomePage';
 import { ProjectDetailPage } from './pages/ProjectDetailPage';
 import { ProjectsPage } from './pages/ProjectsPage';
@@ -16,7 +17,7 @@ function MetadataSync(){
   const { pathname } = useLocation();
   useEffect(() => {
     const project = pathname.startsWith('/projects/') ? getProject(pathname.split('/').pop() ?? '') : undefined;
-    const page = project?.title ?? (pathname === '/projects' ? 'Projects' : pathname === '/about' ? 'About' : 'Portfolio');
+    const page = project?.title ?? (pathname === '/projects' ? 'Projects' : pathname === '/about' ? 'About' : pathname === '/admin' ? 'Admin' : 'Portfolio');
     const title = `${page} — Lim Cheng Yang`;
     const description = project?.summary ?? 'Portfolio of Lim Cheng Yang documenting public software repositories and one project in development.';
     document.title = title;
@@ -32,4 +33,4 @@ function MetadataSync(){
   }, [pathname]);
   return null;
 }
-export default function App(){ return <><ScrollToTop/><MetadataSync/><Navbar/><Routes><Route path="/" element={<HomePage/>}/><Route path="/projects" element={<ProjectsPage/>}/><Route path="/projects/:slug/source" element={<ProjectSourcePage/>}/><Route path="/projects/:slug/source/:category" element={<SourceCategoryPage/>}/><Route path="/projects/:slug/source/:category/:feature" element={<SourceFeaturePage/>}/><Route path="/projects/:slug" element={<ProjectDetailPage/>}/><Route path="/about" element={<AboutPage/>}/><Route path="*" element={<HomePage/>}/></Routes><Footer/></>; }
+export default function App(){ return <><ScrollToTop/><MetadataSync/><Navbar/><Routes><Route path="/" element={<HomePage/>}/><Route path="/projects" element={<ProjectsPage/>}/><Route path="/projects/:slug/source" element={<ProjectSourcePage/>}/><Route path="/projects/:slug/source/:category" element={<SourceCategoryPage/>}/><Route path="/projects/:slug/source/:category/:feature" element={<SourceFeaturePage/>}/><Route path="/projects/:slug" element={<ProjectDetailPage/>}/><Route path="/about" element={<AboutPage/>}/><Route path="/admin" element={<AdminPage/>}/><Route path="*" element={<HomePage/>}/></Routes><Footer/></>; }
