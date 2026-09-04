@@ -128,6 +128,47 @@ function jsonWithCookie(data, status, cookie) {
   });
 }
 
+async function handleAdminLogin(request, env) {
+  if (request.method !== 'POST') return json({ error: 'Method not allowed' }, 405);
+  if (!env.ADMIN_PASSWORD) return json({ error: 'ADMIN_PASSWORD is not configured on the Worker.' }, 503);
+
+  const payload = await request.json().catch(() => null);
+  const password = typeof payload?.password === 'string' ? payload.password : '';
+  if (!password || !safeEqual(password, env.ADMIN_PASSWORD)) {
+    return json({ error: 'Incorrect admin password.' }, 401);
+  }
+
+  const session = await createAdminSession(env);
+  return jsonWithCookie(
+    {
+      authenticated: true,
+      repository: 'Cloudflare portfolio store',
+      defaultBranch: 'live',
+    },
+    200,
+    sessionCookie(request, session, ADMIN_SESSION_MAX_AGE),
+  );
+}
+
+async function handleAdminSession(request, env) {
+  if (request.method !== 'GET') return json({ error: 'Method not allowed' }, 405);
+  if (!(await hasAdminSession(request, env))) return json({ authenticated: false }, 401);
+  return json({
+    authenticated: true,
+    repository: 'Cloudflare portfolio store',
+    defaultBranch: 'live',
+  });
+}
+
+async function handleAdminLogout(request) {
+  if (request.method !== 'POST') return json({ error: 'Method not allowed' }, 405);
+  return jsonWithCookie(
+    { authenticated: false },
+    200,
+    sessionCookie(request, '', 0),
+  );
+}
+
 async function handlePublishPortfolio(request, env) {
   if (request.method !== 'POST') return json({ error: 'Method not allowed' }, 405);
   if (!(await hasAdminSession(request, env))) return json({ error: 'Admin session required.' }, 401);
