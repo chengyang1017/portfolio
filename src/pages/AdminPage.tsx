@@ -71,6 +71,56 @@ const PROJECT_MOCKUPS: Project['mockup'][] = [
   'inflection',
 ];
 
+
+const ADMIN_DRAFT_STORAGE_KEY = 'portfolio-admin-draft-v1';
+
+type AdminDraftSnapshot = {
+  projects: Project[];
+  technologyCatalog: TechnologyCatalog;
+  translations: ProjectTranslationCatalog;
+  selectedSlug: string;
+  contentLocale: ContentLocale;
+  savedAt: string;
+};
+
+function readAdminDraftSnapshot(): AdminDraftSnapshot | null {
+  if (typeof window === 'undefined') return null;
+
+  try {
+    const raw = window.localStorage.getItem(ADMIN_DRAFT_STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as Partial<AdminDraftSnapshot>;
+
+    if (!Array.isArray(parsed.projects)) return null;
+    if (!parsed.technologyCatalog || typeof parsed.technologyCatalog !== 'object') return null;
+    if (!parsed.translations || typeof parsed.translations !== 'object') return null;
+
+    const locale = CONTENT_LOCALES.some((item) => item.id === parsed.contentLocale)
+      ? parsed.contentLocale as ContentLocale
+      : 'en';
+    const selectedSlug = typeof parsed.selectedSlug === 'string' ? parsed.selectedSlug : '';
+
+    return {
+      projects: parsed.projects as Project[],
+      technologyCatalog: parsed.technologyCatalog as TechnologyCatalog,
+      translations: parsed.translations as ProjectTranslationCatalog,
+      selectedSlug,
+      contentLocale: locale,
+      savedAt: typeof parsed.savedAt === 'string' ? parsed.savedAt : '',
+    };
+  } catch {
+    return null;
+  }
+}
+
+function writeAdminDraftSnapshot(snapshot: Omit<AdminDraftSnapshot, 'savedAt'>) {
+  if (typeof window === 'undefined') return;
+  window.localStorage.setItem(
+    ADMIN_DRAFT_STORAGE_KEY,
+    JSON.stringify({ ...snapshot, savedAt: new Date().toISOString() }),
+  );
+}
+
 function cloneProjects() {
   return initialProjects.map((project) => ({
     ...project,
@@ -147,17 +197,28 @@ function galleryToText(project: Pick<Project, 'gallery'>) {
 export function AdminPage() {
   const { language } = useI18n();
   const ui = getAdminUiCopy(language);
-  const [projectDrafts, setProjectDrafts] = useState<Project[]>(cloneProjects);
+  const [initialDraftSnapshot] = useState<AdminDraftSnapshot | null>(() => readAdminDraftSnapshot());
+  const [projectDrafts, setProjectDrafts] = useState<Project[]>(
+    () => initialDraftSnapshot?.projects ?? cloneProjects(),
+  );
   const [technologyDrafts, setTechnologyDrafts] = useState<TechnologyCatalog>(
-    cloneTechnologyCatalog,
+    () => initialDraftSnapshot?.technologyCatalog ?? cloneTechnologyCatalog(),
   );
   const [translationDrafts, setTranslationDrafts] = useState<ProjectTranslationCatalog>(
-    cloneProjectTranslations,
+    () => initialDraftSnapshot?.translations ?? cloneProjectTranslations(),
   );
-  const [contentLocale, setContentLocale] = useState<ContentLocale>('en');
+  const [contentLocale, setContentLocale] = useState<ContentLocale>(
+    () => initialDraftSnapshot?.contentLocale ?? 'en',
+  );
   const [translationState, setTranslationState] = useState<'idle' | 'loading' | 'error'>('idle');
   const [translationMessage, setTranslationMessage] = useState('');
-  const [selectedSlug, setSelectedSlug] = useState(initialProjects[0]?.slug ?? '');
+  const [selectedSlug, setSelectedSlug] = useState(() => {
+    const draftProjects = initialDraftSnapshot?.projects ?? initialProjects;
+    const preferred = initialDraftSnapshot?.selectedSlug ?? '';
+    return draftProjects.some((project) => project.slug === preferred)
+      ? preferred
+      : draftProjects[0]?.slug ?? '';
+  });
   const [repositoryUrl, setRepositoryUrl] = useState('');
   const [analysis, setAnalysis] = useState<RepositoryAnalysis | null>(null);
   const [analysisState, setAnalysisState] = useState<'idle' | 'loading' | 'error'>('idle');
@@ -171,6 +232,7 @@ export function AdminPage() {
   const [accessMessage, setAccessMessage] = useState('');
   const [publishState, setPublishState] = useState<'idle' | 'saving' | 'success' | 'error'>('idle');
   const [publishMessage, setPublishMessage] = useState('');
+  const [draftMessage, setDraftMessage] = useState(initialDraftSnapshot ? ui.draftRestored : '');
   const [agentInstruction, setAgentInstruction] = useState('');
   const [agentState, setAgentState] = useState<'idle' | 'loading' | 'error'>('idle');
   const [agentStatus, setAgentStatus] = useState('');
@@ -253,6 +315,7 @@ export function AdminPage() {
 
   function resetDrafts() {
     const nextProjects = cloneProjects();
+    if (typeof window !== 'undefined') window.localStorage.removeItem(ADMIN_DRAFT_STORAGE_KEY);
     setProjectDrafts(nextProjects);
     setTechnologyDrafts(cloneTechnologyCatalog());
     setTranslationDrafts(cloneProjectTranslations());
@@ -263,7 +326,43 @@ export function AdminPage() {
     setAnalysis(null);
     setPublishState('idle');
     setPublishMessage(ui.resetComplete);
+    setDraftMessage(ui.draftReset);
   }
+
+  function saveDrafts() {
+    writeAdminDraftSnapshot({
+      projects: projectDrafts,
+      technologyCatalog: technologyDrafts,
+      translations: translationDrafts,
+      selectedSlug,
+      contentLocale,
+    });
+    setDraftMessage(ui.draftSaved);
+  }
+
+  useEffect(() => {
+    if (accessState !== 'granted') return;
+
+    const timer = window.setTimeout(() => {
+      writeAdminDraftSnapshot({
+        projects: projectDrafts,
+        technologyCatalog: technologyDrafts,
+        translations: translationDrafts,
+        selectedSlug,
+        contentLocale,
+      });
+      setDraftMessage(ui.draftAutosaved);
+    }, 350);
+
+    return () => window.clearTimeout(timer);
+  }, [
+    accessState,
+    projectDrafts,
+    technologyDrafts,
+    translationDrafts,
+    selectedSlug,
+    contentLocale,
+  ]);
 
   function updateProject(patch: Partial<Project>) {
     setProjectDrafts((current) =>
@@ -548,6 +647,8 @@ export function AdminPage() {
         catalog: translationDrafts,
       });
 
+      if (typeof window !== 'undefined') window.localStorage.removeItem(ADMIN_DRAFT_STORAGE_KEY);
+      setDraftMessage('');
       setPublishState('success');
       setPublishMessage(
         `${ui.published} ${result.projectCommitUrl ?? ''} ${result.technologyCommitUrl ?? ''} ${translationCommitUrl ?? ''}`.trim(),
@@ -695,6 +796,7 @@ export function AdminPage() {
 
           <div className="admin-actions">
             <button type="button" onClick={addBlankProject}>{ui.addProject}</button>
+            <button type="button" className="secondary" onClick={saveDrafts}>{ui.saveDraft}</button>
             <button
               type="button"
               className="secondary"
@@ -714,6 +816,8 @@ export function AdminPage() {
             </button>
           </div>
         </div>
+
+        {draftMessage && <p className="admin-message">{draftMessage}</p>}
 
         <div className="admin-project-layout">
           <nav className="admin-project-list" aria-label={ui.projectList}>

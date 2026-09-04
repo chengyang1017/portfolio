@@ -51,6 +51,11 @@ export interface AdminUiCopy {
   addAsNewProject: string;
   projectContent: string;
   addProject: string;
+  saveDraft: string;
+  draftSaved: string;
+  draftAutosaved: string;
+  draftRestored: string;
+  draftReset: string;
   resetDrafts: string;
   deleteSelected: string;
   projectList: string;
@@ -180,6 +185,11 @@ const en: AdminUiCopy = {
   addAsNewProject: 'Add as new project',
   projectContent: 'Project content',
   addProject: 'Add project',
+  saveDraft: 'Save draft',
+  draftSaved: 'Draft saved in this browser.',
+  draftAutosaved: 'Draft autosaved. You can leave this page and come back without losing changes.',
+  draftRestored: 'Restored your unsaved draft from this browser.',
+  draftReset: 'Local draft cleared and reset to the current live data.',
   resetDrafts: 'Reset drafts',
   deleteSelected: 'Delete selected',
   projectList: 'Projects',
@@ -310,6 +320,11 @@ const zhCN: AdminUiCopy = {
   addAsNewProject: '新增为项目',
   projectContent: '项目内容',
   addProject: '新增项目',
+  saveDraft: '保存草稿',
+  draftSaved: '草稿已保存在这个浏览器。',
+  draftAutosaved: '草稿已自动保存，离开后台再回来也不会丢失。',
+  draftRestored: '已恢复这个浏览器里尚未发布的草稿。',
+  draftReset: '本地草稿已清除，并恢复为当前线上数据。',
   resetDrafts: '重置草稿',
   deleteSelected: '删除当前项目',
   projectList: '项目列表',
@@ -440,6 +455,11 @@ const zhTW: AdminUiCopy = {
   addAsNewProject: '新增為專案',
   projectContent: '專案內容',
   addProject: '新增專案',
+  saveDraft: '儲存草稿',
+  draftSaved: '草稿已儲存在這個瀏覽器。',
+  draftAutosaved: '草稿已自動儲存，離開後台再回來也不會遺失。',
+  draftRestored: '已恢復這個瀏覽器裡尚未發佈的草稿。',
+  draftReset: '本機草稿已清除，並恢復為目前線上資料。',
   resetDrafts: '重設草稿',
   deleteSelected: '刪除目前專案',
   projectList: '專案列表',
@@ -569,6 +589,11 @@ const viLatn: AdminUiCopy = {
   addAsNewProject: 'Thêm thành dự án mới',
   projectContent: 'Nội dung dự án',
   addProject: 'Thêm dự án',
+  saveDraft: 'Lưu bản nháp',
+  draftSaved: 'Bản nháp đã được lưu trong trình duyệt này.',
+  draftAutosaved: 'Bản nháp đã tự động lưu. Bạn có thể rời trang và quay lại mà không mất thay đổi.',
+  draftRestored: 'Đã khôi phục bản nháp chưa xuất bản trong trình duyệt này.',
+  draftReset: 'Đã xóa bản nháp cục bộ và khôi phục dữ liệu đang hiển thị trực tiếp.',
   resetDrafts: 'Đặt lại bản nháp',
   deleteSelected: 'Xóa dự án đang chọn',
   projectList: 'Danh sách dự án',
