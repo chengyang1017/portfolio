@@ -1,0 +1,45 @@
+name: Add Project Screenshot Uploads
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - scripts/add-project-screenshots.py
+      - .github/workflows/add-project-screenshots.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Add screenshot upload flow
+        run: python scripts/add-project-screenshots.py
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build portfolio
+        run: npm run build
+
+      - name: Verify Worker syntax
+        run: node --check dist/server/index.js
+
+      - name: Commit implementation and cleanup
+        run: |
+          rm scripts/add-project-screenshots.py
+          rm .github/workflows/add-project-screenshots.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src scripts .github
+          git commit -m "Add project screenshot uploads"
+          git push
