@@ -1,5 +1,9 @@
 import type { Project } from '../data/projects';
-import type { TechnologyCatalog, TechnologyItem } from '../data/technologyCatalog';
+import type {
+  TechnologyCatalog,
+  TechnologyGroupId,
+  TechnologyItem,
+} from '../data/technologyCatalog';
 
 export type RepositoryAnalysis = {
   owner: string;
@@ -13,19 +17,39 @@ export type RepositoryAnalysis = {
   source: 'ai' | 'repository';
 };
 
+export type PortfolioAccess = {
+  repository: string;
+  defaultBranch: string;
+};
+
 type GitHubRepo = {
   name: string;
   full_name: string;
   html_url: string;
   description: string | null;
   default_branch: string;
+  permissions?: {
+    admin?: boolean;
+    maintain?: boolean;
+    push?: boolean;
+    pull?: boolean;
+  };
 };
 
 type GitHubContentItem = {
   name: string;
   type: 'file' | 'dir';
+  url?: string;
   download_url?: string | null;
 };
+
+type TechnologyDefault = {
+  group: TechnologyGroupId;
+  color: string;
+  logo?: string;
+};
+
+const SIMPLE_ICONS = 'https://cdn.jsdelivr.net/gh/simple-icons/simple-icons@develop/icons';
 
 const LANGUAGE_TECH: Record<string, string[]> = {
   Dart: ['Dart'],
@@ -40,8 +64,36 @@ const LANGUAGE_TECH: Record<string, string[]> = {
   CSS: ['CSS'],
 };
 
+const TECHNOLOGY_DEFAULTS: Record<string, TechnologyDefault> = {
+  Flutter: { group: 'client', color: '#02569B', logo: `${SIMPLE_ICONS}/flutter.svg` },
+  Dart: { group: 'client', color: '#0175C2', logo: `${SIMPLE_ICONS}/dart.svg` },
+  Android: { group: 'client', color: '#3DDC84', logo: `${SIMPLE_ICONS}/android.svg` },
+  Kotlin: { group: 'client', color: '#7F52FF', logo: `${SIMPLE_ICONS}/kotlin.svg` },
+  React: { group: 'client', color: '#61DAFB', logo: `${SIMPLE_ICONS}/react.svg` },
+  TypeScript: { group: 'client', color: '#3178C6', logo: `${SIMPLE_ICONS}/typescript.svg` },
+  JavaScript: { group: 'client', color: '#F7DF1E', logo: `${SIMPLE_ICONS}/javascript.svg` },
+  Vite: { group: 'client', color: '#646CFF', logo: `${SIMPLE_ICONS}/vite.svg` },
+  Electron: { group: 'client', color: '#47848F', logo: `${SIMPLE_ICONS}/electron.svg` },
+  HTML: { group: 'client', color: '#E34F26', logo: `${SIMPLE_ICONS}/html5.svg` },
+  CSS: { group: 'client', color: '#663399', logo: `${SIMPLE_ICONS}/css.svg` },
+  'Node.js': { group: 'backend', color: '#5FA04E', logo: `${SIMPLE_ICONS}/nodedotjs.svg` },
+  Express: { group: 'backend', color: '#B8C0BD', logo: `${SIMPLE_ICONS}/express.svg` },
+  Prisma: { group: 'backend', color: '#2D3748', logo: `${SIMPLE_ICONS}/prisma.svg` },
+  PostgreSQL: { group: 'backend', color: '#4169E1', logo: `${SIMPLE_ICONS}/postgresql.svg` },
+  Python: { group: 'backend', color: '#3776AB', logo: `${SIMPLE_ICONS}/python.svg` },
+  Flask: { group: 'backend', color: '#D7DDDA', logo: `${SIMPLE_ICONS}/flask.svg` },
+  SQLite: { group: 'backend', color: '#003B57', logo: `${SIMPLE_ICONS}/sqlite.svg` },
+  Firebase: { group: 'platform', color: '#FFCA28', logo: `${SIMPLE_ICONS}/firebase.svg` },
+  Stripe: { group: 'platform', color: '#635BFF', logo: `${SIMPLE_ICONS}/stripe.svg` },
+  Rust: { group: 'backend', color: '#DEA584', logo: `${SIMPLE_ICONS}/rust.svg` },
+  'C#': { group: 'backend', color: '#512BD4', logo: `${SIMPLE_ICONS}/dotnet.svg` },
+  Java: { group: 'backend', color: '#ED8B00' },
+};
+
 function parseRepositoryUrl(value: string) {
-  const match = value.trim().match(/^https?:\/\/github\.com\/([^/]+)\/([^/#?]+?)(?:\.git)?(?:[/?#].*)?$/i);
+  const match = value
+    .trim()
+    .match(/^https?:\/\/github\.com\/([^/]+)\/([^/#?]+?)(?:\.git)?(?:[/?#].*)?$/i);
 
   if (!match) {
     throw new Error('Use a GitHub repository URL such as https://github.com/owner/repository');
@@ -55,6 +107,14 @@ function parseRepositoryUrl(value: string) {
 
 function unique(values: string[]) {
   return Array.from(new Set(values.filter(Boolean)));
+}
+
+function githubHeaders(token?: string) {
+  return {
+    Accept: 'application/vnd.github+json',
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    'X-GitHub-Api-Version': '2022-11-28',
+  };
 }
 
 function inferFromFiles(items: GitHubContentItem[]) {
@@ -92,24 +152,40 @@ function inferFromFiles(items: GitHubContentItem[]) {
   return technologies;
 }
 
-async function maybeReadPackageJson(items: GitHubContentItem[]) {
+async function maybeReadPackageJson(
+  items: GitHubContentItem[],
+  token?: string,
+) {
   const packageFile = items.find((item) => item.name.toLowerCase() === 'package.json');
 
-  if (!packageFile?.download_url) {
+  if (!packageFile) {
     return [] as string[];
   }
 
   try {
-    const response = await fetch(packageFile.download_url);
-    if (!response.ok) return [];
+    const response = packageFile.url
+      ? await fetch(packageFile.url, {
+          headers: {
+            ...githubHeaders(token),
+            Accept: 'application/vnd.github.raw+json',
+          },
+        })
+      : packageFile.download_url
+        ? await fetch(packageFile.download_url)
+        : null;
+
+    if (!response?.ok) return [];
+
     const packageJson = (await response.json()) as {
       dependencies?: Record<string, string>;
       devDependencies?: Record<string, string>;
     };
+
     const dependencies = {
       ...packageJson.dependencies,
       ...packageJson.devDependencies,
     };
+
     const detected: string[] = [];
 
     if (dependencies.react) detected.push('React');
@@ -127,11 +203,39 @@ async function maybeReadPackageJson(items: GitHubContentItem[]) {
   }
 }
 
-export async function analyzeRepository(repositoryUrl: string): Promise<RepositoryAnalysis> {
-  const { owner, repo } = parseRepositoryUrl(repositoryUrl);
-  const headers = {
-    Accept: 'application/vnd.github+json',
+export async function verifyPortfolioAccess(token: string): Promise<PortfolioAccess> {
+  if (!token.trim()) {
+    throw new Error('Enter a GitHub token first.');
+  }
+
+  const response = await fetch('https://api.github.com/repos/chengyang1017/portfolio', {
+    headers: githubHeaders(token.trim()),
+  });
+
+  if (!response.ok) {
+    throw new Error(`GitHub rejected this token (${response.status}).`);
+  }
+
+  const repository = (await response.json()) as GitHubRepo;
+
+  if (!repository.permissions?.push && !repository.permissions?.maintain && !repository.permissions?.admin) {
+    throw new Error(
+      'This token can read the repository but cannot write it. Give it Contents: Read and write access to chengyang1017/portfolio.',
+    );
+  }
+
+  return {
+    repository: repository.full_name,
+    defaultBranch: repository.default_branch,
   };
+}
+
+export async function analyzeRepository(
+  repositoryUrl: string,
+  token?: string,
+): Promise<RepositoryAnalysis> {
+  const { owner, repo } = parseRepositoryUrl(repositoryUrl);
+  const headers = githubHeaders(token);
 
   const [repoResponse, languagesResponse, contentsResponse] = await Promise.all([
     fetch(`https://api.github.com/repos/${owner}/${repo}`, { headers }),
@@ -151,10 +255,11 @@ export async function analyzeRepository(repositoryUrl: string): Promise<Reposito
     ? ((await contentsResponse.json()) as GitHubContentItem[])
     : [];
 
-  const packageTechnologies = await maybeReadPackageJson(rootItems);
+  const packageTechnologies = await maybeReadPackageJson(rootItems, token);
   const languageTechnologies = Object.keys(languages).flatMap(
     (language) => LANGUAGE_TECH[language] ?? [language],
   );
+
   const technologies = unique([
     ...languageTechnologies,
     ...inferFromFiles(rootItems),
@@ -221,9 +326,11 @@ export async function analyzeRepository(repositoryUrl: string): Promise<Reposito
 function encodeBase64(value: string) {
   const bytes = new TextEncoder().encode(value);
   let binary = '';
+
   bytes.forEach((byte) => {
     binary += String.fromCharCode(byte);
   });
+
   return btoa(binary);
 }
 
@@ -235,11 +342,7 @@ async function getGitHubFile(
   const response = await fetch(
     `https://api.github.com/repos/chengyang1017/portfolio/contents/${path}?ref=${encodeURIComponent(branch)}`,
     {
-      headers: {
-        Accept: 'application/vnd.github+json',
-        Authorization: `Bearer ${token}`,
-        'X-GitHub-Api-Version': '2022-11-28',
-      },
+      headers: githubHeaders(token),
     },
   );
 
@@ -280,10 +383,8 @@ async function updateGitHubFile({
     {
       method: 'PUT',
       headers: {
-        Accept: 'application/vnd.github+json',
-        Authorization: `Bearer ${token}`,
+        ...githubHeaders(token),
         'Content-Type': 'application/json',
-        'X-GitHub-Api-Version': '2022-11-28',
       },
       body: JSON.stringify({
         message,
@@ -389,6 +490,22 @@ export function createProjectFromAnalysis(
   };
 }
 
+function createTechnologyItem(name: string): {
+  group: TechnologyGroupId;
+  item: TechnologyItem;
+} {
+  const defaults = TECHNOLOGY_DEFAULTS[name];
+
+  return {
+    group: defaults?.group ?? 'platform',
+    item: {
+      name,
+      color: defaults?.color ?? '#C7FF4A',
+      ...(defaults?.logo ? { logo: defaults.logo } : {}),
+    },
+  };
+}
+
 export function mergeTechnologyNames(
   catalog: TechnologyCatalog,
   names: string[],
@@ -398,15 +515,20 @@ export function mergeTechnologyNames(
       .flat()
       .map((item) => item.name.toLowerCase()),
   );
-  const additions: TechnologyItem[] = names
-    .filter((name) => !existing.has(name.toLowerCase()))
-    .map((name) => ({
-      name,
-      color: '#C7FF4A',
-    }));
 
-  return {
-    ...catalog,
-    platform: [...catalog.platform, ...additions],
+  const next: TechnologyCatalog = {
+    client: [...catalog.client],
+    backend: [...catalog.backend],
+    platform: [...catalog.platform],
   };
+
+  names
+    .filter((name) => !existing.has(name.toLowerCase()))
+    .forEach((name) => {
+      const technology = createTechnologyItem(name);
+      next[technology.group].push(technology.item);
+      existing.add(name.toLowerCase());
+    });
+
+  return next;
 }
