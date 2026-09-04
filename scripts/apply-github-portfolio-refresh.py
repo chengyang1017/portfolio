@@ -89,3 +89,5 @@ if 'Warm portfolio data' not in deploy_text:
         raise SystemExit('deploy workflow marker not found')
     deploy_text = deploy_text.replace(marker, replacement, 1)
     deploy.write_text(deploy_text, encoding='utf-8')
+
+# Retry marker: the project lookup helper has been restored before this run.
