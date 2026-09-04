@@ -942,11 +942,6 @@ export function AdminPage() {
             <strong>{accessInfo?.repository}</strong>
           </div>
 
-          <label>
-            <span>{ui.branch}</span>
-            <input value={branch} onChange={(event) => setBranch(event.target.value)} />
-          </label>
-
           <button
             type="button"
             onClick={() => void handlePublish()}
