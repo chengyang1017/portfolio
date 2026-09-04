@@ -243,10 +243,6 @@
   transform: translate(2px, -2px);
 }
 
-.home-areas {
-  background: #e7e6df;
-}
-
 .home-area-list {
   border-top: 1px solid var(--line);
 }
