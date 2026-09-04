@@ -23,3 +23,7 @@ export interface Project {
 
 export const portfolioContentVersion = portfolioSeed.version;
 export const projects = portfolioSeed.projects as Project[];
+
+export function getProject(slug: string) {
+  return projects.find((project) => project.slug === slug);
+}
