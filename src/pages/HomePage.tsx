@@ -1,11 +1,32 @@
+import {
+  AppWindow,
+  Atom,
+  Boxes,
+  Braces,
+  Cloud,
+  Code2,
+  CreditCard,
+  Database,
+  Flame,
+  FlaskConical,
+  Laptop,
+  Monitor,
+  Network,
+  Server,
+  Smartphone,
+  Table2,
+  Terminal,
+  Workflow,
+  Zap,
+} from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Hero } from '../components/Hero';
 import { SectionHeader } from '../components/SectionHeader';
-import { TechTag } from '../components/TechTag';
 import { projects, type Project } from '../data/projects';
 import { homeCategory, homeCopy, homeProjectDescription, homeStatus } from '../i18n/homeTranslations';
 import { useI18n } from '../i18n/I18nProvider';
 import type { AppLocale } from '../i18n/types';
+import '../styles/technology-stack.css';
 
 function ProjectIndexRow({ project, language, action }: { project: Project; language: AppLocale; action: string }) {
   return (
@@ -36,6 +57,51 @@ export function HomePage() {
   const { language } = useI18n();
   const copy = homeCopy(language);
   const selectedProjects = projects.slice(0, 5);
+  const technologyGroups = [
+    {
+      label: copy.stack.client,
+      tone: 'client',
+      icon: Monitor,
+      technologies: [
+        { name: 'Flutter', icon: Smartphone },
+        { name: 'Dart', icon: Braces },
+        { name: 'Android', icon: Smartphone },
+        { name: 'Kotlin', icon: Code2 },
+        { name: 'React', icon: Atom },
+        { name: 'TypeScript', icon: Braces },
+        { name: 'Vite', icon: Zap },
+        { name: 'Electron', icon: Laptop },
+      ],
+    },
+    {
+      label: copy.stack.backend,
+      tone: 'backend',
+      icon: Server,
+      technologies: [
+        { name: 'Node.js', icon: Server },
+        { name: 'Express', icon: Network },
+        { name: 'Prisma', icon: Workflow },
+        { name: 'PostgreSQL', icon: Database },
+        { name: 'Python', icon: Code2 },
+        { name: 'Flask', icon: FlaskConical },
+        { name: 'SQLite', icon: Database },
+        { name: 'ASP.NET Core', icon: Boxes },
+        { name: 'EF Core', icon: Workflow },
+      ],
+    },
+    {
+      label: copy.stack.platform,
+      tone: 'platform',
+      icon: Cloud,
+      technologies: [
+        { name: 'Firebase', icon: Flame },
+        { name: 'Stripe', icon: CreditCard },
+        { name: 'Serverpod', icon: Cloud },
+        { name: 'Monaco Editor', icon: Terminal },
+        { name: 'Pandas', icon: Table2 },
+      ],
+    },
+  ];
 
   return (
     <>
@@ -83,18 +149,38 @@ export function HomePage() {
       <section className="home-section shell home-stack-section">
         <SectionHeader index="03" eyebrow={copy.stack.eyebrow} title={copy.stack.title} />
         <div className="home-stack-grid">
-          <div className="home-stack-group">
-            <h3>{copy.stack.client}</h3>
-            <div>{['Flutter', 'Dart', 'Android', 'Kotlin', 'React', 'TypeScript', 'Vite', 'Electron'].map((item) => <TechTag key={item}>{item}</TechTag>)}</div>
-          </div>
-          <div className="home-stack-group">
-            <h3>{copy.stack.backend}</h3>
-            <div>{['Node.js', 'Express', 'Prisma', 'PostgreSQL', 'Python', 'Flask', 'SQLite', 'ASP.NET Core', 'EF Core'].map((item) => <TechTag key={item}>{item}</TechTag>)}</div>
-          </div>
-          <div className="home-stack-group">
-            <h3>{copy.stack.platform}</h3>
-            <div>{['Firebase', 'Stripe', 'Serverpod', 'Monaco Editor', 'Pandas'].map((item) => <TechTag key={item}>{item}</TechTag>)}</div>
-          </div>
+          {technologyGroups.map((group, groupIndex) => {
+            const GroupIcon = group.icon;
+
+            return (
+              <article className="home-stack-group" data-stack-tone={group.tone} key={group.label}>
+                <div className="home-stack-group-heading">
+                  <span className="home-stack-group-icon" aria-hidden="true">
+                    <GroupIcon />
+                  </span>
+                  <div>
+                    <span className="home-stack-group-number">{String(groupIndex + 1).padStart(2, '0')}</span>
+                    <h3>{group.label}</h3>
+                  </div>
+                </div>
+
+                <div className="home-stack-items">
+                  {group.technologies.map((technology) => {
+                    const TechnologyIcon = technology.icon;
+
+                    return (
+                      <div className="home-stack-item" key={technology.name}>
+                        <span className="home-stack-item-icon" aria-hidden="true">
+                          <TechnologyIcon />
+                        </span>
+                        <span className="home-stack-item-name">{technology.name}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </article>
+            );
+          })}
         </div>
       </section>
 
