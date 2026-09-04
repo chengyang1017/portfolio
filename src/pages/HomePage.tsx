@@ -1,5 +1,4 @@
 import {
-  AppWindow,
   Atom,
   Boxes,
   Braces,
