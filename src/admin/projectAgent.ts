@@ -1,3 +1,4 @@
+// Global portfolio editing agent client.
 import type { Project } from '../data/projects';
 import type {
   ProjectTranslation,
