@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - scripts/globalize-portfolio-agent.py
+      - scripts/fix-globalize-agent-script.py
       - .github/workflows/globalize-portfolio-agent.yml
 
 permissions:
@@ -19,6 +20,9 @@ jobs:
         with:
           ref: main
           fetch-depth: 0
+
+      - name: Fix migration anchors
+        run: python scripts/fix-globalize-agent-script.py
 
       - name: Apply global agent migration
         run: python scripts/globalize-portfolio-agent.py
@@ -39,9 +43,9 @@ jobs:
 
       - name: Commit global agent integration and cleanup
         run: |
-          rm -f scripts/globalize-portfolio-agent.py .github/workflows/globalize-portfolio-agent.yml
+          rm -f scripts/globalize-portfolio-agent.py scripts/fix-globalize-agent-script.py .github/workflows/globalize-portfolio-agent.yml
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add src/pages/AdminPage.tsx src/admin/adminUiCopy.ts src/admin/projectAgent.ts src/styles/admin.css scripts/prepare-site-build.mjs scripts/globalize-portfolio-agent.py .github/workflows/globalize-portfolio-agent.yml
+          git add src/pages/AdminPage.tsx src/admin/adminUiCopy.ts src/admin/projectAgent.ts src/styles/admin.css scripts/prepare-site-build.mjs scripts/globalize-portfolio-agent.py scripts/fix-globalize-agent-script.py .github/workflows/globalize-portfolio-agent.yml
           git commit -m "Make portfolio AI agent global"
           git push origin HEAD:main
