@@ -1,7 +1,13 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
 import type { Project, ProjectCategory } from '../data/projects';
 import { projects as initialProjects } from '../data/projects';
+import {
+  PROJECT_TRANSLATION_LOCALES,
+  projectTranslationCatalog,
+  type ProjectTranslation,
+  type ProjectTranslationCatalog,
+  type ProjectTranslationLocale,
+} from '../data/projectTranslationCatalog';
 import {
   technologyCatalog as initialTechnologyCatalog,
   type TechnologyCatalog,
@@ -18,9 +24,24 @@ import {
   type RepositoryAnalysis,
 } from '../admin/githubPortfolio';
 import { getAdminSession, loginAdmin, logoutAdmin } from '../admin/adminSession';
+import {
+  mergeProjectTranslations,
+  publishProjectTranslationCatalog,
+  translateProjectAllLocales,
+} from '../admin/projectTranslationManager';
 import { getAdminUiCopy } from '../admin/adminUiCopy';
 import { LanguageSwitcher } from '../components/LanguageSwitcher';
 import { useI18n } from '../i18n/I18nProvider';
+
+type ContentLocale = 'en' | ProjectTranslationLocale;
+
+const CONTENT_LOCALES: Array<{ id: ContentLocale; label: string }> = [
+  { id: 'en', label: 'English' },
+  { id: 'zh-CN', label: '简体中文' },
+  { id: 'zh-TW', label: '繁體中文' },
+  { id: 'vi-Latn', label: 'Tiếng Việt' },
+  { id: 'vi-Hani', label: '𡨸喃' },
+];
 
 const GROUPS: Array<{ id: TechnologyGroupId; label: string }> = [
   { id: 'client', label: 'Client / Languages' },
@@ -65,6 +86,23 @@ function cloneTechnologyCatalog(): TechnologyCatalog {
   };
 }
 
+function cloneProjectTranslations(): ProjectTranslationCatalog {
+  return JSON.parse(JSON.stringify(projectTranslationCatalog)) as ProjectTranslationCatalog;
+}
+
+function emptyProjectTranslation(): ProjectTranslation {
+  return {
+    title: '',
+    shortTitle: '',
+    summary: '',
+    overview: '',
+    features: [],
+    challenges: [],
+    architecture: [],
+    gallery: [],
+  };
+}
+
 function listFromText(value: string) {
   return value
     .split(/[\n,]/)
@@ -84,19 +122,19 @@ function pairLines(value: string) {
     .filter(([left]) => Boolean(left));
 }
 
-function challengesToText(project: Project) {
+function challengesToText(project: Pick<Project, 'challenges'>) {
   return project.challenges
     .map((item) => `${item.title} | ${item.description}`)
     .join('\n');
 }
 
-function architectureToText(project: Project) {
+function architectureToText(project: Pick<Project, 'architecture'>) {
   return project.architecture
     .map((item) => `${item.label} | ${item.detail}`)
     .join('\n');
 }
 
-function galleryToText(project: Project) {
+function galleryToText(project: Pick<Project, 'gallery'>) {
   return project.gallery
     .map((item) => `${item.title} | ${item.caption}`)
     .join('\n');
@@ -109,6 +147,12 @@ export function AdminPage() {
   const [technologyDrafts, setTechnologyDrafts] = useState<TechnologyCatalog>(
     cloneTechnologyCatalog,
   );
+  const [translationDrafts, setTranslationDrafts] = useState<ProjectTranslationCatalog>(
+    cloneProjectTranslations,
+  );
+  const [contentLocale, setContentLocale] = useState<ContentLocale>('en');
+  const [translationState, setTranslationState] = useState<'idle' | 'loading' | 'error'>('idle');
+  const [translationMessage, setTranslationMessage] = useState('');
   const [selectedSlug, setSelectedSlug] = useState(initialProjects[0]?.slug ?? '');
   const [repositoryUrl, setRepositoryUrl] = useState('');
   const [analysis, setAnalysis] = useState<RepositoryAnalysis | null>(null);
@@ -133,6 +177,11 @@ export function AdminPage() {
     () => Object.values(technologyDrafts).flat().map((technology) => technology.name),
     [technologyDrafts],
   );
+
+  const selectedTranslation = useMemo(() => {
+    if (!selectedProject || contentLocale === 'en') return null;
+    return translationDrafts[selectedProject.slug]?.[contentLocale] ?? emptyProjectTranslation();
+  }, [contentLocale, selectedProject, translationDrafts]);
 
   async function handleUnlock() {
     const cleanPassword = password.trim();
@@ -196,6 +245,10 @@ export function AdminPage() {
     const nextProjects = cloneProjects();
     setProjectDrafts(nextProjects);
     setTechnologyDrafts(cloneTechnologyCatalog());
+    setTranslationDrafts(cloneProjectTranslations());
+    setContentLocale('en');
+    setTranslationState('idle');
+    setTranslationMessage('');
     setSelectedSlug(nextProjects[0]?.slug ?? '');
     setAnalysis(null);
     setPublishState('idle');
@@ -208,6 +261,37 @@ export function AdminPage() {
         project.slug === selectedSlug ? { ...project, ...patch } : project,
       ),
     );
+  }
+
+  function updateTranslation(patch: Partial<ProjectTranslation>) {
+    if (!selectedProject || contentLocale === 'en') return;
+    setTranslationDrafts((current) => {
+      const existing = current[selectedProject.slug]?.[contentLocale] ?? emptyProjectTranslation();
+      return {
+        ...current,
+        [selectedProject.slug]: {
+          ...(current[selectedProject.slug] ?? {}),
+          [contentLocale]: { ...existing, ...patch },
+        },
+      };
+    });
+  }
+
+  async function handleAiFillTranslations() {
+    if (!selectedProject) return;
+    setTranslationState('loading');
+    setTranslationMessage(ui.translatingMessage);
+    try {
+      const translations = await translateProjectAllLocales({ project: selectedProject });
+      setTranslationDrafts((current) =>
+        mergeProjectTranslations(current, selectedProject.slug, translations),
+      );
+      setTranslationState('idle');
+      setTranslationMessage(ui.translationComplete);
+    } catch (error) {
+      setTranslationState('error');
+      setTranslationMessage(error instanceof Error ? error.message : ui.translationFailed);
+    }
   }
 
   function updateTechnology(
@@ -321,6 +405,11 @@ export function AdminPage() {
 
     const next = projectDrafts.filter((project) => project.slug !== selectedProject.slug);
     setProjectDrafts(next);
+    setTranslationDrafts((current) => {
+      const nextTranslations = { ...current };
+      delete nextTranslations[selectedProject.slug];
+      return nextTranslations;
+    });
     setSelectedSlug(next[0]?.slug ?? '');
   }
 
@@ -329,15 +418,20 @@ export function AdminPage() {
     setPublishMessage(ui.publishingPortfolio);
 
     try {
+      const publishBranch = branch.trim() || 'main';
       const result = await publishPortfolioContent({
-        branch: branch.trim() || 'main',
+        branch: publishBranch,
         projects: projectDrafts,
         technologyCatalog: technologyDrafts,
+      });
+      const translationCommitUrl = await publishProjectTranslationCatalog({
+        branch: publishBranch,
+        catalog: translationDrafts,
       });
 
       setPublishState('success');
       setPublishMessage(
-        `${ui.published} ${result.projectCommitUrl ?? ''} ${result.technologyCommitUrl ?? ''}`.trim(),
+        `${ui.published} ${result.projectCommitUrl ?? ''} ${result.technologyCommitUrl ?? ''} ${translationCommitUrl ?? ''}`.trim(),
       );
     } catch (error) {
       setPublishState('error');
@@ -405,7 +499,6 @@ export function AdminPage() {
 
         <div className="admin-hero-status">
           <LanguageSwitcher />
-          <Link className="admin-translation-link" to="/admin/translations">{ui.translationCenter}</Link>
           <span>{String(projectDrafts.length).padStart(2, '0')} {ui.projects}</span>
           <span>{String(allTechnologyNames.length).padStart(2, '0')} {ui.technologies}</span>
           <span>{accessInfo?.repository ?? ui.githubConnected}</span>
@@ -481,6 +574,14 @@ export function AdminPage() {
 
           <div className="admin-actions">
             <button type="button" onClick={addBlankProject}>{ui.addProject}</button>
+            <button
+              type="button"
+              className="secondary"
+              onClick={() => void handleAiFillTranslations()}
+              disabled={!selectedProject || translationState === 'loading'}
+            >
+              {translationState === 'loading' ? ui.translatingAll : ui.aiTranslateAll}
+            </button>
             <button type="button" className="secondary" onClick={resetDrafts}>{ui.resetDrafts}</button>
             <button
               type="button"
@@ -509,7 +610,34 @@ export function AdminPage() {
           </nav>
 
           {selectedProject ? (
-            <div className="admin-form-grid">
+            <div className="admin-project-editor">
+              <div className="admin-content-locale-bar" aria-label={ui.translationLanguage}>
+                {CONTENT_LOCALES.map((locale) => {
+                  const ready = locale.id === 'en' || Boolean(
+                    translationDrafts[selectedProject.slug]?.[locale.id],
+                  );
+                  return (
+                    <button
+                      type="button"
+                      key={locale.id}
+                      className={contentLocale === locale.id ? 'admin-locale-tab active' : 'admin-locale-tab'}
+                      onClick={() => setContentLocale(locale.id)}
+                    >
+                      <span>{locale.label}</span>
+                      <small>{ready ? ui.ready : ui.empty}</small>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {translationMessage && (
+                <p className={translationState === 'error' ? 'admin-message error' : 'admin-message'}>
+                  {translationMessage}
+                </p>
+              )}
+
+              {contentLocale === 'en' ? (
+                <div className="admin-form-grid">
               <label>
                 <span>{ui.title}</span>
                 <input
@@ -538,6 +666,13 @@ export function AdminPage() {
                         project.slug === previousSlug ? { ...project, slug: nextSlug } : project,
                       ),
                     );
+                    setTranslationDrafts((current) => {
+                      if (!current[previousSlug] || previousSlug === nextSlug) return current;
+                      const nextTranslations = { ...current };
+                      nextTranslations[nextSlug] = nextTranslations[previousSlug];
+                      delete nextTranslations[previousSlug];
+                      return nextTranslations;
+                    });
                     setSelectedSlug(nextSlug);
                   }}
                 />
@@ -696,6 +831,23 @@ export function AdminPage() {
                   }
                 />
               </label>
+            </div>
+              ) : selectedTranslation ? (
+                <div className="admin-form-grid admin-translation-form-grid">
+                  <div className="admin-language-note wide">
+                    <strong>{CONTENT_LOCALES.find((locale) => locale.id === contentLocale)?.label}</strong>
+                    <span>{ui.sourcePreservationNote}</span>
+                  </div>
+                  <label><span>{ui.title}</span><input value={selectedTranslation.title} onChange={(event) => updateTranslation({ title: event.target.value })} /></label>
+                  <label><span>{ui.shortTitle}</span><input value={selectedTranslation.shortTitle} onChange={(event) => updateTranslation({ shortTitle: event.target.value })} /></label>
+                  <label className="wide"><span>{ui.summary}</span><textarea value={selectedTranslation.summary} onChange={(event) => updateTranslation({ summary: event.target.value })} /></label>
+                  <label className="wide"><span>{ui.overview}</span><textarea className="large" value={selectedTranslation.overview} onChange={(event) => updateTranslation({ overview: event.target.value })} /></label>
+                  <label className="wide"><span>{ui.featuresOnePerLine}</span><textarea className="large" value={selectedTranslation.features.join('\n')} onChange={(event) => updateTranslation({ features: listFromText(event.target.value) })} /></label>
+                  <label className="wide"><span>{ui.challengesHint}</span><textarea className="large" value={challengesToText(selectedTranslation)} onChange={(event) => updateTranslation({ challenges: pairLines(event.target.value).map(([title, description]) => ({ title, description })) })} /></label>
+                  <label className="wide"><span>{ui.architectureHint}</span><textarea className="large" value={architectureToText(selectedTranslation)} onChange={(event) => updateTranslation({ architecture: pairLines(event.target.value).map(([label, detail]) => ({ label, detail })) })} /></label>
+                  <label className="wide"><span>{ui.galleryHint}</span><textarea className="large" value={galleryToText(selectedTranslation)} onChange={(event) => updateTranslation({ gallery: pairLines(event.target.value).map(([title, caption]) => ({ title, caption })) })} /></label>
+                </div>
+              ) : null}
             </div>
           ) : (
             <p className="admin-message">{ui.noProjectSelected}</p>
