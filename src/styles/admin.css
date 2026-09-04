@@ -1,0 +1,374 @@
+.admin-page {
+  padding: 58px 0 120px;
+}
+
+.admin-hero,
+.admin-panel-heading,
+.admin-publish-grid,
+.admin-project-layout,
+.admin-tech-group header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 28px;
+}
+
+.admin-hero {
+  padding: 42px 0 54px;
+  border-bottom: 1px solid var(--line);
+}
+
+.admin-hero h1,
+.admin-panel h2 {
+  margin: 8px 0 12px;
+  font-family: 'Manrope', sans-serif;
+  font-weight: 500;
+  letter-spacing: -0.055em;
+}
+
+.admin-hero h1 {
+  font-size: clamp(3.8rem, 7vw, 7rem);
+  line-height: 0.92;
+}
+
+.admin-hero > div:first-child > p:last-child,
+.admin-panel-heading > p {
+  max-width: 620px;
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.admin-hero-status {
+  min-width: 230px;
+  display: grid;
+  gap: 10px;
+  padding-top: 16px;
+  color: #b7c8bf;
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+}
+
+.admin-panel {
+  padding: 54px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.admin-panel h2 {
+  font-size: clamp(2rem, 4vw, 3.6rem);
+}
+
+.admin-panel-heading {
+  margin-bottom: 28px;
+}
+
+.admin-panel-heading > p {
+  margin: 0;
+}
+
+.admin-repo-input-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+}
+
+.admin-page input,
+.admin-page textarea,
+.admin-page select,
+.admin-page button {
+  font: inherit;
+}
+
+.admin-page input,
+.admin-page textarea,
+.admin-page select {
+  width: 100%;
+  border: 1px solid #33443a;
+  border-radius: 10px;
+  background: #0f1713;
+  color: #edf3ef;
+  outline: none;
+}
+
+.admin-page input,
+.admin-page select {
+  min-height: 44px;
+  padding: 0 12px;
+}
+
+.admin-page textarea {
+  min-height: 96px;
+  padding: 12px;
+  resize: vertical;
+  line-height: 1.55;
+}
+
+.admin-page textarea.large {
+  min-height: 150px;
+}
+
+.admin-page input:focus,
+.admin-page textarea:focus,
+.admin-page select:focus {
+  border-color: #c7ff4a;
+  box-shadow: 0 0 0 2px rgba(199, 255, 74, 0.08);
+}
+
+.admin-page button {
+  min-height: 42px;
+  padding: 0 15px;
+  border: 1px solid #c7ff4a;
+  border-radius: 9px;
+  background: #c7ff4a;
+  color: #0d1210;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.admin-page button.secondary {
+  border-color: #415248;
+  background: transparent;
+  color: #dce5df;
+}
+
+.admin-page button.danger {
+  border-color: #734c4c;
+  background: transparent;
+  color: #e7aaaa;
+}
+
+.admin-page button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.admin-analysis-card {
+  display: grid;
+  gap: 18px;
+  margin-top: 18px;
+  padding: 22px;
+  border: 1px solid #33443a;
+  border-radius: 14px;
+  background: #101813;
+}
+
+.admin-analysis-card h3 {
+  margin: 8px 0 6px;
+  font-size: 1.35rem;
+}
+
+.admin-analysis-card p {
+  margin: 0;
+  color: #aebcb4;
+  line-height: 1.6;
+}
+
+.admin-analysis-source {
+  color: #c7ff4a;
+  font-size: 0.63rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+}
+
+.admin-chip-row,
+.admin-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.admin-chip-row span {
+  padding: 5px 8px;
+  border: 1px solid #415248;
+  border-radius: 999px;
+  color: #c5d2cb;
+  font-size: 0.68rem;
+}
+
+.admin-project-layout {
+  align-items: stretch;
+}
+
+.admin-project-list {
+  width: 260px;
+  flex: 0 0 260px;
+  display: grid;
+  align-content: start;
+  gap: 7px;
+}
+
+.admin-project-list button {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+  min-height: 52px;
+  padding: 10px 12px;
+  border-color: #314139;
+  background: transparent;
+  color: #9fada5;
+  text-align: left;
+}
+
+.admin-project-list button.active {
+  border-color: #c7ff4a;
+  background: #c7ff4a;
+  color: #101510;
+}
+
+.admin-project-list button span {
+  font-size: 0.65rem;
+}
+
+.admin-project-list button strong {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-form-grid {
+  min-width: 0;
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.admin-form-grid label,
+.admin-publish-grid label {
+  display: grid;
+  gap: 7px;
+}
+
+.admin-form-grid label > span,
+.admin-publish-grid label > span {
+  color: #93a39a;
+  font-size: 0.67rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.admin-form-grid .wide {
+  grid-column: 1 / -1;
+}
+
+.admin-tech-groups {
+  display: grid;
+  gap: 14px;
+}
+
+.admin-tech-group {
+  padding: 20px;
+  border: 1px solid #2f3f37;
+  border-radius: 13px;
+}
+
+.admin-tech-group header {
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.admin-tech-group header span {
+  color: #7f9187;
+  font-size: 0.6rem;
+  letter-spacing: 0.1em;
+}
+
+.admin-tech-group h3 {
+  margin: 3px 0 0;
+  font-size: 1.05rem;
+}
+
+.admin-tech-list {
+  display: grid;
+  gap: 8px;
+}
+
+.admin-tech-row {
+  display: grid;
+  grid-template-columns: minmax(140px, 0.8fr) 120px minmax(220px, 1.4fr) 28px 40px;
+  gap: 8px;
+  align-items: center;
+}
+
+.admin-tech-row input {
+  min-height: 38px;
+  font-size: 0.78rem;
+}
+
+.admin-color-preview {
+  width: 22px;
+  height: 22px;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 6px;
+}
+
+.admin-page button.icon {
+  min-height: 34px;
+  width: 34px;
+  padding: 0;
+}
+
+.admin-publish-grid {
+  display: grid;
+  grid-template-columns: minmax(240px, 1fr) 180px auto;
+  align-items: end;
+}
+
+.admin-message {
+  margin: 16px 0 0;
+  color: #aebcb4;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.admin-message.error {
+  color: #e9a2a2;
+}
+
+.admin-message.success {
+  color: #c7ff4a;
+}
+
+@media (max-width: 900px) {
+  .admin-hero,
+  .admin-panel-heading,
+  .admin-project-layout {
+    flex-direction: column;
+  }
+
+  .admin-project-list {
+    width: 100%;
+    flex-basis: auto;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .admin-tech-row {
+    grid-template-columns: minmax(140px, 1fr) 110px 28px 40px;
+  }
+
+  .admin-tech-row input:nth-of-type(3) {
+    grid-column: 1 / -1;
+  }
+
+  .admin-publish-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 620px) {
+  .admin-page {
+    padding-top: 32px;
+  }
+
+  .admin-repo-input-row,
+  .admin-form-grid,
+  .admin-project-list {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-tech-row {
+    grid-template-columns: 1fr 96px 28px 36px;
+  }
+}
