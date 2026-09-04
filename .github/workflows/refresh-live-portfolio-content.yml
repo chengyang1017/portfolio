@@ -1,0 +1,50 @@
+name: Refresh Live Portfolio Content
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - scripts/apply-github-portfolio-refresh.py
+      - .github/workflows/refresh-live-portfolio-content.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Apply GitHub-backed portfolio refresh
+        run: python scripts/apply-github-portfolio-refresh.py
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build portfolio
+        run: npm run build
+
+      - name: Verify refreshed seed and runtime migration
+        run: |
+          grep -q "github-refresh-2026-09-05" src/data/portfolioSeed.json
+          grep -q "ensurePortfolioSeed" scripts/prepare-site-build.mjs
+          grep -q "Warm portfolio data" .github/workflows/deploy-cloudflare.yml
+          node --check dist/server/index.js
+
+      - name: Commit implementation and cleanup
+        run: |
+          git config user.name "portfolio-refresh-bot"
+          git config user.email "portfolio-refresh-bot@users.noreply.github.com"
+          git rm scripts/apply-github-portfolio-refresh.py .github/workflows/refresh-live-portfolio-content.yml
+          git add src/data/portfolioSeed.json src/data/projects.ts scripts/prepare-site-build.mjs .github/workflows/deploy-cloudflare.yml
+          git commit -m "Refresh live portfolio from current GitHub projects"
+          git push origin main
