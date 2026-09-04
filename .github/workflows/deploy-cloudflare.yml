@@ -1,4 +1,5 @@
 # Production deployment for the portfolio site and admin workspace.
+# Homepage project showcase deploys the newest published projects first.
 name: Deploy Portfolio to Cloudflare
 
 on:
