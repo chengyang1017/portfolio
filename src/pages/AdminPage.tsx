@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { Project, ProjectCategory } from '../data/projects';
 import { projects as initialProjects } from '../data/projects';
 import {
@@ -16,6 +16,11 @@ import {
   type PortfolioAccess,
   type RepositoryAnalysis,
 } from '../admin/githubPortfolio';
+import {
+  forgetAdminToken,
+  readSavedAdminToken,
+  saveAdminToken,
+} from '../admin/adminCredentialStore';
 
 const GROUPS: Array<{ id: TechnologyGroupId; label: string }> = [
   { id: 'client', label: 'Client / Languages' },
@@ -107,7 +112,7 @@ export function AdminPage() {
   const [analysis, setAnalysis] = useState<RepositoryAnalysis | null>(null);
   const [analysisState, setAnalysisState] = useState<'idle' | 'loading' | 'error'>('idle');
   const [analysisError, setAnalysisError] = useState('');
-  const [token, setToken] = useState('');
+  const [token, setToken] = useState(readSavedAdminToken);
   const [branch, setBranch] = useState('main');
   const [accessState, setAccessState] = useState<'locked' | 'checking' | 'granted' | 'error'>(
     'locked',
@@ -127,12 +132,17 @@ export function AdminPage() {
     [technologyDrafts],
   );
 
-  async function handleUnlock() {
+  async function unlockWithToken(candidateToken: string, persist = true) {
+    const cleanToken = candidateToken.trim();
+    if (!cleanToken) return;
+
     setAccessState('checking');
     setAccessMessage('Checking write access to chengyang1017/portfolio…');
 
     try {
-      const result = await verifyPortfolioAccess(token);
+      const result = await verifyPortfolioAccess(cleanToken);
+      setToken(cleanToken);
+      if (persist) saveAdminToken(cleanToken);
       setAccessInfo(result);
       setBranch(result.defaultBranch || 'main');
       setAccessState('granted');
@@ -143,7 +153,18 @@ export function AdminPage() {
     }
   }
 
+  async function handleUnlock() {
+    await unlockWithToken(token);
+  }
+
+  useEffect(() => {
+    const savedToken = readSavedAdminToken();
+    if (!savedToken) return;
+    void unlockWithToken(savedToken, false);
+  }, []);
+
   function lockAdmin() {
+    forgetAdminToken();
     setToken('');
     setAccessInfo(null);
     setAccessState('locked');
@@ -314,8 +335,9 @@ export function AdminPage() {
             <h1>Admin access</h1>
             <p>
               Unlock this dashboard with a fine-grained GitHub token that can write to
-              chengyang1017/portfolio. The token stays in memory only and is cleared when you lock
-              the dashboard or reload the page.
+              chengyang1017/portfolio. After successful verification, the token is remembered only
+              in this browser so reloads and future visits can unlock automatically. Use Lock admin
+              to sign out and forget the saved token.
             </p>
 
             <label className="admin-access-field">
