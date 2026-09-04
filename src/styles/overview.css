@@ -193,29 +193,108 @@
 }
 
 .overview-redesign .case-links {
-  gap: 0;
+  display: grid;
+  gap: 10px;
 
-  margin-top: 2px;
-
-  font-size: 0.76rem;
-  text-decoration: none;
+  margin-top: 12px;
 }
 
-.overview-redesign .case-links a {
-  display: flex;
+.overview-redesign .case-action {
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr) 24px;
   align-items: center;
-  justify-content: space-between;
-  gap: 18px;
+  gap: 11px;
 
-  padding: 14px 0;
+  min-height: 58px;
+  padding: 10px 11px;
 
-  border-bottom: 1px solid var(--line);
+  border: 1px solid var(--line);
+  border-radius: 14px;
 
+  background:
+    linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--accent) 5%, transparent),
+      transparent 70%
+    ),
+    var(--surface);
+
+  color: var(--text);
   text-decoration: none;
 
   transition:
+    transform 0.18s ease,
+    border-color 0.18s ease,
+    background 0.18s ease;
+}
+
+.overview-redesign .case-action:hover {
+  transform: translateY(-2px);
+
+  border-color:
+    color-mix(in srgb, var(--accent) 45%, var(--line));
+
+  background:
+    linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--accent) 10%, transparent),
+      transparent 70%
+    ),
+    var(--surface);
+}
+
+.case-action-icon {
+  width: 38px;
+  height: 38px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 10px;
+
+  background:
+    color-mix(in srgb, var(--accent) 10%, transparent);
+
+  color: var(--accent);
+}
+
+.case-action-label {
+  min-width: 0;
+
+  font-size: 0.76rem;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.case-action-arrow {
+  width: 24px;
+  height: 24px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid var(--line);
+  border-radius: 50%;
+
+  color: var(--muted);
+
+  font-size: 0.7rem;
+
+  transition:
     color 0.18s ease,
-    padding-left 0.18s ease;
+    border-color 0.18s ease,
+    transform 0.18s ease;
+}
+
+.case-action:hover .case-action-arrow {
+  color: var(--accent);
+
+  border-color:
+    color-mix(in srgb, var(--accent) 45%, var(--line));
+
+  transform: translate(1px, -1px);
 }
 
 .overview-redesign .case-links a:hover {

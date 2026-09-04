@@ -768,9 +768,8 @@
 }
 
 .admin-global-agent-proposal {
-  max-height: 230px;
-  margin-top: 0;
-  overflow-y: auto;
+  max-height: none;
+  overflow: visible;
 }
 
 .admin-global-agent-proposal .admin-chip-row {
