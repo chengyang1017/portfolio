@@ -1,0 +1,42 @@
+name: Clean Cloudflare Admin Store
+
+on:
+  push:
+    branches:
+      - feat/cloudflare-admin-store
+    paths:
+      - scripts/cleanup-cloudflare-admin-store.py
+      - .github/workflows/cleanup-cloudflare-admin-store.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/cloudflare-admin-store
+      - run: python scripts/cleanup-cloudflare-admin-store.py
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - name: Verify no PAT dependency
+        run: |
+          node --check dist/server/index.js
+          ! grep -R "GITHUB_PORTFOLIO_TOKEN" src scripts/prepare-site-build.mjs
+          ! grep -R "portfolio-admin-github-token" src
+          ! grep -R "Enter a GitHub token first" src
+      - name: Commit cleanup
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/admin/githubPortfolio.ts src/admin/projectTranslationManager.ts src/admin/adminSession.ts src/pages/AdminPage.tsx src/pages/AdminTranslationsPage.tsx
+          git diff --cached --quiet && exit 0
+          git commit -m "Remove obsolete GitHub PAT admin code"
+          git push origin feat/cloudflare-admin-store
