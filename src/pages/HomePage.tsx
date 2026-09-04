@@ -1,5 +1,5 @@
 import type { CSSProperties } from 'react';
-import { Cloud, Monitor, Server, Terminal } from 'lucide-react';
+import { Cloud, Monitor, Server, Terminal, type LucideIcon } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Hero } from '../components/Hero';
 import { SectionHeader } from '../components/SectionHeader';
@@ -92,7 +92,7 @@ export function HomePage() {
   const technologyGroups: Array<{
     label: string;
     tone: 'client' | 'backend' | 'platform';
-    icon: typeof Monitor;
+    icon: LucideIcon;
     description: string;
     technologies: BrandTechnology[];
   }> = [
