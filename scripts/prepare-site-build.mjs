@@ -16,6 +16,71 @@ export class PortfolioStore {
   }
 
   async fetch(request) {
+    const url = new URL(request.url);
+
+    if (url.pathname.startsWith('/media/')) {
+      const id = decodeURIComponent(url.pathname.slice('/media/'.length));
+      if (!/^[a-zA-Z0-9_-]{12,120}$/.test(id)) return json({ error: 'Invalid media id.' }, 400);
+      const metaKey = 'media:' + id + ':meta';
+
+      if (request.method === 'PUT') {
+        const bytes = await request.arrayBuffer();
+        if (!bytes.byteLength || bytes.byteLength > 8 * 1024 * 1024) {
+          return json({ error: 'Screenshot must be between 1 byte and 8 MB.' }, 413);
+        }
+
+        const chunkSize = 96 * 1024;
+        const chunks = Math.ceil(bytes.byteLength / chunkSize);
+        const contentType = request.headers.get('content-type') || 'application/octet-stream';
+        const originalName = request.headers.get('x-file-name') || '';
+
+        await this.ctx.storage.put(metaKey, {
+          contentType,
+          originalName,
+          size: bytes.byteLength,
+          chunks,
+          uploadedAt: new Date().toISOString(),
+        });
+
+        for (let index = 0; index < chunks; index += 1) {
+          const start = index * chunkSize;
+          await this.ctx.storage.put('media:' + id + ':' + index, bytes.slice(start, Math.min(start + chunkSize, bytes.byteLength)));
+        }
+
+        return json({ stored: true, id, size: bytes.byteLength, contentType });
+      }
+
+      const meta = await this.ctx.storage.get(metaKey);
+      if (!meta) return json({ error: 'Media not found.' }, 404);
+
+      if (request.method === 'DELETE') {
+        await this.ctx.storage.delete(metaKey);
+        for (let index = 0; index < meta.chunks; index += 1) {
+          await this.ctx.storage.delete('media:' + id + ':' + index);
+        }
+        return json({ deleted: true, id });
+      }
+
+      if (request.method === 'GET') {
+        const parts = [];
+        for (let index = 0; index < meta.chunks; index += 1) {
+          const part = await this.ctx.storage.get('media:' + id + ':' + index);
+          if (!part) return json({ error: 'Media data is incomplete.' }, 500);
+          parts.push(part);
+        }
+
+        return new Response(new Blob(parts, { type: meta.contentType }), {
+          headers: {
+            'content-type': meta.contentType,
+            'content-length': String(meta.size),
+            'cache-control': 'public, max-age=31536000, immutable',
+          },
+        });
+      }
+
+      return json({ error: 'Method not allowed' }, 405);
+    }
+
     if (request.method === 'GET') {
       return json((await this.ctx.storage.get('portfolio')) || {});
     }
@@ -187,6 +252,82 @@ async function handlePublishPortfolio(request, env) {
   } catch (error) {
     return json({ error: error?.message || 'Portfolio publish failed.' }, 502);
   }
+}
+
+
+function projectMediaPublicUrl(id) {
+  return '/api/media/' + encodeURIComponent(id);
+}
+
+async function handleProjectMedia(request, env) {
+  if (!(await hasAdminSession(request, env))) return json({ error: 'Admin session required.' }, 401);
+
+  if (request.method === 'POST') {
+    const contentType = (request.headers.get('content-type') || '').toLowerCase();
+    if (!['image/png', 'image/jpeg', 'image/webp'].includes(contentType)) {
+      return json({ error: 'Only PNG, JPG, and WebP screenshots are supported.' }, 415);
+    }
+
+    const declaredLength = Number(request.headers.get('content-length') || '0');
+    if (declaredLength > 8 * 1024 * 1024) {
+      return json({ error: 'Screenshot must be 8 MB or smaller.' }, 413);
+    }
+
+    const bytes = await request.arrayBuffer();
+    if (!bytes.byteLength || bytes.byteLength > 8 * 1024 * 1024) {
+      return json({ error: 'Screenshot must be between 1 byte and 8 MB.' }, 413);
+    }
+
+    const id = crypto.randomUUID().replace(/-/g, '');
+    const internal = new Request('https://portfolio-store.internal/media/' + encodeURIComponent(id), {
+      method: 'PUT',
+      headers: {
+        'Content-Type': contentType,
+        'X-File-Name': request.headers.get('x-file-name') || '',
+      },
+      body: bytes,
+    });
+    const stored = await portfolioStore(env).fetch(internal);
+    if (!stored.ok) {
+      const detail = await stored.json().catch(() => null);
+      return json({ error: detail?.error || 'Unable to store screenshot.' }, stored.status);
+    }
+
+    return json({
+      id,
+      url: projectMediaPublicUrl(id),
+      size: bytes.byteLength,
+      contentType,
+    });
+  }
+
+  if (request.method === 'DELETE') {
+    const url = new URL(request.url);
+    const id = url.searchParams.get('id') || '';
+    if (!/^[a-zA-Z0-9_-]{12,120}$/.test(id)) return json({ error: 'Invalid media id.' }, 400);
+    const response = await portfolioStore(env).fetch('https://portfolio-store.internal/media/' + encodeURIComponent(id), {
+      method: 'DELETE',
+    });
+    if (!response.ok) {
+      const detail = await response.json().catch(() => null);
+      return json({ error: detail?.error || 'Unable to delete screenshot.' }, response.status);
+    }
+    return json({ deleted: true, id });
+  }
+
+  return json({ error: 'Method not allowed' }, 405);
+}
+
+async function handlePublicProjectMedia(request, env, id) {
+  if (request.method !== 'GET' && request.method !== 'HEAD') {
+    return json({ error: 'Method not allowed' }, 405);
+  }
+  if (!/^[a-zA-Z0-9_-]{12,120}$/.test(id)) return json({ error: 'Invalid media id.' }, 400);
+  const response = await portfolioStore(env).fetch('https://portfolio-store.internal/media/' + encodeURIComponent(id));
+  if (request.method === 'HEAD' && response.ok) {
+    return new Response(null, { status: 200, headers: response.headers });
+  }
+  return response;
 }
 
 async function handlePublishTranslations(request, env) {
@@ -787,6 +928,10 @@ export default {
     if (url.pathname === '/api/admin/session') return handleAdminSession(request, env);
     if (url.pathname === '/api/admin/publish-portfolio') return handlePublishPortfolio(request, env);
     if (url.pathname === '/api/admin/publish-translations') return handlePublishTranslations(request, env);
+    if (url.pathname === '/api/admin/project-media') return handleProjectMedia(request, env);
+    if (url.pathname.startsWith('/api/media/')) {
+      return handlePublicProjectMedia(request, env, decodeURIComponent(url.pathname.slice('/api/media/'.length)));
+    }
     if (url.pathname === '/api/agent/content') return handleAgentContent(request, env);
 
     if (url.pathname === '/api/portfolio-data' && request.method === 'GET') {

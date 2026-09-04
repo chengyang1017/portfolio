@@ -34,6 +34,7 @@ import {
   type PortfolioAgentProposal,
 } from '../admin/projectAgent';
 import { getAdminUiCopy } from '../admin/adminUiCopy';
+import { deleteProjectScreenshot, uploadProjectScreenshot } from '../admin/projectMedia';
 import { LanguageSwitcher } from '../components/LanguageSwitcher';
 import { useI18n } from '../i18n/I18nProvider';
 import { localizeProjectDetail as legacyLocalizeProjectDetail } from '../i18n/projectDetailTranslations';
@@ -71,6 +72,14 @@ const PROJECT_MOCKUPS: Project['mockup'][] = [
   'ide',
   'inflection',
 ];
+
+const PROJECT_MEDIA_COPY = {
+  en: { heading: 'Project screenshots', help: 'PNG, JPG or WebP · up to 8 MB each', add: 'Add screenshot', replace: 'Replace image', remove: 'Remove', title: 'Screenshot title', caption: 'Screenshot caption', empty: 'No screenshots yet.', uploading: 'Uploading…', uploaded: 'Screenshot uploaded. Save changes to publish it.', failed: 'Screenshot upload failed.' },
+  'zh-CN': { heading: '项目截图', help: 'PNG、JPG 或 WebP · 每张最大 8 MB', add: '添加截图', replace: '更换图片', remove: '删除', title: '截图标题', caption: '截图说明', empty: '还没有项目截图。', uploading: '正在上传…', uploaded: '截图已上传，点击“保存修改”后正式发布。', failed: '截图上传失败。' },
+  'zh-TW': { heading: '專案截圖', help: 'PNG、JPG 或 WebP · 每張最大 8 MB', add: '新增截圖', replace: '更換圖片', remove: '刪除', title: '截圖標題', caption: '截圖說明', empty: '還沒有專案截圖。', uploading: '正在上傳…', uploaded: '截圖已上傳，按「儲存修改」後正式發佈。', failed: '截圖上傳失敗。' },
+  'vi-Latn': { heading: 'Ảnh chụp dự án', help: 'PNG, JPG hoặc WebP · tối đa 8 MB mỗi ảnh', add: 'Thêm ảnh', replace: 'Thay ảnh', remove: 'Xóa', title: 'Tiêu đề ảnh', caption: 'Chú thích ảnh', empty: 'Chưa có ảnh chụp dự án.', uploading: 'Đang tải lên…', uploaded: 'Đã tải ảnh. Lưu thay đổi để xuất bản.', failed: 'Tải ảnh thất bại.' },
+  'vi-Hani': { heading: '形影預案', help: 'PNG、JPG 或 WebP · 每形影最大 8 MB', add: '添形影', replace: '替形影', remove: '刪', title: '題形影', caption: '註形影', empty: '𣎏固形影預案。', uploading: '當載𨕭…', uploaded: '形影㐌載𨕭。保存修改抵發布。', failed: '載𨕭形影敗。' },
+} as const;
 
 
 const ADMIN_DRAFT_STORAGE_KEY = 'portfolio-admin-draft-v1';
@@ -250,6 +259,7 @@ function galleryToText(project: Pick<Project, 'gallery'>) {
 export function AdminPage() {
   const { language } = useI18n();
   const ui = getAdminUiCopy(language);
+  const mediaUi = PROJECT_MEDIA_COPY[language];
   const [initialDraftSnapshot] = useState<AdminDraftSnapshot | null>(() => readAdminDraftSnapshot());
   const [projectDrafts, setProjectDrafts] = useState<Project[]>(
     () => initialDraftSnapshot?.projects ?? cloneProjects(),
@@ -302,6 +312,9 @@ export function AdminPage() {
   const [agentStatus, setAgentStatus] = useState('');
   const [agentMessages, setAgentMessages] = useState<AgentMessage[]>([]);
   const [agentProposal, setAgentProposal] = useState<PortfolioAgentProposal | null>(null);
+  const [mediaBusy, setMediaBusy] = useState<number | 'new' | null>(null);
+  const [mediaMessage, setMediaMessage] = useState('');
+  const [mediaError, setMediaError] = useState(false);
 
   const selectedProject = useMemo(
     () => projectDrafts.find((project) => project.slug === selectedSlug),
@@ -448,6 +461,70 @@ export function AdminPage() {
         },
       };
     });
+  }
+
+  function updateGalleryItem(index: number, patch: Partial<Project['gallery'][number]>) {
+    setProjectDrafts((current) =>
+      current.map((project) => {
+        if (project.slug !== selectedSlug) return project;
+        return {
+          ...project,
+          gallery: project.gallery.map((item, itemIndex) =>
+            itemIndex === index ? { ...item, ...patch } : item,
+          ),
+        };
+      }),
+    );
+  }
+
+  async function uploadGalleryScreenshot(file: File, index?: number) {
+    if (!selectedProject) return;
+
+    const target = index ?? 'new';
+    const previousImage = index === undefined ? undefined : selectedProject.gallery[index]?.image;
+    setMediaBusy(target);
+    setMediaError(false);
+    setMediaMessage(mediaUi.uploading);
+
+    try {
+      const uploaded = await uploadProjectScreenshot(file, selectedProject.slug);
+      const titleFromFile = file.name.replace(/\.[^.]+$/, '').replace(/[-_]+/g, ' ').trim();
+
+      setProjectDrafts((current) =>
+        current.map((project) => {
+          if (project.slug !== selectedProject.slug) return project;
+          const gallery = project.gallery.map((item) => ({ ...item }));
+          if (index === undefined) {
+            gallery.push({ title: titleFromFile || 'Screenshot', caption: '', image: uploaded.url });
+          } else if (gallery[index]) {
+            gallery[index] = {
+              ...gallery[index],
+              title: gallery[index].title || titleFromFile || 'Screenshot',
+              image: uploaded.url,
+            };
+          }
+          return { ...project, gallery };
+        }),
+      );
+
+      if (previousImage && previousImage !== uploaded.url) {
+        void deleteProjectScreenshot(previousImage).catch(() => undefined);
+      }
+
+      setMediaMessage(mediaUi.uploaded);
+    } catch (error) {
+      setMediaError(true);
+      setMediaMessage(error instanceof Error ? error.message : mediaUi.failed);
+    } finally {
+      setMediaBusy(null);
+    }
+  }
+
+  function removeGalleryItem(index: number) {
+    if (!selectedProject) return;
+    const image = selectedProject.gallery[index]?.image;
+    updateProject({ gallery: selectedProject.gallery.filter((_, itemIndex) => itemIndex !== index) });
+    if (image) void deleteProjectScreenshot(image).catch(() => undefined);
   }
 
   async function handleAiFillTranslations() {
@@ -1118,21 +1195,86 @@ export function AdminPage() {
                 />
               </label>
 
-              <label className="wide">
-                <span>{ui.galleryHint}</span>
-                <textarea
-                  className="large"
-                  value={galleryToText(selectedProject)}
-                  onChange={(event) =>
-                    updateProject({
-                      gallery: pairLines(event.target.value).map(([title, caption]) => ({
-                        title,
-                        caption,
-                      })),
-                    })
-                  }
-                />
-              </label>
+              <section className="admin-screenshot-editor wide">
+                <div className="admin-screenshot-heading">
+                  <div>
+                    <strong>{mediaUi.heading}</strong>
+                    <small>{mediaUi.help}</small>
+                  </div>
+                  <label className={`admin-upload-button${mediaBusy !== null ? ' is-disabled' : ''}`}>
+                    <span>{mediaBusy === 'new' ? mediaUi.uploading : mediaUi.add}</span>
+                    <input
+                      type="file"
+                      accept="image/png,image/jpeg,image/webp"
+                      disabled={mediaBusy !== null}
+                      onChange={(event) => {
+                        const file = event.currentTarget.files?.[0];
+                        event.currentTarget.value = '';
+                        if (file) void uploadGalleryScreenshot(file);
+                      }}
+                    />
+                  </label>
+                </div>
+
+                {mediaMessage && (
+                  <p className={`admin-message admin-media-message${mediaError ? ' error' : ''}`}>
+                    {mediaMessage}
+                  </p>
+                )}
+
+                {selectedProject.gallery.length === 0 ? (
+                  <div className="admin-screenshot-empty">{mediaUi.empty}</div>
+                ) : (
+                  <div className="admin-screenshot-list">
+                    {selectedProject.gallery.map((item, index) => (
+                      <article className="admin-screenshot-card" key={`${selectedProject.slug}-${index}`}>
+                        <div className="admin-screenshot-preview">
+                          {item.image ? (
+                            <img src={item.image} alt={item.title || `${mediaUi.heading} ${index + 1}`} />
+                          ) : (
+                            <span>NO IMAGE</span>
+                          )}
+                        </div>
+
+                        <div className="admin-screenshot-fields">
+                          <label>
+                            <span>{mediaUi.title}</span>
+                            <input
+                              value={item.title}
+                              onChange={(event) => updateGalleryItem(index, { title: event.target.value })}
+                            />
+                          </label>
+                          <label>
+                            <span>{mediaUi.caption}</span>
+                            <textarea
+                              value={item.caption}
+                              onChange={(event) => updateGalleryItem(index, { caption: event.target.value })}
+                            />
+                          </label>
+                          <div className="admin-screenshot-actions">
+                            <label className={`admin-upload-button secondary${mediaBusy !== null ? ' is-disabled' : ''}`}>
+                              <span>{mediaBusy === index ? mediaUi.uploading : mediaUi.replace}</span>
+                              <input
+                                type="file"
+                                accept="image/png,image/jpeg,image/webp"
+                                disabled={mediaBusy !== null}
+                                onChange={(event) => {
+                                  const file = event.currentTarget.files?.[0];
+                                  event.currentTarget.value = '';
+                                  if (file) void uploadGalleryScreenshot(file, index);
+                                }}
+                              />
+                            </label>
+                            <button type="button" className="danger" onClick={() => removeGalleryItem(index)}>
+                              {mediaUi.remove}
+                            </button>
+                          </div>
+                        </div>
+                      </article>
+                    ))}
+                  </div>
+                )}
+              </section>
             </div>
               ) : selectedTranslation ? (
                 <div className="admin-form-grid admin-translation-form-grid">

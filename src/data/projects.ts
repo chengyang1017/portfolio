@@ -13,7 +13,7 @@ export interface Project {
   features: string[];
   challenges: { title: string; description: string }[];
   architecture: { label: string; detail: string }[];
-  gallery: { title: string; caption: string }[];
+  gallery: { title: string; caption: string; image?: string }[];
   github?: string;
   tone: 'lime' | 'blue' | 'sand' | 'lavender' | 'slate' | 'coral';
   mockup: 'morphology' | 'commerce' | 'language' | 'keyboard' | 'ide' | 'inflection';

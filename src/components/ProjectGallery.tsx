@@ -5,16 +5,25 @@ export function ProjectGallery({ project }: { project: Project }) {
   return (
     <div className="gallery">
       {project.gallery.map((image, index) => (
-        <figure key={image.title}>
-          <ProjectVisual
-            project={project}
-            compact
-            focus={{
-              title: image.title,
-              caption: image.caption,
-              index,
-            }}
-          />
+        <figure key={`${image.title}-${index}`}>
+          {image.image ? (
+            <img
+              className="gallery-screenshot"
+              src={image.image}
+              alt={image.title || `Project screenshot ${index + 1}`}
+              loading="lazy"
+            />
+          ) : (
+            <ProjectVisual
+              project={project}
+              compact
+              focus={{
+                title: image.title,
+                caption: image.caption,
+                index,
+              }}
+            />
+          )}
           <figcaption>
             <span>{String(index + 1).padStart(2, '0')}</span>
             <div>
