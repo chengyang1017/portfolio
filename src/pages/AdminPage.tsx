@@ -632,121 +632,8 @@ export function AdminPage() {
         </div>
       </header>
 
-      <section className="admin-panel admin-global-agent-panel" aria-label={ui.agentTitle}>
-        <div className="admin-panel-heading admin-agent-heading">
-          <div>
-            <p className="eyebrow">AI / GLOBAL AGENT</p>
-            <h2>{ui.agentTitle}</h2>
-          </div>
-          <p>{ui.agentDraftOnly}</p>
-        </div>
-
-        <div className="admin-global-agent-context">
-          <span>{ui.agentPortfolioScope}</span>
-          <strong>{projectDrafts.length} {ui.projects} · {allTechnologyNames.length} {ui.technologies}</strong>
-          {selectedProject && (
-            <small>{ui.agentCurrentFocus}: {selectedProject.title} · {CONTENT_LOCALES.find((locale) => locale.id === contentLocale)?.label}</small>
-          )}
-        </div>
-
-        {agentMessages.length > 0 && (
-          <div className="admin-agent-thread admin-global-agent-thread">
-            {agentMessages.map((message, index) => (
-              <div className={`admin-agent-message ${message.role}`} key={`${index}-${message.role}`}>
-                <span>{message.role === 'user' ? ui.agentYou : 'AI'}</span>
-                <p>{message.content}</p>
-              </div>
-            ))}
-          </div>
-        )}
-
-        <div className="admin-agent-quick-actions">
-          <button
-            type="button"
-            className="secondary"
-            onClick={() => void handleAgentSubmit('Review the entire portfolio and fill only genuinely empty or incomplete portfolio fields across projects. Preserve good existing content and do not invent facts.')}
-            disabled={agentState === 'loading'}
-          >
-            {ui.agentFillEmpty}
-          </button>
-          <button
-            type="button"
-            className="secondary"
-            onClick={() => void handleAgentSubmit('Find missing translations across every project and fill the missing Simplified Chinese, Traditional Chinese, Vietnamese, and Chữ Nôm fields. Do not change English unless necessary for consistency.')}
-            disabled={agentState === 'loading'}
-          >
-            {ui.agentTranslateAll}
-          </button>
-          <button
-            type="button"
-            className="secondary"
-            onClick={() => void handleAgentSubmit(`Focus on the currently selected project (${selectedSlug || 'none'}) and active locale (${contentLocale}). Improve only that scope unless another edit is required for consistency.`)}
-            disabled={agentState === 'loading' || !selectedProject}
-          >
-            {ui.agentImproveCurrent}
-          </button>
-          <button
-            type="button"
-            className="secondary"
-            onClick={() => void handleAgentSubmit('Audit the portfolio for inconsistent project descriptions, duplicated technologies, missing technology catalog entries, and multilingual coverage problems. Propose only safe draft corrections.')}
-            disabled={agentState === 'loading'}
-          >
-            {ui.agentAuditPortfolio}
-          </button>
-        </div>
-
-        <div className="admin-agent-compose admin-global-agent-compose">
-          <textarea
-            value={agentInstruction}
-            onChange={(event) => setAgentInstruction(event.target.value)}
-            onKeyDown={(event) => {
-              if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
-                event.preventDefault();
-                void handleAgentSubmit();
-              }
-            }}
-            placeholder={ui.agentPlaceholder}
-            disabled={agentState === 'loading'}
-          />
-          <button
-            type="button"
-            onClick={() => void handleAgentSubmit()}
-            disabled={agentState === 'loading' || !agentInstruction.trim()}
-          >
-            {agentState === 'loading' ? ui.agentThinking : ui.agentSend}
-          </button>
-        </div>
-
-        {agentStatus && (
-          <p className={agentState === 'error' ? 'admin-message error' : 'admin-message'}>{agentStatus}</p>
-        )}
-
-        {agentProposal && agentProposal.changedFields.length > 0 && (
-          <div className="admin-agent-proposal admin-global-agent-proposal">
-            <div className="admin-agent-proposal-heading">
-              <strong>{ui.agentProposedChanges}</strong>
-              <span>{agentProposal.changedFields.length} {ui.agentFields}</span>
-            </div>
-            <div className="admin-chip-row">
-              {agentProposal.changedFields.map((field) => <span key={field}>{field}</span>)}
-            </div>
-            <div className="admin-actions">
-              <button type="button" onClick={applyAgentProposal}>{ui.agentApply}</button>
-              <button
-                type="button"
-                className="secondary"
-                onClick={() => {
-                  setAgentProposal(null);
-                  setAgentStatus(ui.agentDiscarded);
-                }}
-              >
-                {ui.agentDiscard}
-              </button>
-            </div>
-          </div>
-        )}
-      </section>
-
+      <div className="admin-workspace">
+        <div className="admin-workspace-main">
       <section className="admin-panel admin-ai-panel">
         <div className="admin-panel-heading">
           <div>
@@ -1200,6 +1087,123 @@ export function AdminPage() {
           </p>
         )}
       </section>
+        </div>
+
+      <aside className="admin-global-agent-panel" aria-label={ui.agentTitle}>
+        <div className="admin-panel-heading admin-agent-heading">
+          <div>
+            <p className="eyebrow">AI / GLOBAL AGENT</p>
+            <h2>{ui.agentTitle}</h2>
+          </div>
+          <p>{ui.agentDraftOnly}</p>
+        </div>
+
+        <div className="admin-global-agent-context">
+          <span>{ui.agentPortfolioScope}</span>
+          <strong>{projectDrafts.length} {ui.projects} · {allTechnologyNames.length} {ui.technologies}</strong>
+          {selectedProject && (
+            <small>{ui.agentCurrentFocus}: {selectedProject.title} · {CONTENT_LOCALES.find((locale) => locale.id === contentLocale)?.label}</small>
+          )}
+        </div>
+
+        {agentMessages.length > 0 && (
+          <div className="admin-agent-thread admin-global-agent-thread">
+            {agentMessages.map((message, index) => (
+              <div className={`admin-agent-message ${message.role}`} key={`${index}-${message.role}`}>
+                <span>{message.role === 'user' ? ui.agentYou : 'AI'}</span>
+                <p>{message.content}</p>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <div className="admin-agent-quick-actions">
+          <button
+            type="button"
+            className="secondary"
+            onClick={() => void handleAgentSubmit('Review the entire portfolio and fill only genuinely empty or incomplete portfolio fields across projects. Preserve good existing content and do not invent facts.')}
+            disabled={agentState === 'loading'}
+          >
+            {ui.agentFillEmpty}
+          </button>
+          <button
+            type="button"
+            className="secondary"
+            onClick={() => void handleAgentSubmit('Find missing translations across every project and fill the missing Simplified Chinese, Traditional Chinese, Vietnamese, and Chữ Nôm fields. Do not change English unless necessary for consistency.')}
+            disabled={agentState === 'loading'}
+          >
+            {ui.agentTranslateAll}
+          </button>
+          <button
+            type="button"
+            className="secondary"
+            onClick={() => void handleAgentSubmit(`Focus on the currently selected project (${selectedSlug || 'none'}) and active locale (${contentLocale}). Improve only that scope unless another edit is required for consistency.`)}
+            disabled={agentState === 'loading' || !selectedProject}
+          >
+            {ui.agentImproveCurrent}
+          </button>
+          <button
+            type="button"
+            className="secondary"
+            onClick={() => void handleAgentSubmit('Audit the portfolio for inconsistent project descriptions, duplicated technologies, missing technology catalog entries, and multilingual coverage problems. Propose only safe draft corrections.')}
+            disabled={agentState === 'loading'}
+          >
+            {ui.agentAuditPortfolio}
+          </button>
+        </div>
+
+        <div className="admin-agent-compose admin-global-agent-compose">
+          <textarea
+            value={agentInstruction}
+            onChange={(event) => setAgentInstruction(event.target.value)}
+            onKeyDown={(event) => {
+              if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
+                event.preventDefault();
+                void handleAgentSubmit();
+              }
+            }}
+            placeholder={ui.agentPlaceholder}
+            disabled={agentState === 'loading'}
+          />
+          <button
+            type="button"
+            onClick={() => void handleAgentSubmit()}
+            disabled={agentState === 'loading' || !agentInstruction.trim()}
+          >
+            {agentState === 'loading' ? ui.agentThinking : ui.agentSend}
+          </button>
+        </div>
+
+        {agentStatus && (
+          <p className={agentState === 'error' ? 'admin-message error' : 'admin-message'}>{agentStatus}</p>
+        )}
+
+        {agentProposal && agentProposal.changedFields.length > 0 && (
+          <div className="admin-agent-proposal admin-global-agent-proposal">
+            <div className="admin-agent-proposal-heading">
+              <strong>{ui.agentProposedChanges}</strong>
+              <span>{agentProposal.changedFields.length} {ui.agentFields}</span>
+            </div>
+            <div className="admin-chip-row">
+              {agentProposal.changedFields.map((field) => <span key={field}>{field}</span>)}
+            </div>
+            <div className="admin-actions">
+              <button type="button" onClick={applyAgentProposal}>{ui.agentApply}</button>
+              <button
+                type="button"
+                className="secondary"
+                onClick={() => {
+                  setAgentProposal(null);
+                  setAgentStatus(ui.agentDiscarded);
+                }}
+              >
+                {ui.agentDiscard}
+              </button>
+            </div>
+          </div>
+        )}
+      </aside>
+      </div>
     </main>
   );
 }
