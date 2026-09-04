@@ -1,0 +1,100 @@
+.admin-access-shell {
+  min-height: calc(100vh - 180px);
+  display: grid;
+  place-items: center;
+  padding: 48px 0 80px;
+}
+
+.admin-access-card {
+  width: min(680px, 100%);
+  padding: clamp(28px, 5vw, 52px);
+  border: 1px solid #33443a;
+  border-radius: 18px;
+  background: #0f1713;
+}
+
+.admin-access-card h1 {
+  margin: 12px 0 16px;
+  font-family: 'Manrope', sans-serif;
+  font-size: clamp(3rem, 7vw, 5.8rem);
+  font-weight: 500;
+  line-height: 0.95;
+  letter-spacing: -0.06em;
+}
+
+.admin-access-card > p:not(.eyebrow):not(.admin-message) {
+  max-width: 570px;
+  margin: 0 0 28px;
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.admin-access-field {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.admin-access-field > span {
+  color: #9aaba2;
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+}
+
+.admin-access-card > button {
+  width: 100%;
+}
+
+.admin-lock-button {
+  min-height: 34px !important;
+  justify-self: start;
+  padding: 0 11px !important;
+  font-size: 0.68rem !important;
+}
+
+.admin-publish-grid-verified {
+  grid-template-columns: minmax(240px, 1fr) 180px auto;
+}
+
+.admin-verified-repository {
+  min-height: 44px;
+  display: grid;
+  align-content: center;
+  gap: 3px;
+  padding: 6px 12px;
+  border: 1px solid #33443a;
+  border-radius: 10px;
+  background: #0f1713;
+}
+
+.admin-verified-repository span {
+  color: #82938a;
+  font-size: 0.58rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.admin-verified-repository strong {
+  color: #c7ff4a;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+@media (max-width: 900px) {
+  .admin-publish-grid-verified {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 620px) {
+  .admin-access-shell {
+    padding-top: 24px;
+  }
+
+  .admin-access-card {
+    padding: 24px 18px;
+    border-radius: 14px;
+  }
+}
