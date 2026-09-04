@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { Project, ProjectCategory } from '../data/projects';
-import { projects as initialProjects } from '../data/projects';
+import { portfolioContentVersion, projects as initialProjects } from '../data/projects';
 import {
   PROJECT_TRANSLATION_LOCALES,
   projectTranslationCatalog,
@@ -82,7 +82,7 @@ const PROJECT_MEDIA_COPY = {
 } as const;
 
 
-const ADMIN_DRAFT_STORAGE_KEY = 'portfolio-admin-draft-v1';
+const ADMIN_DRAFT_STORAGE_KEY = `portfolio-admin-draft-${portfolioContentVersion}`;
 
 type AdminDraftSnapshot = {
   projects: Project[];

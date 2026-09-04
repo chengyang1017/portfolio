@@ -1,6 +1,17 @@
-import { mkdir, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
 
-const workerSource = `function json(data, status = 200) {
+const portfolioSeed = JSON.parse(
+  await readFile(new URL('../src/data/portfolioSeed.json', import.meta.url), 'utf8'),
+);
+const portfolioContentVersion = portfolioSeed.version;
+const portfolioProjectsJson = JSON.stringify(portfolioSeed.projects)
+  .replace(/`/g, '\\`')
+  .replace(/\$\{/g, '\\${');
+
+const workerSource = `const PORTFOLIO_CONTENT_VERSION = ${JSON.stringify(portfolioContentVersion)};
+const PORTFOLIO_PROJECT_SEED = ${portfolioProjectsJson};
+
+function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
     headers: {
@@ -8,6 +19,58 @@ const workerSource = `function json(data, status = 200) {
       'cache-control': 'no-store',
     },
   });
+}
+
+function mergeSeedGallery(seedGallery, existingGallery) {
+  const source = Array.isArray(seedGallery) ? seedGallery : [];
+  const existing = Array.isArray(existingGallery) ? existingGallery : [];
+  const next = source.map((item, index) => {
+    const image = typeof existing[index]?.image === 'string' ? existing[index].image : '';
+    return image ? { ...item, image } : item;
+  });
+
+  for (let index = source.length; index < existing.length; index += 1) {
+    const item = existing[index];
+    if (item && typeof item.image === 'string' && item.image) next.push(item);
+  }
+
+  return next;
+}
+
+async function ensurePortfolioSeed(ctx) {
+  const current = (await ctx.storage.get('portfolio')) || {};
+  if (current.contentVersion === PORTFOLIO_CONTENT_VERSION) return current;
+
+  const existingProjects = Array.isArray(current.projects) ? current.projects : [];
+  const existingBySlug = new Map(
+    existingProjects
+      .filter((project) => project && typeof project.slug === 'string')
+      .map((project) => [project.slug, project]),
+  );
+
+  const seededProjects = PORTFOLIO_PROJECT_SEED.map((project) => {
+    const existing = existingBySlug.get(project.slug);
+    if (!existing) return project;
+    return {
+      ...project,
+      gallery: mergeSeedGallery(project.gallery, existing.gallery),
+    };
+  });
+
+  const seedSlugs = new Set(PORTFOLIO_PROJECT_SEED.map((project) => project.slug));
+  const customProjects = existingProjects.filter(
+    (project) => project && typeof project.slug === 'string' && !seedSlugs.has(project.slug),
+  );
+
+  const next = {
+    ...current,
+    projects: [...seededProjects, ...customProjects],
+    contentVersion: PORTFOLIO_CONTENT_VERSION,
+    updatedAt: new Date().toISOString(),
+  };
+
+  await ctx.storage.put('portfolio', next);
+  return next;
 }
 
 export class PortfolioStore {
@@ -82,13 +145,13 @@ export class PortfolioStore {
     }
 
     if (request.method === 'GET') {
-      return json((await this.ctx.storage.get('portfolio')) || {});
+      return json(await ensurePortfolioSeed(this.ctx));
     }
 
     if (request.method === 'PATCH') {
       const patch = await request.json().catch(() => null);
       if (!patch || typeof patch !== 'object') return json({ error: 'Invalid portfolio data.' }, 400);
-      const current = (await this.ctx.storage.get('portfolio')) || {};
+      const current = await ensurePortfolioSeed(this.ctx);
       const next = { ...current, ...patch, updatedAt: new Date().toISOString() };
       await this.ctx.storage.put('portfolio', next);
       return json(next);
