@@ -33,13 +33,17 @@ interface ResolvedBlockState {
     | 'error';
 
   result?: ResolvedCode;
+
   error?: string;
 }
 
 export function SourceCodeBlocks({
   blocks,
+  embedded = false,
 }: {
   blocks: SourceCodeBlock[];
+
+  embedded?: boolean;
 }) {
   const {
     t,
@@ -59,8 +63,12 @@ export function SourceCodeBlocks({
     useRef(true);
 
   useEffect(() => {
+    mountedRef.current =
+      true;
+
     return () => {
-      mountedRef.current = false;
+      mountedRef.current =
+        false;
     };
   }, []);
 
@@ -68,11 +76,14 @@ export function SourceCodeBlocks({
     block: SourceCodeBlock,
   ) {
     setResolvedBlocks(
-      (current) => ({
+      (
+        current,
+      ) => ({
         ...current,
 
         [block.id]: {
-          status: 'loading',
+          status:
+            'loading',
         },
       }),
     );
@@ -90,11 +101,15 @@ export function SourceCodeBlocks({
       }
 
       setResolvedBlocks(
-        (current) => ({
+        (
+          current,
+        ) => ({
           ...current,
 
           [block.id]: {
-            status: 'success',
+            status:
+              'success',
+
             result,
           },
         }),
@@ -107,14 +122,18 @@ export function SourceCodeBlocks({
       }
 
       setResolvedBlocks(
-        (current) => ({
+        (
+          current,
+        ) => ({
           ...current,
 
           [block.id]: {
-            status: 'error',
+            status:
+              'error',
 
             error:
-              error instanceof Error
+              error instanceof
+              Error
                 ? error.message
                 : 'Unknown source loading error',
           },
@@ -124,13 +143,16 @@ export function SourceCodeBlocks({
   }
 
   useEffect(() => {
-    let cancelled = false;
+    let cancelled =
+      false;
 
     async function loadBlocks() {
       const entries =
         await Promise.all(
           blocks.map(
-            async (block) => {
+            async (
+              block,
+            ) => {
               try {
                 const result =
                   await resolveCodeBlock(
@@ -143,10 +165,13 @@ export function SourceCodeBlocks({
                   {
                     status:
                       'success',
+
                     result,
                   } satisfies ResolvedBlockState,
                 ] as const;
-              } catch (error) {
+              } catch (
+                error
+              ) {
                 return [
                   block.id,
 
@@ -166,7 +191,9 @@ export function SourceCodeBlocks({
           ),
         );
 
-      if (cancelled) {
+      if (
+        cancelled
+      ) {
         return;
       }
 
@@ -180,7 +207,9 @@ export function SourceCodeBlocks({
     setResolvedBlocks(
       Object.fromEntries(
         blocks.map(
-          (block) => [
+          (
+            block,
+          ) => [
             block.id,
 
             {
@@ -195,13 +224,28 @@ export function SourceCodeBlocks({
     void loadBlocks();
 
     return () => {
-      cancelled = true;
+      cancelled =
+        true;
     };
-  }, [blocks]);
+  }, [
+    blocks,
+  ]);
 
   if (
     blocks.length === 0
   ) {
+    if (
+      embedded
+    ) {
+      return (
+        <p className="source-inline-empty">
+          {t(
+            'source.empty.code',
+          )}
+        </p>
+      );
+    }
+
     return (
       <section className="source-subsection">
         <h2>
@@ -219,6 +263,52 @@ export function SourceCodeBlocks({
     );
   }
 
+  const blockList = (
+    <div
+      className={
+        embedded
+          ? 'source-code-blocks source-code-blocks-embedded'
+          : 'source-code-blocks'
+      }
+    >
+      {blocks.map(
+        (
+          block,
+          index,
+        ) => (
+          <SourceCodeBlockView
+            key={
+              block.id
+            }
+            block={
+              block
+            }
+            state={
+              resolvedBlocks[
+                block.id
+              ]
+            }
+            defaultExpanded={
+              embedded ||
+              index === 0
+            }
+            onRetry={() => {
+              void retryBlock(
+                block,
+              );
+            }}
+          />
+        ),
+      )}
+    </div>
+  );
+
+  if (
+    embedded
+  ) {
+    return blockList;
+  }
+
   return (
     <section className="source-subsection">
       <h2>
@@ -227,32 +317,7 @@ export function SourceCodeBlocks({
         )}
       </h2>
 
-      <div className="source-code-blocks">
-        {blocks.map(
-          (
-            block,
-            index,
-          ) => (
-            <SourceCodeBlockView
-              key={block.id}
-              block={block}
-              state={
-                resolvedBlocks[
-                  block.id
-                ]
-              }
-              defaultExpanded={
-                index === 0
-              }
-              onRetry={() => {
-                void retryBlock(
-                  block,
-                );
-              }}
-            />
-          ),
-        )}
-      </div>
+      {blockList}
     </section>
   );
 }
@@ -307,8 +372,11 @@ function SourceCodeBlockView({
   onRetry,
 }: {
   block: SourceCodeBlock;
+
   state?: ResolvedBlockState;
+
   defaultExpanded: boolean;
+
   onRetry: () => void;
 }) {
   const {
@@ -329,10 +397,10 @@ function SourceCodeBlockView({
       : undefined;
 
   /*
-   * GitHub 原代码
-   * → Portfolio 展示层 annotations
-   * → i18n placeholders
-   * → syntax highlight
+   * GitHub source
+   * → annotations
+   * → translated placeholders
+   * → syntax highlighting
    */
   const code =
     state?.status ===
@@ -340,7 +408,8 @@ function SourceCodeBlockView({
       ? renderTranslatedCode(
           injectCodeAnnotations(
             state.result
-              ?.code ?? '',
+              ?.code ??
+              '',
             block.language,
             block.annotations,
             t,
@@ -351,7 +420,9 @@ function SourceCodeBlockView({
 
   const highlighted =
     useMemo(() => {
-      if (!code) {
+      if (
+        !code
+      ) {
         return '';
       }
 
@@ -416,7 +487,9 @@ function SourceCodeBlockView({
       <figcaption>
         <div className="source-code-caption-main">
           <span className="source-code-path">
-            {displayPath}
+            {
+              displayPath
+            }
           </span>
 
           {githubSource && (
@@ -468,11 +541,17 @@ function SourceCodeBlockView({
           {sourceUrl && (
             <a
               className="source-code-github-link"
-              href={sourceUrl}
+              href={
+                sourceUrl
+              }
               target="_blank"
               rel="noreferrer"
-              aria-label="View source on GitHub"
-              title="View source on GitHub"
+              aria-label={t(
+                'source.ui.viewOnGitHub',
+              )}
+              title={t(
+                'source.ui.viewOnGitHub',
+              )}
             >
               <GitHubIcon />
             </a>
@@ -497,13 +576,21 @@ function SourceCodeBlockView({
             }
             aria-label={
               expanded
-                ? 'Collapse source code'
-                : 'Expand source code'
+                ? t(
+                    'source.ui.collapseSource',
+                  )
+                : t(
+                    'source.ui.expandSource',
+                  )
             }
             title={
               expanded
-                ? 'Collapse'
-                : 'Expand'
+                ? t(
+                    'source.ui.collapseSource',
+                  )
+                : t(
+                    'source.ui.expandSource',
+                  )
             }
           >
             <CollapseIcon
@@ -517,20 +604,27 @@ function SourceCodeBlockView({
 
       {expanded && (
         <div
-          id={contentId}
+          id={
+            contentId
+          }
           className="source-code-content"
         >
           {state?.status ===
           'error' ? (
             <div className="source-code-status source-code-error">
               <strong>
-                Unable to load
-                source code
+                {t(
+                  'source.ui.unableLoadSource',
+                )}
               </strong>
 
-              <span>
-                {state.error}
-              </span>
+              {state.error && (
+                <span>
+                  {
+                    state.error
+                  }
+                </span>
+              )}
 
               <button
                 type="button"
@@ -539,14 +633,17 @@ function SourceCodeBlockView({
                   onRetry
                 }
               >
-                Retry
+                {t(
+                  'source.ui.retry',
+                )}
               </button>
             </div>
           ) : state?.status !==
             'success' ? (
             <div className="source-code-status">
-              Loading source
-              code…
+              {t(
+                'source.ui.loadingSource',
+              )}
             </div>
           ) : (
             <pre>

@@ -296,3 +296,144 @@
     white-space: normal;
   }
 }
+
+.brand-icon {
+  --brand-color: var(--accent);
+  --brand-bg: color-mix(in srgb, var(--brand-color) 10%, transparent);
+  --brand-border: color-mix(in srgb, var(--brand-color) 28%, var(--line));
+
+  width: 42px;
+  height: 42px;
+
+  display: grid;
+  place-items: center;
+
+  flex: 0 0 auto;
+
+  border-radius: 14px;
+  border: 1px solid var(--brand-border);
+  background: var(--brand-bg);
+}
+
+.brand-icon img {
+  width: 20px;
+  height: 20px;
+  display: block;
+  object-fit: contain;
+}
+
+.brand-icon[data-size='sm'] {
+  width: 34px;
+  height: 34px;
+  border-radius: 12px;
+}
+
+.brand-icon[data-size='sm'] img {
+  width: 16px;
+  height: 16px;
+}
+
+.brand-icon[data-size='lg'] {
+  width: 58px;
+  height: 58px;
+  border-radius: 18px;
+}
+
+.brand-icon[data-size='lg'] img {
+  width: 28px;
+  height: 28px;
+}
+
+.brand-icon[data-brand='flutter'] {
+  --brand-color: #47c5fb;
+}
+
+.brand-icon[data-brand='dart'] {
+  --brand-color: #0175c2;
+}
+
+.brand-icon[data-brand='android'] {
+  --brand-color: #3ddc84;
+}
+
+.brand-icon[data-brand='kotlin'] {
+  --brand-color: #7f52ff;
+}
+
+.brand-icon[data-brand='react'] {
+  --brand-color: #61dafb;
+}
+
+.brand-icon[data-brand='typescript'] {
+  --brand-color: #3178c6;
+}
+
+.brand-icon[data-brand='vite'] {
+  --brand-color: #646cff;
+}
+
+.brand-icon[data-brand='electron'] {
+  --brand-color: #47848f;
+}
+
+.brand-icon[data-brand='nodejs'] {
+  --brand-color: #5fa04e;
+}
+
+.brand-icon[data-brand='express'] {
+  --brand-color: #9aa3a0;
+}
+
+.brand-icon[data-brand='prisma'] {
+  --brand-color: #5a67d8;
+}
+
+.brand-icon[data-brand='postgresql'] {
+  --brand-color: #4169e1;
+}
+
+.brand-icon[data-brand='python'] {
+  --brand-color: #3776ab;
+}
+
+.brand-icon[data-brand='flask'] {
+  --brand-color: #cfd6d3;
+}
+
+.brand-icon[data-brand='sqlite'] {
+  --brand-color: #0f80cc;
+}
+
+.brand-icon[data-brand='dotnet'] {
+  --brand-color: #512bd4;
+}
+
+.brand-icon[data-brand='firebase'] {
+  --brand-color: #ffca28;
+}
+
+.brand-icon[data-brand='stripe'] {
+  --brand-color: #635bff;
+}
+
+.brand-icon[data-brand='serverpod'] {
+  --brand-color: #8bc5ff;
+}
+
+.brand-icon[data-brand='monaco'] {
+  --brand-color: #007acc;
+}
+
+.brand-icon[data-brand='pandas'] {
+  --brand-color: #150458;
+}
+
+.icon-shell {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: color-mix(in srgb, var(--surface) 84%, transparent);
+}

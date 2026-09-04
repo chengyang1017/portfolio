@@ -1,169 +1,415 @@
-.code-flow {
-  list-style: none;
+/* =========================================================
+   CODE FLOW
+   Horizontal execution pipeline
+   ========================================================= */
 
+.flow-section {
+  padding: 72px 0;
+}
+
+
+/* =========================================================
+   HEADING
+   ========================================================= */
+
+.flow-heading {
   max-width: 980px;
 
-  margin: 0;
-  padding: 24px 26px;
+  display: flex;
 
-  background: var(--dark);
-  border-radius: 16px;
+  align-items: flex-end;
+  justify-content: space-between;
+
+  gap: 30px;
+
+  margin-bottom: 28px;
 }
 
-.code-flow-step {
-  position: relative;
+.flow-heading h2 {
+  margin: 8px 0 0;
+
+  font-family:
+    'Manrope',
+    sans-serif;
+
+  font-size:
+    clamp(
+      2.4rem,
+      4vw,
+      3.8rem
+    );
+
+  font-weight: 500;
+
+  line-height: 1;
+
+  letter-spacing: -0.055em;
+}
+
+.flow-heading-label {
+  margin: 0;
+
+  color: var(--muted);
+
+  font-size: 0.7rem;
+  font-weight: 600;
+
+  text-transform: uppercase;
+
+  letter-spacing: 0.14em;
+}
+
+.flow-heading-count {
+  margin-bottom: 6px;
+
+  color: var(--muted);
+
+  font-size: 0.75rem;
+
+  text-transform: uppercase;
+
+  letter-spacing: 0.1em;
+}
+
+
+/* =========================================================
+   PIPELINE
+   ========================================================= */
+
+.flow-pipeline {
+  max-width: 980px;
 
   display: grid;
+
   grid-template-columns:
-    46px minmax(0, 1fr);
+    repeat(
+      4,
+      minmax(0, 1fr)
+    );
 
-  gap: 18px;
-}
-
-/* 步骤之间的连接线 */
-.code-flow-step:not(:last-child)::after {
-  content: "";
-
-  position: absolute;
-
-  left: 18px;
-  top: 38px;
-  bottom: 0;
-
-  width: 1px;
-
-  background: #3a4741;
-}
-
-/* 01 / 02 / 03 */
-.code-flow-step-index {
-  position: relative;
-  z-index: 1;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  width: 36px;
-  height: 36px;
-
-  background: #26322d;
-
-  border: 1px solid #64716a;
-  border-radius: 50%;
-
-  color: var(--accent);
-
-  font-size: 0.68rem;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-}
-
-/* 每一步内容 */
-.code-flow-step-body {
-  min-width: 0;
-
-  padding:
-    5px
-    0
-    30px;
-
-  border-top: 1px solid #3a4741;
-}
-
-.code-flow-step:last-child
-.code-flow-step-body {
-  padding-bottom: 5px;
-}
-
-.code-flow-step h3 {
-  margin:
-    0
-    0
-    7px;
-
-  color: #f3f5f2;
-
-  font-size: 1rem;
-  font-weight: 500;
-  line-height: 1.35;
-}
-
-.code-flow-step p {
-  max-width: 780px;
+  gap: 0;
 
   margin: 0;
 
-  color: #c0c9c4;
+  padding: 0;
 
-  font-size: 0.88rem;
+  list-style: none;
+
+  background: transparent;
+}
+
+
+/* =========================================================
+   STEP
+   ========================================================= */
+
+.flow-pipeline-item {
+  min-width: 0;
+
+  min-height: 255px;
+
+  display: flex;
+
+  flex-direction: column;
+
+  position: relative;
+
+  padding:
+    18px
+    22px
+    18px
+    18px;
+
+  background: transparent;
+
+  border-top:
+    1px solid
+    var(--line);
+
+  border-bottom:
+    1px solid
+    var(--line);
+}
+
+.flow-pipeline-item +
+.flow-pipeline-item {
+  border-left:
+    1px solid
+    var(--line);
+}
+
+
+/* =========================================================
+   TOP
+   ========================================================= */
+
+.flow-pipeline-top {
+  display: flex;
+
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 12px;
+}
+
+.flow-pipeline-number {
+  color: var(--accent);
+
+  font-size: 0.66rem;
+
+  font-weight: 700;
+
+  letter-spacing: 0.09em;
+}
+
+.flow-pipeline-state {
+  color: #78867f;
+
+  font-size: 0.48rem;
+
+  font-weight: 600;
+
+  letter-spacing: 0.13em;
+}
+
+
+/* =========================================================
+   COPY
+   ========================================================= */
+
+.flow-pipeline-copy {
+  padding-top: 34px;
+}
+
+.flow-pipeline-copy h3 {
+  margin: 0;
+
+  color: var(--ink);
+
+  font-family:
+    'Manrope',
+    sans-serif;
+
+  font-size:
+    clamp(
+      1.05rem,
+      1.4vw,
+      1.3rem
+    );
+
+  font-weight: 500;
+
+  line-height: 1.18;
+
+  letter-spacing: -0.035em;
+}
+
+.flow-pipeline-copy p {
+  margin:
+    11px
+    0
+    0;
+
+  color: var(--muted);
+
+  font-size: 0.75rem;
+
   line-height: 1.6;
 }
 
-/* 文件路径 */
-.code-flow-step-file {
-  display: inline-block;
+
+/* =========================================================
+   FILE PATH
+   ========================================================= */
+
+.flow-pipeline-file {
+  display: block;
 
   max-width: 100%;
 
-  margin-top: 10px;
-  padding: 5px 8px;
+  margin-top: auto;
 
-  background: #26322d;
-
-  border: 1px solid #3a4741;
-  border-radius: 5px;
-
-  color: #9eaaa4;
-
-  font-size: 0.7rem;
-  line-height: 1.4;
+  padding-top: 22px;
 
   overflow-wrap: anywhere;
+
+  background: transparent;
+
+  color: #89968f;
+
+  font-family:
+    ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    Monaco,
+    Consolas,
+    monospace;
+
+  font-size: 0.59rem;
+
+  line-height: 1.5;
 }
 
-@media (max-width: 680px) {
-  .code-flow {
-    max-width: 100%;
 
-    padding: 18px 16px;
+/* =========================================================
+   ARROW BETWEEN STEPS
+   ========================================================= */
+
+.flow-pipeline-arrow {
+  width: 28px;
+  height: 28px;
+
+  display: grid;
+
+  place-items: center;
+
+  position: absolute;
+
+  top: 50%;
+  right: -14px;
+
+  z-index: 2;
+
+  transform:
+    translateY(
+      -50%
+    );
+
+  border:
+    1px solid
+    #3b4942;
+
+  border-radius: 50%;
+
+  background:
+    var(--paper);
+
+  color: #9ca8a2;
+
+  font-size: 0.72rem;
+}
+
+
+/* =========================================================
+   HOVER
+   ========================================================= */
+
+.flow-pipeline-item {
+  transition:
+    border-color 0.18s ease;
+}
+
+.flow-pipeline-item:hover {
+  border-top-color:
+    color-mix(
+      in srgb,
+      var(--accent) 38%,
+      var(--line)
+    );
+}
+
+.flow-pipeline-item:hover
+.flow-pipeline-number {
+  color:
+    color-mix(
+      in srgb,
+      var(--accent) 82%,
+      #c0cbc5
+    );
+}
+
+
+/* =========================================================
+   SMALL DESKTOP
+   ========================================================= */
+
+@media (max-width: 1050px) {
+  .flow-pipeline {
+    grid-template-columns:
+      repeat(
+        2,
+        minmax(0, 1fr)
+      );
+
+    gap: 0;
   }
 
-  .code-flow-step {
-    grid-template-columns:
-      38px minmax(0, 1fr);
+  .flow-pipeline-item {
+    min-height: 220px;
+  }
+
+  .flow-pipeline-item:nth-child(3) {
+    border-left: 0;
+
+    border-top-color:
+      transparent;
+  }
+
+  .flow-pipeline-arrow {
+    display: none;
+  }
+}
+
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 680px) {
+  .flow-heading {
+    align-items:
+      flex-start;
+
+    flex-direction:
+      column;
 
     gap: 12px;
   }
 
-  .code-flow-step-index {
-    width: 32px;
-    height: 32px;
-
-    font-size: 0.62rem;
+  .flow-heading-count {
+    margin: 0;
   }
 
-  .code-flow-step:not(:last-child)::after {
-    left: 16px;
-    top: 34px;
+  .flow-pipeline {
+    grid-template-columns:
+      1fr;
   }
 
-  .code-flow-step-body {
+  .flow-pipeline-item,
+  .flow-pipeline-item +
+  .flow-pipeline-item {
+    min-height: auto;
+
     padding:
-      3px
-      0
-      25px;
+      18px
+      0;
+
+    border-left: 0;
+
+    border-top:
+      1px solid
+      var(--line);
+
+    border-bottom: 0;
   }
 
-  .code-flow-step h3 {
-    font-size: 0.94rem;
+  .flow-pipeline-item:last-child {
+    border-bottom:
+      1px solid
+      var(--line);
   }
 
-  .code-flow-step p {
-    font-size: 0.82rem;
+  .flow-pipeline-copy {
+    padding-top: 20px;
   }
 
-  .code-flow-step-file {
-    font-size: 0.66rem;
+  .flow-pipeline-file {
+    margin-top: 16px;
+
+    padding-top: 0;
+  }
+
+  .flow-pipeline-arrow {
+    display: none;
   }
 }

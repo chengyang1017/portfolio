@@ -8,30 +8,89 @@ import { homeCategory, homeCopy, homeProjectDescription, homeStatus } from '../i
 import { useI18n } from '../i18n/I18nProvider';
 import type { AppLocale } from '../i18n/types';
 import '../styles/technology-stack.css';
+import '../styles/home-icons.css';
+import '../styles/home-work-redesign.css';
 
 const SIMPLE_ICONS = 'https://cdn.jsdelivr.net/gh/simple-icons/simple-icons@develop/icons';
 
-function ProjectIndexRow({ project, language, action }: { project: Project; language: AppLocale; action: string }) {
+function HomeWorkFeaturedProject({
+  project,
+  language,
+  action,
+}: {
+  project: Project;
+  language: AppLocale;
+  action: string;
+}) {
   return (
-    <Link className="home-project-row" data-tone={project.tone} to={`/projects/${project.slug}`}>
-      <span className="home-project-number">{project.number}</span>
-
-      <div className="home-project-identity">
-        <p>{homeCategory(project.category, language)} · {homeStatus(project.status, language)}</p>
-        <h3>{project.title}</h3>
+    <Link
+      className="home-work-featured-card"
+      data-tone={project.tone}
+      to={`/projects/${project.slug}`}
+      aria-label={`${action}: ${project.title}`}
+    >
+      <div className="home-work-card-top">
+        <span className="home-work-card-number">{project.number}</span>
+        <span className="home-work-card-arrow" aria-hidden="true">↗</span>
       </div>
 
-      <p className="home-project-summary">
-        {homeProjectDescription(project.slug, language, project.summary)}
-      </p>
+      <div className="home-work-card-meta">
+        <span>{homeCategory(project.category, language)}</span>
+        <span className="home-work-card-meta-dot">·</span>
+        <span>{homeStatus(project.status, language)}</span>
+      </div>
 
-      <div className="home-project-stack">
+      <div className="home-work-card-body">
+        <h3>{project.title}</h3>
+        <p>{homeProjectDescription(project.slug, language, project.summary)}</p>
+      </div>
+
+      <div className="home-work-card-stack">
+        {project.technologies.slice(0, 4).map((technology) => (
+          <span key={technology}>{technology}</span>
+        ))}
+      </div>
+    </Link>
+  );
+}
+
+function HomeWorkProjectCard({
+  project,
+  language,
+  action,
+}: {
+  project: Project;
+  language: AppLocale;
+  action: string;
+}) {
+  return (
+    <Link
+      className="home-work-mini-card"
+      data-tone={project.tone}
+      to={`/projects/${project.slug}`}
+      aria-label={`${action}: ${project.title}`}
+    >
+      <div className="home-work-card-top">
+        <span className="home-work-card-number">{project.number}</span>
+        <span className="home-work-card-arrow" aria-hidden="true">↗</span>
+      </div>
+
+      <div className="home-work-card-meta">
+        <span>{homeCategory(project.category, language)}</span>
+        <span className="home-work-card-meta-dot">·</span>
+        <span>{homeStatus(project.status, language)}</span>
+      </div>
+
+      <div className="home-work-card-body">
+        <h3>{project.title}</h3>
+        <p>{homeProjectDescription(project.slug, language, project.summary)}</p>
+      </div>
+
+      <div className="home-work-card-stack">
         {project.technologies.slice(0, 3).map((technology) => (
           <span key={technology}>{technology}</span>
         ))}
       </div>
-
-      <span className="home-project-action" aria-label={`${action}: ${project.title}`}>↗</span>
     </Link>
   );
 }
@@ -82,13 +141,14 @@ type BrandTechnology = {
   name: string;
   logo?: string;
   wideLogo?: boolean;
+  color: string;
 };
 
 export function HomePage() {
   const { language } = useI18n();
   const copy = homeCopy(language);
   const stackDetails = stackDetailCopy(language);
-  const selectedProjects = projects.slice(0, 5);
+  const selectedProjects = projects.slice(0, 4);
   const technologyGroups: Array<{
     label: string;
     tone: 'client' | 'backend' | 'platform';
@@ -102,14 +162,14 @@ export function HomePage() {
       icon: Monitor,
       description: stackDetails.client,
       technologies: [
-        { name: 'Flutter', logo: `${SIMPLE_ICONS}/flutter.svg` },
-        { name: 'Dart', logo: `${SIMPLE_ICONS}/dart.svg` },
-        { name: 'Android', logo: `${SIMPLE_ICONS}/android.svg` },
-        { name: 'Kotlin', logo: `${SIMPLE_ICONS}/kotlin.svg` },
-        { name: 'React', logo: `${SIMPLE_ICONS}/react.svg` },
-        { name: 'TypeScript', logo: `${SIMPLE_ICONS}/typescript.svg` },
-        { name: 'Vite', logo: `${SIMPLE_ICONS}/vite.svg` },
-        { name: 'Electron', logo: `${SIMPLE_ICONS}/electron.svg` },
+        { name: 'Flutter', logo: `${SIMPLE_ICONS}/flutter.svg`, color: '#54C5F8' },
+        { name: 'Dart', logo: `${SIMPLE_ICONS}/dart.svg`, color: '#40C4FF' },
+        { name: 'Android', logo: `${SIMPLE_ICONS}/android.svg`, color: '#3DDC84' },
+        { name: 'Kotlin', logo: `${SIMPLE_ICONS}/kotlin.svg`, color: '#A97BFF' },
+        { name: 'React', logo: `${SIMPLE_ICONS}/react.svg`, color: '#61DAFB' },
+        { name: 'TypeScript', logo: `${SIMPLE_ICONS}/typescript.svg`, color: '#3178C6' },
+        { name: 'Vite', logo: `${SIMPLE_ICONS}/vite.svg`, color: '#8B8FFF' },
+        { name: 'Electron', logo: `${SIMPLE_ICONS}/electron.svg`, color: '#9FEAF9' },
       ],
     },
     {
@@ -118,15 +178,13 @@ export function HomePage() {
       icon: Server,
       description: stackDetails.backend,
       technologies: [
-        { name: 'Node.js', logo: `${SIMPLE_ICONS}/nodedotjs.svg` },
-        { name: 'Express', logo: `${SIMPLE_ICONS}/express.svg` },
-        { name: 'Prisma', logo: `${SIMPLE_ICONS}/prisma.svg` },
-        { name: 'PostgreSQL', logo: `${SIMPLE_ICONS}/postgresql.svg` },
-        { name: 'Python', logo: `${SIMPLE_ICONS}/python.svg` },
-        { name: 'Flask', logo: `${SIMPLE_ICONS}/flask.svg` },
-        { name: 'SQLite', logo: `${SIMPLE_ICONS}/sqlite.svg` },
-        { name: 'ASP.NET Core', logo: `${SIMPLE_ICONS}/dotnet.svg` },
-        { name: 'EF Core', logo: `${SIMPLE_ICONS}/dotnet.svg` },
+        { name: 'Node.js', logo: `${SIMPLE_ICONS}/nodedotjs.svg`, color: '#5FA04E' },
+        { name: 'Express', logo: `${SIMPLE_ICONS}/express.svg`, color: '#B8C0BD' },
+        { name: 'Prisma', logo: `${SIMPLE_ICONS}/prisma.svg`, color: '#7C8BA1' },
+        { name: 'PostgreSQL', logo: `${SIMPLE_ICONS}/postgresql.svg`, color: '#6FA8DC' },
+        { name: 'Python', logo: `${SIMPLE_ICONS}/python.svg`, color: '#4B8BBE' },
+        { name: 'Flask', logo: `${SIMPLE_ICONS}/flask.svg`, color: '#D7DDDA' },
+        { name: 'SQLite', logo: `${SIMPLE_ICONS}/sqlite.svg`, color: '#4CA5D8' },
       ],
     },
     {
@@ -135,15 +193,16 @@ export function HomePage() {
       icon: Cloud,
       description: stackDetails.platform,
       technologies: [
-        { name: 'Firebase', logo: `${SIMPLE_ICONS}/firebase.svg` },
-        { name: 'Stripe', logo: `${SIMPLE_ICONS}/stripe.svg` },
+        { name: 'Firebase', logo: `${SIMPLE_ICONS}/firebase.svg`, color: '#FFCA28' },
+        { name: 'Stripe', logo: `${SIMPLE_ICONS}/stripe.svg`, color: '#7A73FF' },
         {
           name: 'Serverpod',
           logo: 'https://raw.githubusercontent.com/serverpod/serverpod/main/examples/legacy/chat/chat_server/web/static/serverpod-logo.svg',
           wideLogo: true,
+          color: '#6EA8FE',
         },
-        { name: 'Monaco Editor' },
-        { name: 'Pandas', logo: `${SIMPLE_ICONS}/pandas.svg` },
+        { name: 'Monaco Editor', color: '#5DADE2' },
+        { name: 'Pandas', logo: `${SIMPLE_ICONS}/pandas.svg`, color: '#8D7AC7' },
       ],
     },
   ];
@@ -152,21 +211,22 @@ export function HomePage() {
     <>
       <Hero />
 
-      <section className="home-section home-work shell">
-        <div className="home-section-intro">
-          <div>
+      <section className="home-section shell home-work-showcase">
+        <div className="home-work-header">
+          <div className="home-work-header-main">
             <p className="eyebrow">01 / {copy.work.eyebrow}</p>
             <h2>{copy.work.title}</h2>
           </div>
-          <div className="home-section-note">
+
+          <div className="home-work-header-side">
             <p>{copy.work.description}</p>
             <Link className="text-link" to="/projects">{copy.work.allProjects}</Link>
           </div>
         </div>
 
-        <div className="home-project-index">
+        <div className="home-work-showcase-grid">
           {selectedProjects.map((project) => (
-            <ProjectIndexRow
+            <HomeWorkProjectCard
               key={project.slug}
               project={project}
               language={language}
@@ -178,18 +238,49 @@ export function HomePage() {
 
       <section className="home-section home-areas">
         <div className="shell">
-          <SectionHeader index="02" eyebrow={copy.areas.eyebrow} title={copy.areas.title} />
-          <div className="home-area-list">
-            {copy.areas.items.map((item, index) => (
-              <article className="home-area-row" key={item.title}>
-                <span>{String(index + 1).padStart(2, '0')}</span>
-                <h3>{item.title}</h3>
-                <p>{item.description}</p>
-              </article>
-            ))}
+          <SectionHeader
+            index="02"
+            eyebrow={copy.areas.eyebrow}
+            title={copy.areas.title}
+          />
+
+          <div className="home-area-grid">
+            {copy.areas.items.map((item, index) => {
+              const AreaIcon =
+                index === 0
+                  ? Monitor
+                  : index === 1
+                    ? Terminal
+                    : Server;
+
+              return (
+                <article
+                  className="home-area-card"
+                  data-area={index + 1}
+                  key={item.title}
+                >
+                  <div className="home-area-card-top">
+                    <span className="home-area-number">
+                      {String(index + 1).padStart(2, '0')}
+                    </span>
+
+                    <span className="home-area-icon" aria-hidden="true">
+                      <AreaIcon />
+                    </span>
+                  </div>
+
+                  <div className="home-area-card-copy">
+                    <h3>{item.title}</h3>
+                    <p>{item.description}</p>
+                  </div>
+
+                  <div className="home-area-card-line" />
+                </article>
+              );
+            })}
           </div>
         </div>
-      </section>
+</section>
 
       <section className="home-section shell home-stack-section">
         <SectionHeader index="03" eyebrow={copy.stack.eyebrow} title={copy.stack.title} />
@@ -214,17 +305,23 @@ export function HomePage() {
 
                 <div className="home-stack-items">
                   {group.technologies.map((technology) => {
-                    const brandStyle = technology.logo
-                      ? ({ '--brand-logo': `url("${technology.logo}")` } as CSSProperties)
-                      : undefined;
+                    const brandStyle = {
+                      '--tech-color': technology.color,
+                      ...(technology.logo
+                        ? { '--brand-logo': `url("${technology.logo}")` }
+                        : {}),
+                    } as CSSProperties;
 
                     return (
                       <div className="home-stack-item" key={technology.name}>
-                        <span className="home-stack-item-icon" aria-hidden="true">
+                        <span
+                          className="home-stack-item-icon"
+                          aria-hidden="true"
+                          style={brandStyle}
+                        >
                           {technology.logo ? (
                             <span
                               className={`home-stack-brand-logo${technology.wideLogo ? ' is-wide' : ''}`}
-                              style={brandStyle}
                             />
                           ) : (
                             <Terminal className="home-stack-fallback-logo" />
@@ -246,22 +343,56 @@ export function HomePage() {
       </section>
 
       <section className="home-section home-about-preview">
-        <div className="shell home-about-grid">
-          <div className="home-about-identity">
-            <p className="eyebrow">04 / {copy.about.eyebrow}</p>
-            <div className="home-about-monogram">
-              <strong>LCY</strong>
-              <span>{copy.about.label}</span>
-            </div>
-          </div>
+  <div className="shell home-about-layout">
 
-          <div className="home-about-copy">
-            <h2>{copy.about.title} <em>{copy.about.accent}</em></h2>
-            <p>{copy.about.description}</p>
-            <Link className="text-link" to="/about">{copy.about.link}</Link>
-          </div>
-        </div>
-      </section>
+    <aside className="home-about-card">
+      <div className="home-about-card-top">
+        <span>04</span>
+        <span>LCY</span>
+      </div>
+
+      <div className="home-about-card-main">
+        <p>{copy.about.eyebrow}</p>
+
+        <strong>
+          Language
+          <span>Product</span>
+          Tooling
+        </strong>
+      </div>
+
+      <div className="home-about-card-bottom">
+        <span>{copy.about.label}</span>
+        <span className="home-about-card-mark">↘</span>
+      </div>
+    </aside>
+
+    <div className="home-about-content">
+      <p className="eyebrow">04 / {copy.about.eyebrow}</p>
+
+      <h2>
+        {copy.about.title}
+        <em>{copy.about.accent}</em>
+      </h2>
+
+      <div className="home-about-content-bottom">
+        <p>{copy.about.description}</p>
+
+        <Link className="home-about-link" to="/about">
+          <span>{copy.about.link}</span>
+          <span>↗</span>
+        </Link>
+      </div>
+
+      <div className="home-about-pill-row">
+        <span>01 · LANGUAGE</span>
+        <span>02 · PRODUCT</span>
+        <span>03 · TOOLING</span>
+      </div>
+    </div>
+
+  </div>
+</section>
 
       <section className="home-contact shell" id="contact">
         <div>

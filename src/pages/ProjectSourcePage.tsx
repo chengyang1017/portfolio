@@ -1,5 +1,6 @@
 import {
   useEffect,
+  useRef,
   useState,
 } from 'react';
 
@@ -22,10 +23,6 @@ import {
 } from '../components/source/SourceBreadcrumbs';
 
 import {
-  SourceCodeBlocks,
-} from '../components/source/SourceCodeBlocks';
-
-import {
   SourceEmptyState,
 } from '../components/source/SourceEmptyState';
 
@@ -40,10 +37,6 @@ import {
 import {
   useI18n,
 } from '../i18n/I18nProvider';
-
-type SourceView =
-  | 'explanation'
-  | 'code';
 
 export function ProjectSourcePage() {
   const {
@@ -70,24 +63,11 @@ export function ProjectSourcePage() {
     setSelectedFeatureSlug,
   ] = useState('');
 
-  const [
-    activeView,
-    setActiveView,
-  ] = useState<SourceView>(
-    'explanation',
-  );
+  const featureTabsRef =
+    useRef<HTMLDivElement>(
+      null,
+    );
 
-  /*
-   * 仍然只有一个页面：
-   *
-   * /projects/glyphora/source
-   *
-   * hash 只负责保存：
-   *
-   * #posts-engagement/publish-post
-   *
-   * 不会进入新的 React Router 页面。
-   */
   useEffect(() => {
     if (
       !source ||
@@ -98,8 +78,10 @@ export function ProjectSourcePage() {
 
     const syncFromHash = () => {
       const hash =
-        window.location.hash
-          .replace(/^#/, '');
+        window.location.hash.replace(
+          /^#/,
+          '',
+        );
 
       const [
         categoryFromHash,
@@ -163,20 +145,28 @@ export function ProjectSourcePage() {
       <main className="source-page shell">
         <SourceBreadcrumbs
           projectSlug={slug}
-          projectTitle={project.title}
+          projectTitle={
+            project.title
+          }
         />
 
         <header className="source-hero">
           <p className="eyebrow">
-            {t('source.eyebrow')}
+            {t(
+              'source.eyebrow',
+            )}
           </p>
 
           <h1>
-            {t('source.title')}
+            {t(
+              'source.title',
+            )}
           </h1>
 
           <p>
-            {t('source.description')}
+            {t(
+              'source.description',
+            )}
           </p>
         </header>
 
@@ -248,18 +238,15 @@ export function ProjectSourcePage() {
       firstFeature?.slug ?? '',
     );
 
-    /*
-     * 切换分类以后，
-     * 默认回到 Code explanation。
-     */
-    setActiveView(
-      'explanation',
-    );
-
     updateHash(
       category.slug,
       firstFeature?.slug ?? '',
     );
+
+    featureTabsRef.current?.scrollTo({
+      left: 0,
+      behavior: 'smooth',
+    });
   }
 
   function selectFeature(
@@ -269,169 +256,278 @@ export function ProjectSourcePage() {
       featureSlug,
     );
 
-    /*
-     * 切换 Feature 后，
-     * 默认先展示解释。
-     */
-    setActiveView(
-      'explanation',
-    );
-
     updateHash(
       selectedCategory.slug,
       featureSlug,
     );
   }
 
+  function scrollFeatures(
+    direction: -1 | 1,
+  ) {
+    featureTabsRef.current?.scrollBy({
+      left:
+        direction * 420,
+
+      behavior:
+        'smooth',
+    });
+  }
+
   return (
     <main className="source-page shell">
       <SourceBreadcrumbs
         projectSlug={slug}
-        projectTitle={project.title}
+        projectTitle={
+          project.title
+        }
       />
 
       {/* =====================================================
-          PAGE HERO
+          HERO
           ===================================================== */}
 
       <header className="source-hero source-hero-compact">
         <p className="eyebrow">
-          {t('source.eyebrow')}
+          {t(
+            'source.eyebrow',
+          )}
         </p>
 
         <h1>
-          {t('source.title')}
+          {t(
+            'source.title',
+          )}
         </h1>
 
         <p>
-          {t(source.summaryKey)}
+          {t(
+            source.summaryKey,
+          )}
         </p>
       </header>
 
-      {/* =====================================================
-          CATEGORY TABS
+      <section className="source-workspace">
+        {/* ===================================================
+            TWO LEVEL NAVIGATION
+            =================================================== */}
 
-          Posts & engagement
-          Real-time chat lifecycle
-          Collaborative notes
-          ===================================================== */}
+        <div className="source-filter-panel">
+          {/* =================================================
+              01 CATEGORY
+              ================================================= */}
 
-      <nav
-        className="source-category-tabs"
-        aria-label="Source categories"
-      >
-        {source.categories.map(
-          (category, index) => {
-            const active =
-              selectedCategory.slug ===
-              category.slug;
+          <section className="source-filter-stage">
+            <header className="source-filter-stage-label">
+              <span className="source-filter-step">
+                01
+              </span>
 
-            return (
+              <div>
+                <small>
+                  {t('source.category')}
+                </small>
+
+                <strong>
+                  {t(
+                    selectedCategory
+                      .nameKey,
+                  )}
+                </strong>
+              </div>
+            </header>
+
+            <div className="source-category-options">
+              {source.categories.map(
+                (
+                  category,
+                  index,
+                ) => {
+                  const active =
+                    selectedCategory
+                      .slug ===
+                    category.slug;
+
+                  return (
+                    <button
+                      key={
+                        category.slug
+                      }
+                      type="button"
+                      aria-pressed={
+                        active
+                      }
+                      className={
+                        active
+                          ? 'source-category-option active'
+                          : 'source-category-option'
+                      }
+                      onClick={() =>
+                        selectCategory(
+                          category.slug,
+                        )
+                      }
+                    >
+                      <span>
+                        {String(
+                          index + 1,
+                        ).padStart(
+                          2,
+                          '0',
+                        )}
+                      </span>
+
+                      <strong>
+                        {t(
+                          category
+                            .nameKey,
+                        )}
+                      </strong>
+                    </button>
+                  );
+                },
+              )}
+            </div>
+          </section>
+
+          {/* =================================================
+              02 FEATURE
+              ================================================= */}
+
+          <section className="source-filter-stage">
+            <header className="source-filter-stage-label">
+              <span className="source-filter-step">
+                02
+              </span>
+
+              <div>
+                <small>
+                  {t('source.feature')}
+                </small>
+
+                <strong>
+                  {selectedFeature
+                    ? t(
+                        selectedFeature
+                          .nameKey,
+                      )
+                    : '—'}
+                </strong>
+              </div>
+            </header>
+
+            <div className="source-feature-navigation">
               <button
-                key={category.slug}
                 type="button"
-                className={
-                  active
-                    ? 'source-category-tab active'
-                    : 'source-category-tab'
-                }
+                className="source-feature-scroll-button"
+                aria-label={t('source.ui.previousFeatures')}
                 onClick={() =>
-                  selectCategory(
-                    category.slug,
+                  scrollFeatures(
+                    -1,
                   )
                 }
               >
-                <span>
-                  {String(
-                    index + 1,
-                  ).padStart(2, '0')}
-                </span>
-
-                <strong>
-                  {t(category.nameKey)}
-                </strong>
+                ←
               </button>
-            );
-          },
-        )}
-      </nav>
 
-      {/* =====================================================
-          CURRENT CATEGORY
-          ===================================================== */}
+              <div
+                ref={
+                  featureTabsRef
+                }
+                className="source-feature-options"
+              >
+                {selectedCategory.features.map(
+                  (
+                    feature,
+                    index,
+                  ) => {
+                    const active =
+                      selectedFeature
+                        ?.slug ===
+                      feature.slug;
 
-      <section className="source-category-workspace">
-        <header className="source-category-intro">
+                    return (
+                      <button
+                        key={
+                          feature.slug
+                        }
+                        type="button"
+                        aria-pressed={
+                          active
+                        }
+                        className={
+                          active
+                            ? 'source-feature-option active'
+                            : 'source-feature-option'
+                        }
+                        onClick={() =>
+                          selectFeature(
+                            feature.slug,
+                          )
+                        }
+                      >
+                        <span>
+                          {String(
+                            index + 1,
+                          ).padStart(
+                            2,
+                            '0',
+                          )}
+                        </span>
+
+                        <strong>
+                          {t(
+                            feature
+                              .nameKey,
+                          )}
+                        </strong>
+                      </button>
+                    );
+                  },
+                )}
+              </div>
+
+              <button
+                type="button"
+                className="source-feature-scroll-button"
+                aria-label={t('source.ui.nextFeatures')}
+                onClick={() =>
+                  scrollFeatures(
+                    1,
+                  )
+                }
+              >
+                →
+              </button>
+            </div>
+          </section>
+        </div>
+
+        {/* ===================================================
+            CATEGORY CONTEXT
+            =================================================== */}
+
+        <div className="source-current-context">
           <div>
-            <p className="eyebrow">
-              Category
-            </p>
+            <small>
+              {t('source.ui.currentCategory')}
+            </small>
 
-            <h2>
+            <strong>
               {t(
-                selectedCategory.nameKey,
+                selectedCategory
+                  .nameKey,
               )}
-            </h2>
+            </strong>
           </div>
 
           <p>
             {t(
-              selectedCategory.summaryKey,
+              selectedCategory
+                .summaryKey,
             )}
           </p>
-        </header>
-
-        {/* ===================================================
-            FEATURE TABS
-
-            Publish a multilingual post
-            Optimistic, idempotent likes
-            =================================================== */}
-
-        {selectedCategory.features.length >
-          0 && (
-          <nav
-            className="source-feature-tabs"
-            aria-label="Features"
-          >
-            {selectedCategory.features.map(
-              (feature, index) => {
-                const active =
-                  selectedFeature?.slug ===
-                  feature.slug;
-
-                return (
-                  <button
-                    key={feature.slug}
-                    type="button"
-                    className={
-                      active
-                        ? 'source-feature-tab active'
-                        : 'source-feature-tab'
-                    }
-                    onClick={() =>
-                      selectFeature(
-                        feature.slug,
-                      )
-                    }
-                  >
-                    <span>
-                      {String(
-                        index + 1,
-                      ).padStart(2, '0')}
-                    </span>
-
-                    <strong>
-                      {t(
-                        feature.nameKey,
-                      )}
-                    </strong>
-                  </button>
-                );
-              },
-            )}
-          </nav>
-        )}
+        </div>
 
         {!selectedFeature ? (
           <p className="source-inline-empty">
@@ -443,157 +539,105 @@ export function ProjectSourcePage() {
                 SELECTED FEATURE
                 =============================================== */}
 
-            <header className="source-selected-feature">
-              <span className="source-feature-number">
-                {String(
-                  selectedFeatureIndex +
-                    1,
-                ).padStart(2, '0')}
-              </span>
+            <header className="source-selected-feature-redesign">
+              <div className="source-selected-feature-index">
+                <span>
+                  FEATURE
+                </span>
 
-              <div>
+                <strong>
+                  {String(
+                    selectedFeatureIndex +
+                      1,
+                  ).padStart(
+                    2,
+                    '0',
+                  )}
+                </strong>
+              </div>
+
+              <div className="source-selected-feature-copy">
                 <p className="eyebrow">
-                  {t('source.feature')}
+                  {t(
+                    'source.feature',
+                  )}
                 </p>
 
                 <h2>
                   {t(
-                    selectedFeature.nameKey,
+                    selectedFeature
+                      .nameKey,
                   )}
                 </h2>
 
                 <p>
                   {t(
-                    selectedFeature.summaryKey,
+                    selectedFeature
+                      .summaryKey,
                   )}
                 </p>
               </div>
             </header>
 
             {/* ===============================================
-                MAIN TABVIEW
-
-                Code explanation
-                Source code
+                RELATED FILES
+                Click a file to reveal source code
                 =============================================== */}
 
-            <div
-              className="source-view-tabs"
-              role="tablist"
-              aria-label="Source feature view"
-            >
-              <button
-                type="button"
-                role="tab"
-                aria-selected={
-                  activeView ===
-                  'explanation'
-                }
-                className={
-                  activeView ===
-                  'explanation'
-                    ? 'active'
-                    : ''
-                }
-                onClick={() =>
-                  setActiveView(
-                    'explanation',
-                  )
-                }
-              >
-                Code explanation
-              </button>
-
-              <button
-                type="button"
-                role="tab"
-                aria-selected={
-                  activeView === 'code'
-                }
-                className={
-                  activeView === 'code'
-                    ? 'active'
-                    : ''
-                }
-                onClick={() =>
-                  setActiveView(
-                    'code',
-                  )
-                }
-              >
-                Source code
-              </button>
-            </div>
+            <RelatedFiles
+              files={
+                selectedFeature
+                  .relatedFiles
+              }
+              codeBlocks={
+                selectedFeature
+                  .codeBlocks
+              }
+            />
 
             {/* ===============================================
-                TAB CONTENT
+                CODE FLOW
                 =============================================== */}
 
-            <div className="source-view-content">
-              {activeView ===
-              'explanation' ? (
-                /*
-                 * TAB 1
-                 *
-                 * Code explanation
-                 * Related files
-                 * Code flow
-                 */
-                <div className="source-explanation-view">
-                  {selectedFeature
-                    .explanationKeys
-                    .length > 0 && (
-                    <section className="source-subsection source-explanation-copy">
-                      <h2>
-                        Code explanation
-                      </h2>
+            <CodeFlow
+              steps={
+                selectedFeature
+                  .codeFlow
+              }
+            />
 
-                      {selectedFeature
-                        .explanationKeys
-                        .map(
-                          (key) => (
-                            <p
-                              key={key}
-                            >
-                              {t(key)}
-                            </p>
-                          ),
-                        )}
-                    </section>
+            {/* ===============================================
+                EXPLANATION
+                =============================================== */}
+
+            {selectedFeature
+              .explanationKeys
+              .length >
+              0 && (
+              <section className="source-subsection source-explanation-copy">
+                <h2>
+                  {t(
+                    'source.explanation',
                   )}
+                </h2>
 
-                  <RelatedFiles
-                    files={
-                      selectedFeature.relatedFiles
-                    }
-                  />
-
-                  <CodeFlow
-                    steps={
-                      selectedFeature.codeFlow
-                    }
-                  />
-                </div>
-              ) : (
-                /*
-                 * TAB 2
-                 *
-                 * 真正的 GitHub Source Code
-                 *
-                 * 动态代码读取、
-                 * GitHub 按钮、
-                 * annotation 展示逻辑
-                 * 全部继续由 SourceCodeBlocks 负责。
-                 */
-                <div className="source-code-view">
-                  <SourceCodeBlocks
-                    blocks={
-                      selectedFeature.codeBlocks
-                    }
-                  />
-                </div>
-              )}
-            </div>
+                {selectedFeature.explanationKeys.map(
+                  (
+                    key,
+                  ) => (
+                    <p
+                      key={
+                        key
+                      }
+                    >
+                      {t(
+                        key,
+                      )}
+                    </p>
+                  ),
+                )}
+              </section>
+            )}
           </>
         )}
       </section>
@@ -602,7 +646,9 @@ export function ProjectSourcePage() {
         className="back-link source-project-back"
         to={`/projects/${slug}`}
       >
-        {t('source.backProject')}
+        {t(
+          'source.backProject',
+        )}
       </Link>
     </main>
   );

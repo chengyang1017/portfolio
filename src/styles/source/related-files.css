@@ -1,26 +1,49 @@
+/* =========================================================
+   RELATED FILES
+   Repository file browser
+   ========================================================= */
+
 .related-files-section {
   padding: 72px 0;
 }
 
-.related-files-heading {
+
+/* =========================================================
+   HEADING
+   ========================================================= */
+
+.related-files-toolbar {
   max-width: 980px;
-  margin-bottom: 28px;
 
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
+
   gap: 30px;
+
+  margin-bottom: 28px;
 }
 
-.related-files-heading h2 {
+.related-files-toolbar h2 {
   margin: 8px 0 0;
 
-  font-family: 'Manrope', sans-serif;
-  font-size: clamp(2.4rem, 4vw, 3.8rem);
+  font-family:
+    'Manrope',
+    sans-serif;
+
+  font-size:
+    clamp(
+      2.4rem,
+      4vw,
+      3.8rem
+    );
+
   font-weight: 500;
 
   line-height: 1;
-  letter-spacing: -0.055em;
+
+  letter-spacing:
+    -0.055em;
 }
 
 .related-files-label {
@@ -32,7 +55,9 @@
   font-weight: 600;
 
   text-transform: uppercase;
-  letter-spacing: 0.14em;
+
+  letter-spacing:
+    0.14em;
 }
 
 .related-files-count {
@@ -41,135 +66,1250 @@
   color: var(--muted);
 
   font-size: 0.75rem;
+
   text-transform: uppercase;
-  letter-spacing: 0.1em;
+
+  letter-spacing:
+    0.1em;
 }
 
-.related-files {
+
+/* =========================================================
+   BROWSER
+   ========================================================= */
+
+.related-files-browser {
   max-width: 980px;
 
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
+  background: transparent;
 
-  padding: 14px;
+  border-top:
+    1px solid
+    var(--line);
 
-  background: var(--dark);
-
-  border-radius: 16px;
+  border-bottom:
+    1px solid
+    var(--line);
 }
 
-.related-files article {
-  min-width: 0;
-  min-height: 150px;
 
+/* =========================================================
+   COLUMN HEADER
+   ========================================================= */
+
+.related-files-browser-head {
   display: grid;
-  grid-template-columns: 38px minmax(0, 1fr);
+
+  grid-template-columns:
+    54px
+    minmax(
+      210px,
+      0.95fr
+    )
+    minmax(
+      250px,
+      1.2fr
+    )
+    62px
+    34px
+    34px;
+
   gap: 14px;
 
-  padding: 20px;
+  align-items: center;
 
-  background: #26322d;
-  border: 1px solid #3a4741;
-  border-radius: 11px;
+  min-height: 42px;
+
+  padding:
+    0
+    10px;
+
+  color: #68776f;
+
+  border-bottom:
+    1px solid
+    var(--line);
+
+  font-size: 0.52rem;
+  font-weight: 600;
+
+  text-transform: uppercase;
+
+  letter-spacing:
+    0.11em;
+}
+
+
+/* =========================================================
+   ENTRY
+   ========================================================= */
+
+.related-file-entry {
+  width: 100%;
+
+  margin: 0;
+  padding: 0;
+
+  background: transparent;
+
+  border-bottom:
+    1px solid
+    color-mix(
+      in srgb,
+      var(--line) 76%,
+      transparent
+    );
+}
+
+.related-file-entry:last-child {
+  border-bottom: 0;
+}
+
+
+/* =========================================================
+   TOP ROW
+   ========================================================= */
+
+.related-file-row {
+  width: 100%;
+
+  display: grid;
+
+  grid-template-columns:
+    minmax(0, 1fr)
+    34px
+    34px;
+
+  gap: 8px;
+
+  align-items: center;
+
+  position: relative;
+
+  background: transparent;
 
   transition:
-    transform 0.2s,
-    background 0.2s,
-    border-color 0.2s;
+    background 0.18s ease;
 }
 
-.related-files article:hover {
-  transform: translateY(-2px);
+.related-file-row::before {
+  content: '';
 
-  background: #2d3a34;
-  border-color: #68766f;
+  width: 2px;
+
+  position: absolute;
+
+  left: 0;
+  top: 16px;
+  bottom: 16px;
+
+  border-radius: 99px;
+
+  background: transparent;
+
+  transition:
+    background 0.18s ease;
 }
+
+.related-file-entry.expanded
+.related-file-row::before {
+  background: #91aa9d;
+}
+
+
+/* =========================================================
+   MAIN FILE BUTTON
+   ========================================================= */
+
+.related-file-main {
+  appearance: none;
+  -webkit-appearance: none;
+
+  width: 100%;
+  min-width: 0;
+
+  display: grid;
+
+  grid-template-columns:
+    54px
+    minmax(210px, 0.95fr)
+    minmax(250px, 1.2fr)
+    62px;
+
+  gap: 14px;
+
+  align-items: center;
+
+  margin: 0;
+
+  padding:
+    18px
+    10px;
+
+  border: 0;
+  border-radius: 0;
+
+  outline: none;
+
+  background: transparent !important;
+
+  color: inherit;
+
+  font: inherit;
+
+  text-align: left;
+
+  cursor: pointer;
+
+  box-shadow: none;
+}
+
+.related-file-row {
+  transition:
+    background 0.18s ease;
+}
+
+.related-file-main:hover {
+  background: transparent;
+}
+
+.related-file-row:has(.related-file-main:hover) {
+  background:
+    rgba(
+      255,
+      255,
+      255,
+      0.018
+    );
+}
+
+.related-file-entry.expanded
+.related-file-row {
+  background:
+    rgba(
+      255,
+      255,
+      255,
+      0.025
+    );
+}
+
+.related-file-entry.expanded
+.related-file-main {
+  background: transparent;
+}
+
+
+/* =========================================================
+   INDEX
+   ========================================================= */
 
 .related-file-index {
-  color: var(--accent);
+  color: #8fa398;
 
-  font-size: 0.7rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
+  font-size: 0.63rem;
+
+  font-weight: 700;
+
+  letter-spacing:
+    0.08em;
 }
 
-.related-file-content {
+
+/* =========================================================
+   FILE NAME
+   ========================================================= */
+
+.related-file-name {
   min-width: 0;
 }
 
-.related-file-title {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 14px;
-}
-
-.related-file-title strong {
-  min-width: 0;
-
-  color: #f3f5f2;
-
-  font-size: 1rem;
-  font-weight: 500;
-
-  overflow-wrap: anywhere;
-}
-
-.related-file-type {
-  flex-shrink: 0;
-
-  padding: 5px 7px;
-
-  border: 1px solid #64716a;
-  border-radius: 5px;
-
-  color: var(--accent);
-
-  font-size: 0.6rem;
-  font-weight: 600;
-
-  letter-spacing: 0.1em;
-}
-
-.related-file-path {
+.related-file-name strong {
   display: block;
 
-  margin-top: 16px;
+  overflow-wrap:
+    anywhere;
 
-  color: #9eaaa4;
+  color:
+    var(--ink);
 
-  font-size: 0.72rem;
-  line-height: 1.55;
+  font-size:
+    0.9rem;
 
-  overflow-wrap: anywhere;
+  font-weight:
+    500;
 }
 
-.related-file-content p {
-  margin: 14px 0 0;
 
-  color: #c0c9c4;
+/* =========================================================
+   REPOSITORY / BRANCH / SYMBOL
+   moved from old code header
+   ========================================================= */
 
-  font-size: 0.82rem;
-  line-height: 1.65;
+.related-file-origin {
+  display: flex;
+
+  flex-wrap: wrap;
+
+  gap: 4px;
+
+  margin-top: 7px;
 }
+
+.related-file-origin span {
+  padding:
+    2px
+    6px;
+
+  border:
+    1px solid
+    #34433c;
+
+  border-radius:
+    5px;
+
+  color:
+    #87958e;
+
+  background:
+    transparent;
+
+  font-size:
+    0.55rem;
+
+  line-height:
+    1.25;
+}
+
+
+/* =========================================================
+   CAPTION
+   moved from old code header
+   ========================================================= */
+
+.related-file-caption {
+  display:
+    -webkit-box;
+
+  overflow:
+    hidden;
+
+  max-width:
+    330px;
+
+  margin:
+    7px
+    0
+    0;
+
+  color:
+    var(--muted);
+
+  font-size:
+    0.64rem;
+
+  line-height:
+    1.45;
+
+  -webkit-box-orient:
+    vertical;
+
+  -webkit-line-clamp:
+    2;
+}
+
+
+/* =========================================================
+   PATH
+   ========================================================= */
+
+.related-file-path {
+  min-width: 0;
+
+  overflow-wrap:
+    anywhere;
+
+  color:
+    #87958e;
+
+  background:
+    transparent;
+
+  font-family:
+    ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    Monaco,
+    Consolas,
+    monospace;
+
+  font-size:
+    0.62rem;
+
+  line-height:
+    1.5;
+}
+
+
+/* =========================================================
+   TYPE
+   ========================================================= */
+
+.related-file-type {
+  justify-self: end;
+
+  padding:
+    4px
+    7px;
+
+  border:
+    1px solid
+    #44534b;
+
+  border-radius:
+    5px;
+
+  color:
+    #a4b7ac;
+
+  background:
+    transparent;
+
+  font-size:
+    0.53rem;
+
+  font-weight:
+    700;
+
+  letter-spacing:
+    0.08em;
+}
+
+
+/* =========================================================
+   GITHUB BUTTON
+   ========================================================= */
+
+.related-file-github {
+  width: 32px;
+  height: 32px;
+
+  display: grid;
+
+  place-items: center;
+
+  border:
+    1px solid
+    #39473f;
+
+  border-radius:
+    7px;
+
+  background:
+    transparent;
+
+  color:
+    #aab5af;
+
+  transition:
+    background 0.18s ease,
+    border-color 0.18s ease,
+    color 0.18s ease,
+    transform 0.18s ease;
+}
+
+.related-file-github svg {
+  width: 16px;
+  height: 16px;
+}
+
+.related-file-github:hover {
+  transform:
+    translateY(-1px);
+
+  background:
+    #25322c;
+
+  border-color:
+    #586b60;
+
+  color:
+    #edf1ef;
+}
+
+.related-file-action-placeholder {
+  width: 32px;
+  height: 32px;
+}
+
+
+/* =========================================================
+   EXPAND BUTTON
+   ========================================================= */
+
+.related-file-toggle {
+  width: 32px;
+  height: 32px;
+
+  display: grid;
+
+  place-items: center;
+
+  padding: 0;
+
+  border:
+    1px solid
+    #39473f;
+
+  border-radius:
+    7px;
+
+  background:
+    transparent;
+
+  color:
+    #929f98;
+
+  font: inherit;
+
+  cursor: pointer;
+
+  transition:
+    background 0.18s ease,
+    border-color 0.18s ease,
+    color 0.18s ease,
+    transform 0.2s ease;
+}
+
+.related-file-toggle span {
+  display: block;
+
+  transition:
+    transform 0.2s ease;
+}
+
+.related-file-toggle:hover {
+  background:
+    #25322c;
+
+  border-color:
+    #586b60;
+
+  color:
+    #edf1ef;
+}
+
+.related-file-toggle.expanded span {
+  transform:
+    rotate(180deg);
+}
+
+
+
+/* =========================================================
+   EXPANDED CODE
+   Integrated with file row
+   ========================================================= */
+
+.related-file-expanded {
+  width: 100%;
+
+  padding: 0;
+
+  background: transparent;
+
+  border-top:
+    1px solid
+    color-mix(
+      in srgb,
+      var(--line) 82%,
+      transparent
+    );
+}
+
+
+/* 隐藏 SourceCodeBlocks 自己重复的 header */
+
+.related-file-expanded
+.source-code-blocks-embedded
+figcaption {
+  display: none;
+}
+
+
+/* 整个源码区域和文件行完全同宽 */
+
+.related-file-expanded
+.source-code-blocks,
+.related-file-expanded
+.source-code-blocks-embedded {
+  width: 100%;
+  max-width: none;
+
+  display: block;
+
+  margin: 0;
+  padding: 0;
+
+  gap: 0;
+}
+
+
+/* 不再做成里面另一张卡 */
+
+.related-file-expanded
+.source-code-blocks
+figure,
+.related-file-expanded
+.source-code-blocks-embedded
+figure {
+  width: 100%;
+  max-width: none;
+
+  margin: 0;
+
+  overflow: hidden;
+
+  border: 0;
+
+  border-radius: 0;
+
+  background: transparent;
+
+  box-shadow: none;
+}
+
+
+/* 源码区域直接接在文件行下面 */
+
+.related-file-expanded
+.source-code-content {
+  width: 100%;
+
+  margin: 0;
+
+  border: 0;
+
+  background: #0e1512;
+}
+
+
+/*
+  代码文字左边与上面的「文件名」列对齐。
+
+  文件行：
+  54px 编号
+  + 14px gap
+  + 10px 左 padding
+  = 78px
+*/
+
+.related-file-expanded
+.source-code-blocks
+pre {
+  width: 100%;
+
+  max-height: 650px;
+
+  margin: 0;
+
+  padding:
+    24px
+    26px
+    28px
+    78px;
+
+  overflow: auto;
+
+  background: transparent;
+}
+
+
+/* syntax highlight 自己不要再加背景 */
+
+.related-file-expanded
+.source-code-blocks
+.hljs {
+  padding: 0;
+
+  background: transparent;
+}
+
+
+/* loading / error 也和代码文字起点一致 */
+
+.related-file-expanded
+.source-code-status {
+  padding:
+    22px
+    24px
+    22px
+    78px;
+}
+
+
+/* 展开时让上面的文件行和代码视觉连接 */
+
+.related-file-entry.expanded
+.related-file-row {
+  background:
+    rgba(
+      255,
+      255,
+      255,
+      0.018
+    );
+}
+
+.related-file-entry.expanded
+.related-file-main {
+  background: transparent;
+}
+
+
+/* 展开状态左边的竖线延续视觉层级 */
+
+.related-file-entry.expanded
+.related-file-row::before {
+  top: 16px;
+  bottom: 0;
+
+  background: #91aa9d;
+
+  border-radius:
+    99px
+    99px
+    0
+    0;
+}
+
+
+/* =========================================================
+   TABLET
+   ========================================================= */
+
+@media (max-width: 850px) {
+  .related-file-expanded
+  .source-code-blocks
+  pre {
+    padding:
+      20px
+      20px
+      24px
+      58px;
+  }
+
+  .related-file-expanded
+  .source-code-status {
+    padding-left: 58px;
+  }
+}
+
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
 
 @media (max-width: 680px) {
-  .related-files-heading {
-    align-items: flex-start;
-    flex-direction: column;
-    gap: 12px;
+  .related-file-expanded
+  .source-code-blocks
+  pre {
+    padding:
+      18px
+      14px
+      22px
+      34px;
+  }
+
+  .related-file-expanded
+  .source-code-status {
+    padding-left: 34px;
+  }
+}
+
+
+/* =========================================================
+   NO CODE
+   ========================================================= */
+
+.related-file-no-code {
+  margin: 0;
+
+  padding:
+    18px
+    0;
+
+  color:
+    var(--muted);
+
+  font-size:
+    0.75rem;
+}
+
+
+/* =========================================================
+   TABLET
+   ========================================================= */
+
+@media (max-width: 850px) {
+  .related-files-browser-head {
+    display: none;
+  }
+
+  .related-file-main {
+    grid-template-columns:
+      38px
+      minmax(
+        0,
+        1fr
+      )
+      60px;
+
+    gap: 10px;
+  }
+
+  .related-file-path {
+    grid-column:
+      2 / 4;
+  }
+
+  .related-file-type {
+    grid-column:
+      3;
+
+    grid-row:
+      1;
+
+    align-self:
+      start;
+  }
+
+  .related-file-expanded {
+    padding-left:
+      58px;
+  }
+}
+
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 680px) {
+  .related-files-toolbar {
+    align-items:
+      flex-start;
+
+    flex-direction:
+      column;
+
+    gap:
+      12px;
   }
 
   .related-files-count {
     margin: 0;
   }
 
-  .related-files {
-    grid-template-columns: 1fr;
+  .related-file-row {
+    grid-template-columns:
+      minmax(
+        0,
+        1fr
+      )
+      30px
+      30px;
+
+    gap: 6px;
   }
 
-  .related-files article {
-    min-height: auto;
+  .related-file-main {
+    grid-template-columns:
+      30px
+      minmax(
+        0,
+        1fr
+      )
+      46px;
+
+    padding:
+      14px
+      4px;
   }
+
+  .related-file-name strong {
+    font-size:
+      0.82rem;
+  }
+
+  .related-file-origin {
+    gap: 3px;
+  }
+
+  .related-file-origin span {
+    font-size:
+      0.5rem;
+  }
+
+  .related-file-path {
+    font-size:
+      0.57rem;
+  }
+
+  .related-file-type {
+    padding:
+      3px
+      5px;
+
+    font-size:
+      0.47rem;
+  }
+
+  .related-file-github,
+  .related-file-toggle {
+    width: 30px;
+    height: 30px;
+  }
+
+  .related-file-expanded {
+    padding:
+      0
+      0
+      20px
+      34px;
+  }
+}
+
+/* =========================================================
+   RELATED FILES — TEXT VISIBILITY
+   Only improve text contrast.
+   No size / spacing / layout changes.
+   ========================================================= */
+
+/* 大标题 */
+.related-files-toolbar h2 {
+  color: #f3f5f4;
+}
+
+/* Repository references */
+.related-files-label {
+  color: #a9b7b0;
+}
+
+/* 04 FILES */
+.related-files-count {
+  color: #b5c0ba;
+}
+
+
+/* 表头 */
+.related-files-browser-head {
+  color: #8f9d96;
+}
+
+
+/* 文件编号 */
+.related-file-index {
+  color: #a9bdb2;
+}
+
+
+/* 文件名：最亮 */
+.related-file-name strong {
+  color: #f4f6f5;
+}
+
+
+/* repo / branch / symbol */
+.related-file-origin span {
+  color: #aebbb4;
+
+  border-color: #46564d;
+}
+
+
+/* 文件说明 */
+.related-file-caption {
+  color: #b9c4be;
+}
+
+
+/* Repository location */
+.related-file-path {
+  color: #aab7b0;
+}
+
+
+/* DART / TS */
+.related-file-type {
+  color: #c2cec7;
+
+  border-color: #516159;
+}
+
+
+/* GitHub icon */
+.related-file-github {
+  color: #c5d0ca;
+
+  border-color: #46564d;
+}
+
+
+/* 展开箭头 */
+.related-file-toggle {
+  color: #bcc8c1;
+
+  border-color: #46564d;
+}
+
+
+/* hover 再亮一点 */
+.related-file-github:hover,
+.related-file-toggle:hover {
+  color: #ffffff;
+
+  border-color: #71857a;
+}
+
+
+/* 展开状态 */
+.related-file-entry.expanded
+.related-file-index {
+  color: #c4d4cb;
+}
+
+.related-file-entry.expanded
+.related-file-name strong {
+  color: #ffffff;
+}
+
+/* =========================================================
+   RELATED FILES
+   Typography + language colors
+   ========================================================= */
+
+/* 表头稍微大一点 */
+.related-files-browser-head {
+  font-size: 0.6rem;
+  color: #9ba9a2;
+}
+
+
+/* 编号 */
+.related-file-index {
+  font-size: 0.7rem;
+  color: #a9bbb1;
+}
+
+
+/* 文件名：主要阅读信息 */
+.related-file-name strong {
+  font-size: 1.05rem;
+  line-height: 1.25;
+
+  color: #f4f6f5;
+}
+
+
+/* repo / branch / symbol */
+.related-file-origin span {
+  font-size: 0.61rem;
+
+  color: #aebdb5;
+
+  border-color: #46574e;
+}
+
+
+/* 说明文字 */
+.related-file-caption {
+  font-size: 0.72rem;
+  line-height: 1.5;
+
+  color: #b8c5be;
+}
+
+
+/* 文件路径 */
+.related-file-path {
+  font-size: 0.7rem;
+  line-height: 1.55;
+
+  color: #9fafb7;
+}
+
+
+/* =========================================================
+   FILE TYPE
+   Base
+   ========================================================= */
+
+.related-file-type {
+  min-width: 44px;
+
+  text-align: center;
+
+  padding: 5px 8px;
+
+  font-size: 0.61rem;
+  font-weight: 700;
+
+  letter-spacing: 0.07em;
+
+  border-radius: 6px;
+}
+
+
+/* =========================================================
+   DART
+   ========================================================= */
+
+.related-file-type[data-type='dart'] {
+  color: #40c4ff;
+
+  border-color: #0175c2;
+
+  background: rgba(1, 117, 194, 0.14);
+}
+
+
+/* =========================================================
+   TYPESCRIPT
+   ========================================================= */
+
+.related-file-type[data-type='ts'] {
+  color: #5fa8e8;
+
+  border-color: #3178c6;
+
+  background: rgba(49, 120, 198, 0.14);
+}
+
+
+/* =========================================================
+   JAVASCRIPT
+   ========================================================= */
+
+.related-file-type[data-type='js'] {
+  color: #d1b967;
+
+  border-color: #766a3e;
+
+  background:
+    rgba(
+      170,
+      145,
+      60,
+      0.12
+    );
+}
+
+
+/* =========================================================
+   PYTHON
+   ========================================================= */
+
+.related-file-type[data-type='py'] {
+  color: #ffd43b;
+  border-color: #3776ab;
+  background: rgba(55, 118, 171, 0.14);
+}
+
+
+/* =========================================================
+   KOTLIN
+   ========================================================= */
+
+.related-file-type[data-type='kt'],
+.related-file-type[data-type='kts'] {
+  color: #a97bff;
+  border-color: #7f52ff;
+  background: rgba(127, 82, 255, 0.14);
+}
+
+
+/* =========================================================
+   C#
+   ========================================================= */
+
+.related-file-type[data-type='cs'] {
+  color: #9b6bd3;
+  border-color: #68217a;
+  background: rgba(104, 33, 122, 0.14);
+}
+
+
+/* =========================================================
+   RUST
+   ========================================================= */
+
+.related-file-type[data-type='rs'] {
+  color: #dea584;
+  border-color: #dea584;
+  background: rgba(222, 165, 132, 0.11);
+}
+
+
+/* =========================================================
+   JSON
+   ========================================================= */
+
+.related-file-type[data-type='json'] {
+  color: #c1b78d;
+
+  border-color: #6b654c;
+
+  background:
+    rgba(
+      145,
+      135,
+      90,
+      0.11
+    );
+}
+
+
+/* =========================================================
+   GITHUB BUTTON
+   ========================================================= */
+
+.related-file-github {
+  color: #d0d8d4;
+
+  border-color: #4b5b53;
+}
+
+.related-file-github:hover {
+  color: #ffffff;
+
+  background: #293831;
+
+  border-color: #6b8175;
+}
+
+
+/* =========================================================
+   EXPAND BUTTON
+   ========================================================= */
+
+.related-file-toggle {
+  color: #b8c6bf;
+
+  border-color: #4b5b53;
+}
+
+.related-file-toggle:hover {
+  color: #ffffff;
+
+  background: #293831;
+
+  border-color: #6b8175;
+}
+
+
+/* 展开时文件名再亮一点 */
+.related-file-entry.expanded
+.related-file-name strong {
+  color: #ffffff;
 }

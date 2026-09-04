@@ -309,10 +309,13 @@
 
 .gallery {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 52px 28px;
 
-  margin-top: 55px;
+  grid-template-columns:
+    repeat(3, minmax(0, 1fr));
+
+  gap: 16px;
+
+  margin-top: 38px;
 }
 
 .gallery figure {
@@ -320,21 +323,22 @@
   margin: 0;
 }
 
+/* 第一张不再独占整行 */
 .gallery figure:first-child {
-  grid-column: 1 / -1;
+  grid-column: auto;
 }
 
-.gallery .visual {
-  height: 430px;
+/* 所有项目区域统一大小 */
+.gallery .visual,
+.gallery figure:first-child .visual {
+  height: 300px;
   margin: 0;
 }
 
-.gallery figure:first-child .visual {
-  height: 560px;
-}
-
+/* 内容窗口稍微放大一点，避免卡片缩小后内容太小 */
 .gallery .visual-window {
-  width: 88%;
+  width: 90%;
+  max-width: none;
 }
 
 .gallery figcaption {

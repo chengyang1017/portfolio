@@ -1,8 +1,272 @@
-import { SectionHeader } from '../components/SectionHeader';
+import {
+  ArrowUpRight,
+  Code2,
+  Database,
+  GitBranch,
+  Languages,
+  Server,
+  Smartphone,
+  Terminal,
+} from 'lucide-react';
 
-export function AboutPage() { return <main className="page">
-  <section className="about-hero shell"><p className="eyebrow">About</p><div><h1>Software projects with <em>public source.</em></h1><p>This portfolio belongs to Lim Cheng Yang and documents software repositories across language tooling, mobile applications, developer tools, commerce, and backend systems.</p></div></section>
-  <section className="about-story"><div className="shell about-story-grid"><div className="portrait portrait-large"><span>LCY</span><i>GITHUB<br/>chengyang1017</i></div><div><SectionHeader index="01" eyebrow="Source of truth"/><h2>Repository-backed project information.</h2><p>Descriptions, technology lists, features, and implementation details are based on the public source code and README files linked from each project.</p><p>The Language Platform is listed separately as an in-development project using ASP.NET Core, Entity Framework Core, and PostgreSQL. No public repository or demo is linked for it.</p><blockquote>Public repositories are the source of truth for the work shown here.</blockquote></div></div></section>
-  <section className="section shell"><SectionHeader index="02" eyebrow="Verified project areas"/><div className="principles"><article><span>01</span><h3>Language tools</h3><p>Dictionaries, morphology, language metadata, and Chữ Nôm input.</p></article><article><span>02</span><h3>Mobile software</h3><p>Flutter applications and a Kotlin Android input method.</p></article><article><span>03</span><h3>Developer tools</h3><p>An Electron code tutor IDE and Flutter layout package.</p></article><article><span>04</span><h3>Backend systems</h3><p>Node.js, Python, Serverpod, ASP.NET Core, and PostgreSQL projects.</p></article></div></section>
-  <section className="about-cta shell"><h2>View the verified repositories.</h2><a className="button" href="https://github.com/chengyang1017">GitHub profile <span>↗</span></a></section>
-</main>; }
+import { aboutCopy } from '../i18n/aboutTranslations';
+import { useI18n } from '../i18n/I18nProvider';
+
+const areaIcons = [
+  Languages,   // 语言工具
+  Smartphone,  // 移动软件
+  Code2,       // 开发者工具
+  Server,      // 后端系统
+];
+
+export function AboutPage() {
+  const { language } = useI18n();
+  const copy = aboutCopy(language);
+
+  return (
+    <main className="page about-page">
+
+      {/* HERO */}
+      <section className="about-hero shell">
+        <div className="about-hero-main">
+          <p className="eyebrow">
+            {copy.hero.eyebrow}
+          </p>
+
+          <h1>
+            {copy.hero.titleLead}
+            <span className="about-hero-accent">
+              {copy.hero.titleAccent}
+            </span>
+          </h1>
+        </div>
+
+        <aside className="about-hero-aside">
+          <p className="about-hero-description">
+            {copy.hero.description}
+          </p>
+
+          <div className="about-hero-facts">
+            {copy.hero.facts.map((fact, index) => (
+              <div key={fact.label}>
+                <span>
+                  {String(index + 1).padStart(2, '0')}
+                </span>
+
+                <div>
+                  <small>{fact.label}</small>
+                  <strong>{fact.value}</strong>
+                </div>
+              </div>
+            ))}
+          </div>
+        </aside>
+      </section>
+
+
+      {/* SOURCE OF TRUTH */}
+      <section className="about-source-section">
+        <div className="shell about-source-grid">
+
+          <div className="about-source-card">
+
+            <div className="about-source-card-top">
+              <div className="about-source-brand">
+                <span className="about-source-github-icon">
+                  <GitBranch />
+                </span>
+
+                <div>
+                  <small>GITHUB</small>
+                  <strong>chengyang1017</strong>
+                </div>
+              </div>
+
+              <Code2 className="about-source-check" />
+            </div>
+
+            <div className="about-source-symbol">
+              <Code2 />
+            </div>
+
+            <div className="about-source-rows">
+              <div>
+                <Code2 />
+                <span>
+                  <small>
+                    {copy.source.repository.label}
+                  </small>
+
+                  <strong>
+                    {copy.source.repository.value}
+                  </strong>
+                </span>
+              </div>
+
+              <div>
+                <Code2 />
+                <span>
+                  <small>
+                    {copy.source.implementation.label}
+                  </small>
+
+                  <strong>
+                    {copy.source.implementation.value}
+                  </strong>
+                </span>
+              </div>
+
+              <div>
+                <Database />
+                <span>
+                  <small>
+                    {copy.source.readme.label}
+                  </small>
+
+                  <strong>
+                    {copy.source.readme.value}
+                  </strong>
+                </span>
+              </div>
+            </div>
+
+            <div className="about-source-card-footer">
+              <span>PUBLIC SOURCE</span>
+              <span>LCY / 2026</span>
+            </div>
+          </div>
+
+
+          <div className="about-source-copy">
+            <p className="eyebrow">
+              01 / {copy.source.eyebrow}
+            </p>
+
+            <h2>
+              {copy.source.title}
+            </h2>
+
+            <div className="about-source-body">
+              <p>
+                {copy.source.description}
+              </p>
+
+              <p>
+                {copy.source.note}
+              </p>
+            </div>
+
+            <blockquote>
+              <span />
+              <p>
+                {copy.source.quote}
+              </p>
+            </blockquote>
+          </div>
+
+        </div>
+      </section>
+
+
+      {/* AREAS */}
+      <section className="about-areas shell">
+
+        <div className="about-areas-heading">
+
+          <div>
+            <p className="eyebrow">
+              02 / {copy.areas.eyebrow}
+            </p>
+
+            <h2>
+              {copy.areas.title}
+            </h2>
+          </div>
+
+          <p className="about-areas-description">
+            {copy.areas.description}
+          </p>
+
+        </div>
+
+
+        <div className="about-area-grid">
+          {copy.areas.items.map((item, index) => {
+            const AreaIcon =
+              areaIcons[index] ?? Code2;
+
+            return (
+              <article
+  className="about-area-card"
+  key={item.title}
+>
+ <div className="about-area-card-top">
+  <span>
+    {String(index + 1).padStart(2, '0')}
+  </span>
+</div>
+
+  <div className="about-area-visual" aria-hidden="true">
+    <AreaIcon />
+  </div>
+
+  <div className="about-area-card-copy">
+    <h3>{item.title}</h3>
+
+    <p>
+      {item.description}
+    </p>
+  </div>
+
+  <span className="about-area-meta">
+    {item.meta}
+  </span>
+</article>
+            );
+          })}
+        </div>
+
+      </section>
+
+
+      {/* CTA */}
+      <section className="about-cta shell">
+
+        <div className="about-cta-inner">
+
+          <div className="about-cta-copy">
+            <p className="eyebrow">
+              03 / {copy.cta.eyebrow}
+            </p>
+
+            <h2>
+              {copy.cta.title}
+            </h2>
+
+            <p>
+              {copy.cta.description}
+            </p>
+          </div>
+
+          <a
+            className="about-github-link"
+            href="https://github.com/chengyang1017"
+            target="_blank"
+            rel="noreferrer"
+          >
+            <GitBranch />
+
+            <span>
+              {copy.cta.action}
+            </span>
+
+            <ArrowUpRight />
+          </a>
+
+        </div>
+
+      </section>
+
+    </main>
+  );
+}
