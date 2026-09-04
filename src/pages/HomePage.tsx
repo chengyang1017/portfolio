@@ -145,7 +145,7 @@ export function HomePage() {
   const { language } = useI18n();
   const copy = homeCopy(language);
   const stackDetails = stackDetailCopy(language);
-  const selectedProjects = projects.slice(0, 4);
+  const selectedProjects = projects.slice(-4).reverse();
   const technologyGroups: Array<{
     label: string;
     tone: 'client' | 'backend' | 'platform';
