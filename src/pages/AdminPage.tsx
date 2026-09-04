@@ -19,7 +19,6 @@ import {
   createProjectFromAnalysis,
   mergeTechnologyNames,
   publishPortfolioContent,
-  verifyPortfolioAccess,
   type PortfolioAccess,
   type RepositoryAnalysis,
 } from '../admin/githubPortfolio';
@@ -941,11 +940,6 @@ export function AdminPage() {
             <span>{ui.verifiedRepository}</span>
             <strong>{accessInfo?.repository}</strong>
           </div>
-
-          <label>
-            <span>{ui.branch}</span>
-            <input value={branch} onChange={(event) => setBranch(event.target.value)} />
-          </label>
 
           <button
             type="button"

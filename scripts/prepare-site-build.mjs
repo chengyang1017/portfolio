@@ -10,31 +10,48 @@ const workerSource = `function json(data, status = 200) {
   });
 }
 
-function bearerToken(request) {
-  const header = request.headers.get('authorization') || '';
-  return header.startsWith('Bearer ') ? header.slice(7).trim() : '';
+export class PortfolioStore {
+  constructor(ctx) {
+    this.ctx = ctx;
+  }
+
+  async fetch(request) {
+    if (request.method === 'GET') {
+      return json((await this.ctx.storage.get('portfolio')) || {});
+    }
+
+    if (request.method === 'PATCH') {
+      const patch = await request.json().catch(() => null);
+      if (!patch || typeof patch !== 'object') return json({ error: 'Invalid portfolio data.' }, 400);
+      const current = (await this.ctx.storage.get('portfolio')) || {};
+      const next = { ...current, ...patch, updatedAt: new Date().toISOString() };
+      await this.ctx.storage.put('portfolio', next);
+      return json(next);
+    }
+
+    return json({ error: 'Method not allowed' }, 405);
+  }
 }
 
-async function verifyPortfolioWriteAccess(token) {
-  if (!token) return false;
+function portfolioStore(env) {
+  const id = env.PORTFOLIO_STORE.idFromName('primary');
+  return env.PORTFOLIO_STORE.get(id);
+}
 
-  const response = await fetch('https://api.github.com/repos/chengyang1017/portfolio', {
-    headers: {
-      Accept: 'application/vnd.github+json',
-      Authorization: 'Bearer ' + token,
-      'User-Agent': 'lim-cheng-yang-portfolio-worker',
-      'X-GitHub-Api-Version': '2022-11-28',
-    },
+async function readPortfolioStore(env) {
+  const response = await portfolioStore(env).fetch('https://portfolio-store.internal/data');
+  if (!response.ok) throw new Error('Unable to read the Cloudflare portfolio data store.');
+  return response.json();
+}
+
+async function patchPortfolioStore(env, patch) {
+  const response = await portfolioStore(env).fetch('https://portfolio-store.internal/data', {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(patch),
   });
-
-  if (!response.ok) return false;
-
-  const repository = await response.json();
-  return Boolean(
-    repository?.permissions?.push ||
-    repository?.permissions?.maintain ||
-    repository?.permissions?.admin
-  );
+  if (!response.ok) throw new Error('Unable to update the Cloudflare portfolio data store.');
+  return response.json();
 }
 
 const ADMIN_SESSION_COOKIE = 'portfolio_admin_session';
@@ -111,73 +128,22 @@ function jsonWithCookie(data, status, cookie) {
   });
 }
 
-function serverGitHubHeaders(env) {
-  if (!env.GITHUB_PORTFOLIO_TOKEN) {
-    throw new Error('GITHUB_PORTFOLIO_TOKEN is not configured on the Worker.');
-  }
-  return {
-    Accept: 'application/vnd.github+json',
-    Authorization: 'Bearer ' + env.GITHUB_PORTFOLIO_TOKEN,
-    'User-Agent': 'lim-cheng-yang-portfolio-worker',
-    'X-GitHub-Api-Version': '2022-11-28',
-  };
-}
-
-async function portfolioAccess(env) {
-  let headers;
-  try {
-    headers = serverGitHubHeaders(env);
-  } catch (error) {
-    return { ok: false, error: error.message };
-  }
-
-  const response = await fetch('https://api.github.com/repos/chengyang1017/portfolio', { headers });
-  if (!response.ok) {
-    return { ok: false, error: 'Worker GitHub credential was rejected (' + response.status + ').' };
-  }
-
-  const repository = await response.json();
-  const writable = Boolean(
-    repository?.permissions?.push ||
-    repository?.permissions?.maintain ||
-    repository?.permissions?.admin
-  );
-  if (!writable) {
-    return { ok: false, error: 'Worker GitHub credential cannot write to chengyang1017/portfolio.' };
-  }
-
-  return {
-    ok: true,
-    repository: repository.full_name || 'chengyang1017/portfolio',
-    defaultBranch: repository.default_branch || 'main',
-  };
-}
-
 async function handleAdminLogin(request, env) {
   if (request.method !== 'POST') return json({ error: 'Method not allowed' }, 405);
   if (!env.ADMIN_PASSWORD) return json({ error: 'ADMIN_PASSWORD is not configured on the Worker.' }, 503);
 
-  let payload;
-  try {
-    payload = await request.json();
-  } catch {
-    return json({ error: 'Invalid JSON request.' }, 400);
-  }
-
+  const payload = await request.json().catch(() => null);
   const password = typeof payload?.password === 'string' ? payload.password : '';
   if (!password || !safeEqual(password, env.ADMIN_PASSWORD)) {
     return json({ error: 'Incorrect admin password.' }, 401);
   }
 
-  const access = await portfolioAccess(env);
-  if (!access.ok) return json({ error: access.error }, 503);
-
   const session = await createAdminSession(env);
   return jsonWithCookie(
     {
       authenticated: true,
-      repository: access.repository,
-      defaultBranch: access.defaultBranch,
+      repository: 'Cloudflare portfolio store',
+      defaultBranch: 'live',
     },
     200,
     sessionCookie(request, session, ADMIN_SESSION_MAX_AGE),
@@ -186,15 +152,11 @@ async function handleAdminLogin(request, env) {
 
 async function handleAdminSession(request, env) {
   if (request.method !== 'GET') return json({ error: 'Method not allowed' }, 405);
-  if (!(await hasAdminSession(request, env))) {
-    return json({ authenticated: false }, 401);
-  }
-  const access = await portfolioAccess(env);
-  if (!access.ok) return json({ error: access.error }, 503);
+  if (!(await hasAdminSession(request, env))) return json({ authenticated: false }, 401);
   return json({
     authenticated: true,
-    repository: access.repository,
-    defaultBranch: access.defaultBranch,
+    repository: 'Cloudflare portfolio store',
+    defaultBranch: 'live',
   });
 }
 
@@ -207,108 +169,21 @@ async function handleAdminLogout(request) {
   );
 }
 
-function encodeBase64Utf8(value) {
-  const bytes = new TextEncoder().encode(value);
-  let binary = '';
-  for (const byte of bytes) binary += String.fromCharCode(byte);
-  return btoa(binary);
-}
-
-function decodeBase64Utf8(value) {
-  const binary = atob(String(value || '').replace(/\\n/g, ''));
-  const bytes = Uint8Array.from(binary, (char) => char.charCodeAt(0));
-  return new TextDecoder().decode(bytes);
-}
-
-async function serverGetFile(env, path, branch) {
-  const response = await fetch(
-    'https://api.github.com/repos/chengyang1017/portfolio/contents/' + path + '?ref=' + encodeURIComponent(branch),
-    { headers: serverGitHubHeaders(env) },
-  );
-  if (!response.ok) throw new Error('Unable to read ' + path + ' from GitHub (' + response.status + ').');
-  return response.json();
-}
-
-async function serverUpdateFile(env, { path, branch, message, content }) {
-  const current = await serverGetFile(env, path, branch);
-  const response = await fetch(
-    'https://api.github.com/repos/chengyang1017/portfolio/contents/' + path,
-    {
-      method: 'PUT',
-      headers: {
-        ...serverGitHubHeaders(env),
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        message,
-        content: encodeBase64Utf8(content),
-        sha: current.sha,
-        branch,
-      }),
-    },
-  );
-  if (!response.ok) {
-    const payload = await response.json().catch(() => null);
-    throw new Error(payload?.message || 'Unable to update ' + path + '.');
-  }
-  return response.json();
-}
-
-function replaceProjectsArrayServer(source, projects) {
-  const pattern = /export const projects: Project\\[\\] = \\[\\s\\S]*?\\n\\];\\n\\nexport function getProject/;
-  if (!pattern.test(source)) throw new Error('Could not locate the projects array in src/data/projects.ts.');
-  return source.replace(
-    pattern,
-    'export const projects: Project[] = ' + JSON.stringify(projects, null, 2) + ';\\n\\nexport function getProject',
-  );
-}
-
-function serializeTechnologyCatalogServer(catalog) {
-  return "export type TechnologyGroupId = 'client' | 'backend' | 'platform';\\n\\nexport interface TechnologyItem {\\n  name: string;\\n  logo?: string;\\n  wideLogo?: boolean;\\n  color: string;\\n}\\n\\nexport type TechnologyCatalog = Record<TechnologyGroupId, TechnologyItem[]>;\\n\\nexport const technologyCatalog: TechnologyCatalog = " + JSON.stringify(catalog, null, 2) + ';\\n';
-}
-
-function serializeProjectTranslationsServer(catalog) {
-  return "import type { Project } from './projects';\\n\\nexport const PROJECT_TRANSLATION_LOCALES = [\\n  'zh-CN',\\n  'zh-TW',\\n  'vi-Latn',\\n  'vi-Hani',\\n] as const;\\n\\nexport type ProjectTranslationLocale =\\n  (typeof PROJECT_TRANSLATION_LOCALES)[number];\\n\\nexport type ProjectTranslation = Pick<\\n  Project,\\n  | 'title'\\n  | 'shortTitle'\\n  | 'summary'\\n  | 'overview'\\n  | 'features'\\n  | 'challenges'\\n  | 'architecture'\\n  | 'gallery'\\n>;\\n\\nexport type ProjectTranslationCatalog = Record<\\n  string,\\n  Partial<Record<ProjectTranslationLocale, ProjectTranslation>>\\n>;\\n\\nexport const projectTranslationCatalog: ProjectTranslationCatalog = " + JSON.stringify(catalog, null, 2) + ';\\n';
-}
-
 async function handlePublishPortfolio(request, env) {
   if (request.method !== 'POST') return json({ error: 'Method not allowed' }, 405);
   if (!(await hasAdminSession(request, env))) return json({ error: 'Admin session required.' }, 401);
 
-  let payload;
-  try {
-    payload = await request.json();
-  } catch {
-    return json({ error: 'Invalid JSON request.' }, 400);
-  }
-
-  const branch = typeof payload?.branch === 'string' && payload.branch.trim() ? payload.branch.trim() : 'main';
+  const payload = await request.json().catch(() => null);
   if (!Array.isArray(payload?.projects) || !payload?.technologyCatalog) {
     return json({ error: 'Projects and technology catalog are required.' }, 400);
   }
 
   try {
-    const projectsFile = await serverGetFile(env, 'src/data/projects.ts', branch);
-    const nextProjectsSource = replaceProjectsArrayServer(
-      decodeBase64Utf8(projectsFile.content),
-      payload.projects,
-    );
-    const projectUpdate = await serverUpdateFile(env, {
-      path: 'src/data/projects.ts',
-      branch,
-      message: 'Update portfolio projects from admin',
-      content: nextProjectsSource,
+    await patchPortfolioStore(env, {
+      projects: payload.projects,
+      technologyCatalog: payload.technologyCatalog,
     });
-    const technologyUpdate = await serverUpdateFile(env, {
-      path: 'src/data/technologyCatalog.ts',
-      branch,
-      message: 'Update portfolio technology catalog from admin',
-      content: serializeTechnologyCatalogServer(payload.technologyCatalog),
-    });
-    return json({
-      projectCommitUrl: projectUpdate?.commit?.html_url,
-      technologyCommitUrl: technologyUpdate?.commit?.html_url,
-    });
+    return json({ stored: true });
   } catch (error) {
     return json({ error: error?.message || 'Portfolio publish failed.' }, 502);
   }
@@ -318,26 +193,14 @@ async function handlePublishTranslations(request, env) {
   if (request.method !== 'POST') return json({ error: 'Method not allowed' }, 405);
   if (!(await hasAdminSession(request, env))) return json({ error: 'Admin session required.' }, 401);
 
-  let payload;
-  try {
-    payload = await request.json();
-  } catch {
-    return json({ error: 'Invalid JSON request.' }, 400);
-  }
-
-  const branch = typeof payload?.branch === 'string' && payload.branch.trim() ? payload.branch.trim() : 'main';
+  const payload = await request.json().catch(() => null);
   if (!payload?.catalog || typeof payload.catalog !== 'object') {
     return json({ error: 'Translation catalog is required.' }, 400);
   }
 
   try {
-    const update = await serverUpdateFile(env, {
-      path: 'src/data/projectTranslationCatalog.ts',
-      branch,
-      message: 'Update project translations from admin',
-      content: serializeProjectTranslationsServer(payload.catalog),
-    });
-    return json({ commitUrl: update?.commit?.html_url });
+    await patchPortfolioStore(env, { projectTranslationCatalog: payload.catalog });
+    return json({ stored: true });
   } catch (error) {
     return json({ error: error?.message || 'Translation publish failed.' }, 502);
   }
@@ -436,7 +299,7 @@ async function runOpenAI(env, instructions, input, maxOutputTokens) {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      model: env.OPENAI_MODEL || 'gpt-5.6-luna',
+      model: env.OPENAI_MODEL || 'gpt-5-mini',
       reasoning: { effort: 'low' },
       instructions,
       input: JSON.stringify(input),
@@ -613,6 +476,14 @@ export default {
     if (url.pathname === '/api/admin/publish-portfolio') return handlePublishPortfolio(request, env);
     if (url.pathname === '/api/admin/publish-translations') return handlePublishTranslations(request, env);
 
+    if (url.pathname === '/api/portfolio-data' && request.method === 'GET') {
+      try {
+        return json(await readPortfolioStore(env));
+      } catch (error) {
+        return json({ error: error?.message || 'Unable to load portfolio data.' }, 502);
+      }
+    }
+
     if (url.pathname === '/api/portfolio-ai') {
       return handlePortfolioAi(request, env);
     }
@@ -640,6 +511,10 @@ await writeFile(
         binding: 'ASSETS',
         not_found_handling: 'single-page-application',
       },
+      durable_objects: {
+        bindings: [{ name: 'PORTFOLIO_STORE', class_name: 'PortfolioStore' }],
+      },
+      migrations: [{ tag: 'v1', new_sqlite_classes: ['PortfolioStore'] }],
     },
     null,
     2,

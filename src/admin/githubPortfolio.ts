@@ -251,33 +251,6 @@ async function collectRepositoryEvidence(items: GitHubContentItem[], token?: str
   return parts.join('').slice(0, 28000);
 }
 
-export async function verifyPortfolioAccess(token: string): Promise<PortfolioAccess> {
-  if (!token.trim()) {
-    throw new Error('Enter a GitHub token first.');
-  }
-
-  const response = await fetch('https://api.github.com/repos/chengyang1017/portfolio', {
-    headers: githubHeaders(token.trim()),
-  });
-
-  if (!response.ok) {
-    throw new Error(`GitHub rejected this token (${response.status}).`);
-  }
-
-  const repository = (await response.json()) as GitHubRepo;
-
-  if (!repository.permissions?.push && !repository.permissions?.maintain && !repository.permissions?.admin) {
-    throw new Error(
-      'This token can read the repository but cannot write it. Give it Contents: Read and write access to chengyang1017/portfolio.',
-    );
-  }
-
-  return {
-    repository: repository.full_name,
-    defaultBranch: repository.default_branch,
-  };
-}
-
 export async function analyzeRepository(
   repositoryUrl: string,
 ): Promise<RepositoryAnalysis> {
@@ -372,99 +345,6 @@ export async function analyzeRepository(
   } catch {
     return fallback;
   }
-}
-
-function encodeBase64(value: string) {
-  const bytes = new TextEncoder().encode(value);
-  let binary = '';
-
-  bytes.forEach((byte) => {
-    binary += String.fromCharCode(byte);
-  });
-
-  return btoa(binary);
-}
-
-async function getGitHubFile(token: string, path: string, branch: string) {
-  const response = await fetch(
-    `https://api.github.com/repos/chengyang1017/portfolio/contents/${path}?ref=${encodeURIComponent(branch)}`,
-    { headers: githubHeaders(token) },
-  );
-
-  if (!response.ok) {
-    throw new Error(`Unable to read ${path} from GitHub (${response.status}).`);
-  }
-
-  return (await response.json()) as {
-    sha: string;
-    content: string;
-    encoding: string;
-  };
-}
-
-function decodeGitHubContent(content: string) {
-  const normalized = content.replace(/\n/g, '');
-  const binary = atob(normalized);
-  const bytes = Uint8Array.from(binary, (char) => char.charCodeAt(0));
-  return new TextDecoder().decode(bytes);
-}
-
-async function updateGitHubFile({
-  token,
-  path,
-  branch,
-  message,
-  content,
-}: {
-  token: string;
-  path: string;
-  branch: string;
-  message: string;
-  content: string;
-}) {
-  const current = await getGitHubFile(token, path, branch);
-  const response = await fetch(
-    `https://api.github.com/repos/chengyang1017/portfolio/contents/${path}`,
-    {
-      method: 'PUT',
-      headers: {
-        ...githubHeaders(token),
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        message,
-        content: encodeBase64(content),
-        sha: current.sha,
-        branch,
-      }),
-    },
-  );
-
-  if (!response.ok) {
-    const error = (await response.json().catch(() => null)) as { message?: string } | null;
-    throw new Error(error?.message ?? `Unable to update ${path}.`);
-  }
-
-  return response.json() as Promise<{
-    commit?: { html_url?: string };
-  }>;
-}
-
-function replaceProjectsArray(source: string, projects: Project[]) {
-  const pattern = /export const projects: Project\[\] = \[[\s\S]*?\n\];\n\nexport function getProject/;
-
-  if (!pattern.test(source)) {
-    throw new Error('Could not locate the projects array in src/data/projects.ts.');
-  }
-
-  return source.replace(
-    pattern,
-    `export const projects: Project[] = ${JSON.stringify(projects, null, 2)};\n\nexport function getProject`,
-  );
-}
-
-export function serializeTechnologyCatalog(catalog: TechnologyCatalog) {
-  return `export type TechnologyGroupId = 'client' | 'backend' | 'platform';\n\nexport interface TechnologyItem {\n  name: string;\n  logo?: string;\n  wideLogo?: boolean;\n  color: string;\n}\n\nexport type TechnologyCatalog = Record<TechnologyGroupId, TechnologyItem[]>;\n\nexport const technologyCatalog: TechnologyCatalog = ${JSON.stringify(catalog, null, 2)};\n`;
 }
 
 export async function publishPortfolioContent({

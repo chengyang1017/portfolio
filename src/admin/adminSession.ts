@@ -66,12 +66,4 @@ export async function logoutAdmin() {
     method: 'POST',
     credentials: 'include',
   }).catch(() => undefined);
-
-  if (typeof window !== 'undefined') {
-    try {
-      window.localStorage.removeItem('portfolio-admin-github-token');
-    } catch {
-      // Ignore cleanup failures in hardened browser contexts.
-    }
-  }
 }
