@@ -38,6 +38,7 @@ type GitHubRepo = {
 
 type GitHubContentItem = {
   name: string;
+  path?: string;
   type: 'file' | 'dir';
   url?: string;
   download_url?: string | null;
@@ -76,6 +77,7 @@ const TECHNOLOGY_DEFAULTS: Record<string, TechnologyDefault> = {
   Electron: { group: 'client', color: '#47848F', logo: `${SIMPLE_ICONS}/electron.svg` },
   HTML: { group: 'client', color: '#E34F26', logo: `${SIMPLE_ICONS}/html5.svg` },
   CSS: { group: 'client', color: '#663399', logo: `${SIMPLE_ICONS}/css.svg` },
+  Vue: { group: 'client', color: '#42B883', logo: `${SIMPLE_ICONS}/vuedotjs.svg` },
   'Node.js': { group: 'backend', color: '#5FA04E', logo: `${SIMPLE_ICONS}/nodedotjs.svg` },
   Express: { group: 'backend', color: '#B8C0BD', logo: `${SIMPLE_ICONS}/express.svg` },
   Prisma: { group: 'backend', color: '#2D3748', logo: `${SIMPLE_ICONS}/prisma.svg` },
@@ -83,12 +85,30 @@ const TECHNOLOGY_DEFAULTS: Record<string, TechnologyDefault> = {
   Python: { group: 'backend', color: '#3776AB', logo: `${SIMPLE_ICONS}/python.svg` },
   Flask: { group: 'backend', color: '#D7DDDA', logo: `${SIMPLE_ICONS}/flask.svg` },
   SQLite: { group: 'backend', color: '#003B57', logo: `${SIMPLE_ICONS}/sqlite.svg` },
+  'C#': { group: 'backend', color: '#512BD4', logo: `${SIMPLE_ICONS}/dotnet.svg` },
+  Rust: { group: 'backend', color: '#DEA584', logo: `${SIMPLE_ICONS}/rust.svg` },
+  Java: { group: 'backend', color: '#ED8B00' },
   Firebase: { group: 'platform', color: '#FFCA28', logo: `${SIMPLE_ICONS}/firebase.svg` },
   Stripe: { group: 'platform', color: '#635BFF', logo: `${SIMPLE_ICONS}/stripe.svg` },
-  Rust: { group: 'backend', color: '#DEA584', logo: `${SIMPLE_ICONS}/rust.svg` },
-  'C#': { group: 'backend', color: '#512BD4', logo: `${SIMPLE_ICONS}/dotnet.svg` },
-  Java: { group: 'backend', color: '#ED8B00' },
+  Supabase: { group: 'platform', color: '#3FCF8E', logo: `${SIMPLE_ICONS}/supabase.svg` },
 };
+
+const EVIDENCE_FILES = new Set([
+  'readme.md',
+  'readme',
+  'package.json',
+  'pubspec.yaml',
+  'pyproject.toml',
+  'requirements.txt',
+  'cargo.toml',
+  'composer.json',
+  'firebase.json',
+  'pom.xml',
+  'build.gradle',
+  'build.gradle.kts',
+  'settings.gradle',
+  'settings.gradle.kts',
+]);
 
 function parseRepositoryUrl(value: string) {
   const match = value
@@ -121,13 +141,8 @@ function inferFromFiles(items: GitHubContentItem[]) {
   const names = new Set(items.map((item) => item.name.toLowerCase()));
   const technologies: string[] = [];
 
-  if (names.has('pubspec.yaml')) {
-    technologies.push('Flutter', 'Dart');
-  }
-
-  if (names.has('package.json')) {
-    technologies.push('Node.js');
-  }
+  if (names.has('pubspec.yaml')) technologies.push('Flutter', 'Dart');
+  if (names.has('package.json')) technologies.push('Node.js');
 
   if (
     names.has('vite.config.ts') ||
@@ -137,46 +152,54 @@ function inferFromFiles(items: GitHubContentItem[]) {
     technologies.push('Vite');
   }
 
-  if (names.has('firebase.json')) {
-    technologies.push('Firebase');
-  }
+  if (names.has('firebase.json')) technologies.push('Firebase');
+  if (names.has('prisma') || names.has('schema.prisma')) technologies.push('Prisma');
+  if (names.has('requirements.txt') || names.has('pyproject.toml')) technologies.push('Python');
+  if (names.has('cargo.toml')) technologies.push('Rust');
 
-  if (names.has('prisma') || names.has('schema.prisma')) {
-    technologies.push('Prisma');
-  }
-
-  if (names.has('requirements.txt') || names.has('pyproject.toml')) {
-    technologies.push('Python');
+  if (
+    Array.from(names).some((name) => name.endsWith('.csproj')) ||
+    Array.from(names).some((name) => name.endsWith('.sln'))
+  ) {
+    technologies.push('C#');
   }
 
   return technologies;
 }
 
-async function maybeReadPackageJson(
-  items: GitHubContentItem[],
+async function readGitHubTextFile(
+  item: GitHubContentItem,
   token?: string,
+  maxChars = 7000,
 ) {
-  const packageFile = items.find((item) => item.name.toLowerCase() === 'package.json');
-
-  if (!packageFile) {
-    return [] as string[];
-  }
-
   try {
-    const response = packageFile.url
-      ? await fetch(packageFile.url, {
+    const response = item.url
+      ? await fetch(item.url, {
           headers: {
             ...githubHeaders(token),
             Accept: 'application/vnd.github.raw+json',
           },
         })
-      : packageFile.download_url
-        ? await fetch(packageFile.download_url)
+      : item.download_url
+        ? await fetch(item.download_url)
         : null;
 
-    if (!response?.ok) return [];
+    if (!response?.ok) return '';
+    return (await response.text()).slice(0, maxChars);
+  } catch {
+    return '';
+  }
+}
 
-    const packageJson = (await response.json()) as {
+async function maybeReadPackageJson(items: GitHubContentItem[], token?: string) {
+  const packageFile = items.find((item) => item.name.toLowerCase() === 'package.json');
+  if (!packageFile) return [] as string[];
+
+  const source = await readGitHubTextFile(packageFile, token, 20000);
+  if (!source) return [] as string[];
+
+  try {
+    const packageJson = JSON.parse(source) as {
       dependencies?: Record<string, string>;
       devDependencies?: Record<string, string>;
     };
@@ -189,18 +212,43 @@ async function maybeReadPackageJson(
     const detected: string[] = [];
 
     if (dependencies.react) detected.push('React');
+    if (dependencies.vue) detected.push('Vue');
     if (dependencies.express) detected.push('Express');
     if (dependencies.prisma || dependencies['@prisma/client']) detected.push('Prisma');
     if (dependencies.firebase) detected.push('Firebase');
+    if (dependencies['@supabase/supabase-js']) detected.push('Supabase');
     if (dependencies.electron) detected.push('Electron');
     if (dependencies.vite) detected.push('Vite');
-    if (dependencies.stripe) detected.push('Stripe');
+    if (dependencies.stripe || dependencies['@stripe/stripe-js']) detected.push('Stripe');
     if (dependencies.typescript) detected.push('TypeScript');
 
     return detected;
   } catch {
-    return [];
+    return [] as string[];
   }
+}
+
+async function collectRepositoryEvidence(items: GitHubContentItem[], token?: string) {
+  const evidenceFiles = items.filter(
+    (item) => item.type === 'file' && EVIDENCE_FILES.has(item.name.toLowerCase()),
+  );
+
+  const parts: string[] = [];
+  let total = 0;
+
+  for (const item of evidenceFiles) {
+    if (total >= 28000) break;
+
+    const remaining = 28000 - total;
+    const text = await readGitHubTextFile(item, token, Math.min(7000, remaining));
+    if (!text.trim()) continue;
+
+    const section = `\n--- ${item.path ?? item.name} ---\n${text.trim()}\n`;
+    parts.push(section);
+    total += section.length;
+  }
+
+  return parts.join('').slice(0, 28000);
 }
 
 export async function verifyPortfolioAccess(token: string): Promise<PortfolioAccess> {
@@ -255,7 +303,11 @@ export async function analyzeRepository(
     ? ((await contentsResponse.json()) as GitHubContentItem[])
     : [];
 
-  const packageTechnologies = await maybeReadPackageJson(rootItems, token);
+  const [packageTechnologies, evidence] = await Promise.all([
+    maybeReadPackageJson(rootItems, token),
+    collectRepositoryEvidence(rootItems, token),
+  ]);
+
   const languageTechnologies = Object.keys(languages).flatMap(
     (language) => LANGUAGE_TECH[language] ?? [language],
   );
@@ -282,23 +334,23 @@ export async function analyzeRepository(
     source: 'repository',
   };
 
-  const aiEndpoint = import.meta.env.VITE_PORTFOLIO_AI_ENDPOINT as string | undefined;
-
-  if (!aiEndpoint) {
-    return fallback;
-  }
+  const aiEndpoint =
+    (import.meta.env.VITE_PORTFOLIO_AI_ENDPOINT as string | undefined) ||
+    '/api/portfolio-ai';
 
   try {
     const aiResponse = await fetch(aiEndpoint, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
       body: JSON.stringify({
         repository,
         languages,
-        rootFiles: rootItems.map((item) => item.name),
+        rootFiles: rootItems.map((item) => item.path ?? item.name),
         detectedTechnologies: technologies,
+        evidence,
       }),
     });
 
@@ -315,7 +367,7 @@ export async function analyzeRepository(
       repo,
       github: repository.html_url,
       technologies: unique(ai.technologies ?? technologies),
-      features: ai.features ?? [],
+      features: Array.isArray(ai.features) ? ai.features : [],
       source: 'ai',
     };
   } catch {
@@ -334,16 +386,10 @@ function encodeBase64(value: string) {
   return btoa(binary);
 }
 
-async function getGitHubFile(
-  token: string,
-  path: string,
-  branch: string,
-) {
+async function getGitHubFile(token: string, path: string, branch: string) {
   const response = await fetch(
     `https://api.github.com/repos/chengyang1017/portfolio/contents/${path}?ref=${encodeURIComponent(branch)}`,
-    {
-      headers: githubHeaders(token),
-    },
+    { headers: githubHeaders(token) },
   );
 
   if (!response.ok) {
@@ -506,10 +552,7 @@ function createTechnologyItem(name: string): {
   };
 }
 
-export function mergeTechnologyNames(
-  catalog: TechnologyCatalog,
-  names: string[],
-) {
+export function mergeTechnologyNames(catalog: TechnologyCatalog, names: string[]) {
   const existing = new Set(
     Object.values(catalog)
       .flat()
