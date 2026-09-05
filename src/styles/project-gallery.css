@@ -23,14 +23,7 @@
   grid-column: span 4;
 }
 
-/* In mixed mobile/desktop galleries, give the desktop view half the row and
-   let two phone screenshots frame it at a readable quarter-row width each. */
-.gallery:has(.gallery-card.is-landscape) .gallery-card.is-portrait {
-  grid-column: span 3;
-}
-
-/* Three desktop screenshots become a clean 2 + 1 composition instead of
-   three tiny thumbnails. */
+/* All-landscape galleries keep the successful 2 + 1 composition. */
 .gallery .gallery-card.is-landscape:last-child:nth-child(odd) {
   grid-column: 4 / span 6;
 }
@@ -45,6 +38,24 @@
 
 .gallery .gallery-card.is-generated:only-child {
   grid-column: 2 / span 10;
+}
+
+/* Mixed phone + desktop galleries use a portfolio-style hero composition:
+   the wide desktop surface leads at full readable width, then the two phone
+   screenshots sit underneath as a balanced pair. This removes the dead area
+   that appears when tall and short screenshots share one row. */
+.gallery.is-mixed .gallery-card.is-landscape {
+  grid-column: 2 / span 10;
+  order: -1;
+  width: 100%;
+  max-width: 1120px;
+  justify-self: center;
+}
+
+.gallery.is-mixed .gallery-card.is-portrait {
+  grid-column: span 6;
+  width: min(100%, 430px);
+  justify-self: center;
 }
 
 .gallery .gallery-card.is-generated .visual,
@@ -231,7 +242,6 @@
   .gallery .gallery-card.is-landscape:last-child:nth-child(odd),
   .gallery .gallery-card.is-landscape:only-child,
   .gallery .gallery-card.is-portrait,
-  .gallery:has(.gallery-card.is-landscape) .gallery-card.is-portrait,
   .gallery .gallery-card.is-portrait:only-child,
   .gallery .gallery-card.is-generated:only-child {
     grid-column: auto;
@@ -241,6 +251,18 @@
     width: min(100%, 420px);
     justify-self: center;
   }
+
+  .gallery.is-mixed .gallery-card.is-landscape {
+    grid-column: 1 / -1;
+    order: -1;
+    width: min(100%, 900px);
+    justify-self: center;
+  }
+
+  .gallery.is-mixed .gallery-card.is-portrait {
+    grid-column: auto;
+    width: min(100%, 420px);
+  }
 }
 
 @media (max-width: 760px) {
@@ -249,8 +271,14 @@
     gap: 46px;
   }
 
-  .gallery .gallery-card.is-portrait {
+  .gallery .gallery-card.is-portrait,
+  .gallery.is-mixed .gallery-card.is-portrait {
     width: min(100%, 390px);
+  }
+
+  .gallery.is-mixed .gallery-card.is-landscape {
+    grid-column: auto;
+    width: 100%;
   }
 
   .gallery .gallery-card.is-generated .visual,
