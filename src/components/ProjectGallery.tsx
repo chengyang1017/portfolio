@@ -17,6 +17,11 @@ export function ProjectGallery({ project }: { project: Project }) {
   const [activeImage, setActiveImage] = useState<LightboxImage | null>(null);
 
   useEffect(() => {
+    setOrientations({});
+    setActiveImage(null);
+  }, [project.slug]);
+
+  useEffect(() => {
     if (!activeImage) return;
 
     const previousOverflow = document.body.style.overflow;
@@ -34,9 +39,17 @@ export function ProjectGallery({ project }: { project: Project }) {
     };
   }, [activeImage]);
 
+  const screenshotCount = project.gallery.filter((image) => Boolean(image.image)).length;
+  const resolvedOrientations = Object.values(orientations);
+  const hasPortrait = resolvedOrientations.includes('portrait');
+  const hasLandscape = resolvedOrientations.includes('landscape');
+  const hasMeasuredAllScreenshots = resolvedOrientations.length === screenshotCount;
+  const isMixedGallery =
+    screenshotCount > 1 && hasMeasuredAllScreenshots && hasPortrait && hasLandscape;
+
   return (
     <>
-      <div className="gallery">
+      <div className={`gallery${isMixedGallery ? ' is-mixed' : ''}`}>
         {project.gallery.map((image, index) => {
           const orientation = orientations[index];
           const cardClass = image.image
