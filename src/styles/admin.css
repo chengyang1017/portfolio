@@ -969,3 +969,129 @@
     flex-direction: column;
   }
 }
+
+
+/* Admin project drag ordering */
+.admin-project-list .admin-project-sort-item {
+  position: relative;
+  min-width: 0;
+}
+
+.admin-project-list .admin-project-select {
+  width: 100%;
+  min-height: 64px;
+  padding: 10px 86px 10px 12px;
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+}
+
+.admin-project-list .admin-project-drag-handle {
+  width: 34px;
+  min-height: 30px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  position: absolute;
+  top: 7px;
+  right: 8px;
+  z-index: 3;
+  border-color: transparent;
+  background: transparent;
+  color: #7f9187;
+  cursor: grab;
+  font-size: 1.05rem;
+  line-height: 1;
+}
+
+.admin-project-list .admin-project-drag-handle:hover,
+.admin-project-list .admin-project-drag-handle:focus-visible {
+  border-color: #4a5d52;
+  background: rgba(255, 255, 255, 0.04);
+  color: #d9e4de;
+}
+
+.admin-project-list .admin-project-drag-handle:active {
+  cursor: grabbing;
+}
+
+.admin-project-sort-item.is-active .admin-project-drag-handle {
+  color: #1a2712;
+}
+
+.admin-project-sort-item.is-active .admin-project-drag-handle:hover,
+.admin-project-sort-item.is-active .admin-project-drag-handle:focus-visible {
+  border-color: rgba(13, 18, 16, 0.35);
+  background: rgba(13, 18, 16, 0.08);
+  color: #0d1210;
+}
+
+.admin-project-order-buttons {
+  display: flex;
+  gap: 4px;
+  position: absolute;
+  right: 8px;
+  bottom: 7px;
+  z-index: 3;
+}
+
+.admin-project-list .admin-project-order-button {
+  width: 30px;
+  min-height: 24px;
+  padding: 0;
+  border-radius: 6px;
+  border-color: #34483d;
+  background: rgba(255, 255, 255, 0.025);
+  color: #8fa098;
+  font-size: 0.72rem;
+  line-height: 1;
+}
+
+.admin-project-list .admin-project-order-button:hover:not(:disabled),
+.admin-project-list .admin-project-order-button:focus-visible:not(:disabled) {
+  border-color: #c7ff4a;
+  color: #c7ff4a;
+}
+
+.admin-project-sort-item.is-active .admin-project-order-button {
+  border-color: rgba(13, 18, 16, 0.24);
+  background: rgba(13, 18, 16, 0.06);
+  color: #243118;
+}
+
+.admin-project-sort-item.is-dragging {
+  opacity: 0.42;
+}
+
+.admin-project-sort-item.drop-before::before,
+.admin-project-sort-item.drop-after::after {
+  content: '';
+  position: absolute;
+  left: 4px;
+  right: 4px;
+  z-index: 6;
+  height: 2px;
+  border-radius: 999px;
+  background: #c7ff4a;
+  box-shadow: 0 0 0 3px rgba(199, 255, 74, 0.12);
+  pointer-events: none;
+}
+
+.admin-project-sort-item.drop-before::before {
+  top: -4px;
+}
+
+.admin-project-sort-item.drop-after::after {
+  bottom: -4px;
+}
+
+.admin-project-list.is-reordering .admin-project-sort-item:not(.is-dragging) .admin-project-select {
+  transition: border-color 120ms ease, transform 120ms ease;
+}
+
+@media (max-width: 620px) {
+  .admin-project-list .admin-project-select {
+    min-height: 66px;
+  }
+}

@@ -315,6 +315,11 @@ export function AdminPage() {
   const [mediaBusy, setMediaBusy] = useState<number | 'new' | null>(null);
   const [mediaMessage, setMediaMessage] = useState('');
   const [mediaError, setMediaError] = useState(false);
+  const [draggedProjectSlug, setDraggedProjectSlug] = useState<string | null>(null);
+  const [projectDropTarget, setProjectDropTarget] = useState<{
+    slug: string;
+    edge: 'before' | 'after';
+  } | null>(null);
 
   const selectedProject = useMemo(
     () => projectDrafts.find((project) => project.slug === selectedSlug),
@@ -718,6 +723,47 @@ export function AdminPage() {
     setTechnologyDrafts((current) => mergeTechnologyNames(current, analysis.technologies));
   }
 
+  function renumberProjectDrafts(items: Project[]) {
+    return items.map((project, index) => ({
+      ...project,
+      number: String(index + 1).padStart(2, '0'),
+    }));
+  }
+
+  function reorderProjectDrafts(
+    sourceSlug: string,
+    targetSlug: string,
+    edge: 'before' | 'after',
+  ) {
+    if (!sourceSlug || sourceSlug === targetSlug) return;
+
+    setProjectDrafts((current) => {
+      const sourceIndex = current.findIndex((project) => project.slug === sourceSlug);
+      const targetIndex = current.findIndex((project) => project.slug === targetSlug);
+      if (sourceIndex < 0 || targetIndex < 0) return current;
+
+      const next = [...current];
+      const [moving] = next.splice(sourceIndex, 1);
+      const adjustedTargetIndex = next.findIndex((project) => project.slug === targetSlug);
+      if (adjustedTargetIndex < 0) return current;
+
+      next.splice(edge === 'after' ? adjustedTargetIndex + 1 : adjustedTargetIndex, 0, moving);
+      return renumberProjectDrafts(next);
+    });
+  }
+
+  function moveProjectByOffset(slug: string, offset: -1 | 1) {
+    setProjectDrafts((current) => {
+      const currentIndex = current.findIndex((project) => project.slug === slug);
+      const nextIndex = currentIndex + offset;
+      if (currentIndex < 0 || nextIndex < 0 || nextIndex >= current.length) return current;
+
+      const next = [...current];
+      [next[currentIndex], next[nextIndex]] = [next[nextIndex], next[currentIndex]];
+      return renumberProjectDrafts(next);
+    });
+  }
+
   function addAnalysisAsProject() {
     if (!analysis) return;
 
@@ -762,7 +808,9 @@ export function AdminPage() {
   function removeSelectedProject() {
     if (!selectedProject) return;
 
-    const next = projectDrafts.filter((project) => project.slug !== selectedProject.slug);
+    const next = renumberProjectDrafts(
+      projectDrafts.filter((project) => project.slug !== selectedProject.slug),
+    );
     setProjectDrafts(next);
     setTranslationDrafts((current) => {
       const nextTranslations = { ...current };
@@ -973,18 +1021,92 @@ export function AdminPage() {
         {draftMessage && <p className="admin-message">{draftMessage}</p>}
 
         <div className="admin-project-layout">
-          <nav className="admin-project-list" aria-label={ui.projectList}>
-            {projectDrafts.map((project) => (
-              <button
-                type="button"
-                className={project.slug === selectedSlug ? 'active' : ''}
-                key={project.slug}
-                onClick={() => setSelectedSlug(project.slug)}
-              >
-                <span>{project.number}</span>
-                <strong>{project.title}</strong>
-              </button>
-            ))}
+          <nav
+            className={draggedProjectSlug ? 'admin-project-list is-reordering' : 'admin-project-list'}
+            aria-label={ui.projectList}
+          >
+            {projectDrafts.map((project, index) => {
+              const dropClass =
+                projectDropTarget?.slug === project.slug
+                  ? ` drop-${projectDropTarget.edge}`
+                  : '';
+
+              return (
+                <div
+                  className={`admin-project-sort-item${
+                    project.slug === selectedSlug ? ' is-active' : ''
+                  }${draggedProjectSlug === project.slug ? ' is-dragging' : ''}${dropClass}`}
+                  key={project.slug}
+                  onDragOver={(event) => {
+                    if (!draggedProjectSlug || draggedProjectSlug === project.slug) return;
+                    event.preventDefault();
+                    const bounds = event.currentTarget.getBoundingClientRect();
+                    const edge = event.clientY < bounds.top + bounds.height / 2 ? 'before' : 'after';
+                    setProjectDropTarget({ slug: project.slug, edge });
+                    event.dataTransfer.dropEffect = 'move';
+                  }}
+                  onDrop={(event) => {
+                    event.preventDefault();
+                    const sourceSlug = event.dataTransfer.getData('text/plain') || draggedProjectSlug;
+                    const bounds = event.currentTarget.getBoundingClientRect();
+                    const edge = event.clientY < bounds.top + bounds.height / 2 ? 'before' : 'after';
+                    if (sourceSlug) reorderProjectDrafts(sourceSlug, project.slug, edge);
+                    setDraggedProjectSlug(null);
+                    setProjectDropTarget(null);
+                  }}
+                >
+                  <button
+                    type="button"
+                    className={`admin-project-select${project.slug === selectedSlug ? ' active' : ''}`}
+                    onClick={() => setSelectedSlug(project.slug)}
+                  >
+                    <span>{String(index + 1).padStart(2, '0')}</span>
+                    <strong>{project.title}</strong>
+                  </button>
+
+                  <button
+                    type="button"
+                    className="admin-project-drag-handle"
+                    draggable
+                    aria-label={`Drag ${project.title} to reorder`}
+                    title="Drag to reorder"
+                    onDragStart={(event) => {
+                      setDraggedProjectSlug(project.slug);
+                      setProjectDropTarget(null);
+                      event.dataTransfer.effectAllowed = 'move';
+                      event.dataTransfer.setData('text/plain', project.slug);
+                    }}
+                    onDragEnd={() => {
+                      setDraggedProjectSlug(null);
+                      setProjectDropTarget(null);
+                    }}
+                  >
+                    <span aria-hidden="true">⠿</span>
+                  </button>
+
+                  <div className="admin-project-order-buttons">
+                    <button
+                      type="button"
+                      className="secondary admin-project-order-button"
+                      aria-label={`Move ${project.title} up`}
+                      disabled={index === 0}
+                      onClick={() => moveProjectByOffset(project.slug, -1)}
+                    >
+                      ↑
+                    </button>
+                    <button
+                      type="button"
+                      className="secondary admin-project-order-button"
+                      aria-label={`Move ${project.title} down`}
+                      disabled={index === projectDrafts.length - 1}
+                      onClick={() => moveProjectByOffset(project.slug, 1)}
+                    >
+                      ↓
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
           </nav>
 
           {selectedProject ? (
