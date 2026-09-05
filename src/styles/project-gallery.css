@@ -1,0 +1,285 @@
+/* Screenshot gallery layout: prioritize readability without adding artificial letterboxing. */
+.gallery.gallery {
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  align-items: start;
+  gap: 48px 24px;
+}
+
+.gallery .gallery-card {
+  min-width: 0;
+  margin: 0;
+  grid-column: span 4;
+}
+
+.gallery .gallery-card.is-generated {
+  grid-column: span 4;
+}
+
+.gallery .gallery-card.is-landscape {
+  grid-column: span 6;
+}
+
+.gallery .gallery-card.is-portrait {
+  grid-column: span 4;
+}
+
+/* In mixed mobile/desktop galleries, give the desktop view half the row and
+   let two phone screenshots frame it at a readable quarter-row width each. */
+.gallery:has(.gallery-card.is-landscape) .gallery-card.is-portrait {
+  grid-column: span 3;
+}
+
+/* Three desktop screenshots become a clean 2 + 1 composition instead of
+   three tiny thumbnails. */
+.gallery .gallery-card.is-landscape:last-child:nth-child(odd) {
+  grid-column: 4 / span 6;
+}
+
+.gallery .gallery-card.is-landscape:only-child {
+  grid-column: 2 / span 10;
+}
+
+.gallery .gallery-card.is-portrait:only-child {
+  grid-column: 5 / span 4;
+}
+
+.gallery .gallery-card.is-generated:only-child {
+  grid-column: 2 / span 10;
+}
+
+.gallery .gallery-card.is-generated .visual,
+.gallery .gallery-card.is-generated:first-child .visual {
+  height: 340px;
+}
+
+.gallery-screenshot-button {
+  width: 100%;
+  padding: 0;
+  display: block;
+  position: relative;
+  overflow: visible;
+
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: inherit;
+  cursor: zoom-in;
+}
+
+.gallery .gallery-screenshot {
+  width: 100%;
+  height: auto;
+  max-height: none;
+  display: block;
+
+  object-fit: initial;
+  object-position: center;
+
+  border: 1px solid var(--line);
+  background: transparent;
+  box-shadow: 0 18px 48px rgb(0 0 0 / 8%);
+
+  transition:
+    transform 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.case-dark .gallery .gallery-screenshot {
+  border-color: #33413b;
+  box-shadow: 0 22px 54px rgb(0 0 0 / 22%);
+}
+
+.gallery-screenshot-button:hover .gallery-screenshot,
+.gallery-screenshot-button:focus-visible .gallery-screenshot {
+  transform: translateY(-3px);
+  border-color: currentColor;
+  box-shadow: 0 26px 64px rgb(0 0 0 / 16%);
+}
+
+.gallery-screenshot-button:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 5px;
+}
+
+.gallery-zoom-mark {
+  width: 34px;
+  height: 34px;
+
+  display: grid;
+  place-items: center;
+
+  position: absolute;
+  top: 12px;
+  right: 12px;
+
+  border: 1px solid rgb(255 255 255 / 24%);
+  border-radius: 999px;
+  background: rgb(8 12 10 / 78%);
+  color: white;
+
+  font-size: 1.15rem;
+  line-height: 1;
+
+  opacity: 0;
+  transform: scale(0.9);
+  transition:
+    opacity 180ms ease,
+    transform 180ms ease;
+  pointer-events: none;
+}
+
+.gallery-screenshot-button:hover .gallery-zoom-mark,
+.gallery-screenshot-button:focus-visible .gallery-zoom-mark {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.gallery .gallery-card figcaption {
+  margin-top: 18px;
+}
+
+/* Full-size viewer: the gallery stays compact, while detailed UI/code remains
+   available at a useful scale with one click. */
+.gallery-lightbox {
+  padding: clamp(18px, 3vw, 48px);
+
+  display: grid;
+  place-items: center;
+
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+
+  background: rgb(4 8 6 / 94%);
+  backdrop-filter: blur(10px);
+}
+
+.gallery-lightbox-panel {
+  width: min(1500px, 100%);
+  height: min(90vh, 980px);
+  min-height: 0;
+
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  gap: 16px;
+}
+
+.gallery-lightbox-image {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+
+  display: block;
+  object-fit: contain;
+  object-position: center;
+}
+
+.gallery-lightbox-caption {
+  max-width: 900px;
+  color: white;
+}
+
+.gallery-lightbox-caption strong {
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.gallery-lightbox-caption p {
+  margin: 5px 0 0;
+  color: #aeb9b3;
+  line-height: 1.55;
+}
+
+.gallery-lightbox-close {
+  width: 44px;
+  height: 44px;
+
+  display: grid;
+  place-items: center;
+
+  position: fixed;
+  top: 18px;
+  right: 18px;
+  z-index: 10001;
+
+  border: 1px solid rgb(255 255 255 / 22%);
+  border-radius: 999px;
+  background: rgb(255 255 255 / 8%);
+  color: white;
+  cursor: pointer;
+
+  font-size: 1.55rem;
+  line-height: 1;
+}
+
+.gallery-lightbox-close:hover,
+.gallery-lightbox-close:focus-visible {
+  background: rgb(255 255 255 / 15%);
+}
+
+@media (max-width: 1100px) {
+  .gallery.gallery {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 42px 22px;
+  }
+
+  .gallery .gallery-card,
+  .gallery .gallery-card.is-generated,
+  .gallery .gallery-card.is-landscape,
+  .gallery .gallery-card.is-landscape:last-child:nth-child(odd),
+  .gallery .gallery-card.is-landscape:only-child,
+  .gallery .gallery-card.is-portrait,
+  .gallery:has(.gallery-card.is-landscape) .gallery-card.is-portrait,
+  .gallery .gallery-card.is-portrait:only-child,
+  .gallery .gallery-card.is-generated:only-child {
+    grid-column: auto;
+  }
+
+  .gallery .gallery-card.is-portrait {
+    width: min(100%, 420px);
+    justify-self: center;
+  }
+}
+
+@media (max-width: 760px) {
+  .gallery.gallery {
+    grid-template-columns: 1fr;
+    gap: 46px;
+  }
+
+  .gallery .gallery-card.is-portrait {
+    width: min(100%, 390px);
+  }
+
+  .gallery .gallery-card.is-generated .visual,
+  .gallery .gallery-card.is-generated:first-child .visual {
+    height: 300px;
+  }
+
+  .gallery-zoom-mark {
+    opacity: 1;
+    transform: none;
+  }
+
+  .gallery-lightbox {
+    padding: 58px 14px 18px;
+  }
+
+  .gallery-lightbox-panel {
+    height: calc(100dvh - 76px);
+  }
+
+  .gallery-lightbox-close {
+    top: 10px;
+    right: 10px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gallery .gallery-screenshot,
+  .gallery-zoom-mark {
+    transition: none;
+  }
+}
