@@ -27,7 +27,16 @@ export async function uploadProjectScreenshot(file: File, slug: string): Promise
   return payload;
 }
 
-export async function deleteProjectScreenshot(imageUrl: string) {
+export async function deleteProjectScreenshot(
+  imageUrl: string,
+  options: { force?: boolean } = {},
+) {
+  // Project edits are draft-first. Do not physically remove media while a draft
+  // is being edited because the public portfolio may still reference the old URL
+  // until Publish succeeds. A future post-publish cleanup can opt in with
+  // { force: true } once the new project data is already live.
+  if (!options.force) return;
+
   const url = new URL(imageUrl, window.location.origin);
   const marker = '/api/media/';
   const markerIndex = url.pathname.indexOf(marker);
