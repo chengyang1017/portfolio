@@ -40,22 +40,67 @@
   grid-column: 2 / span 10;
 }
 
-/* Mixed phone + desktop galleries use a portfolio-style hero composition:
-   the wide desktop surface leads at full readable width, then the two phone
-   screenshots sit underneath as a balanced pair. This removes the dead area
-   that appears when tall and short screenshots share one row. */
-.gallery.is-mixed .gallery-card.is-landscape {
-  grid-column: 2 / span 10;
-  order: -1;
+/* Mixed phone + desktop galleries use a deliberate three-column showcase.
+   The desktop/admin screenshot is the main visual in the middle while the
+   phone screenshots remain large enough to read. Captions stay attached to
+   each screenshot instead of creating a tall, empty lower half. */
+.gallery.gallery.is-mixed {
+  grid-template-columns:
+    minmax(220px, 0.9fr)
+    minmax(430px, 1.8fr)
+    minmax(220px, 0.9fr);
+  gap: 32px;
+  align-items: start;
+}
+
+.gallery.is-mixed > .gallery-card,
+.gallery.is-mixed > .gallery-card.is-landscape,
+.gallery.is-mixed > .gallery-card.is-portrait {
+  grid-column: auto;
+  order: 0;
   width: 100%;
-  max-width: 1120px;
+  max-width: none;
+  justify-self: stretch;
+}
+
+.gallery.is-mixed > .gallery-card.is-portrait {
+  width: min(100%, 330px);
   justify-self: center;
 }
 
-.gallery.is-mixed .gallery-card.is-portrait {
-  grid-column: span 6;
-  width: min(100%, 430px);
-  justify-self: center;
+.gallery.is-mixed > .gallery-card.is-landscape {
+  align-self: start;
+}
+
+.gallery.is-mixed .gallery-card figcaption {
+  margin-top: 16px;
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+}
+
+.gallery.is-mixed .gallery-card figcaption > span {
+  padding-top: 3px;
+  font-size: 0.78rem;
+  line-height: 1;
+  letter-spacing: 0.06em;
+  opacity: 0.72;
+}
+
+.gallery.is-mixed .gallery-card figcaption strong {
+  display: block;
+  margin-bottom: 5px;
+}
+
+.gallery.is-mixed .gallery-card figcaption p {
+  margin: 0;
+  max-width: 58ch;
+  line-height: 1.5;
+}
+
+.gallery.is-mixed .gallery-card.is-portrait figcaption p {
+  max-width: 24ch;
 }
 
 .gallery .gallery-card.is-generated .visual,
@@ -252,33 +297,52 @@
     justify-self: center;
   }
 
-  .gallery.is-mixed .gallery-card.is-landscape {
+  .gallery.gallery.is-mixed {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 42px 24px;
+  }
+
+  .gallery.is-mixed > .gallery-card.is-landscape {
     grid-column: 1 / -1;
-    order: -1;
+    grid-row: 1;
     width: min(100%, 900px);
     justify-self: center;
   }
 
-  .gallery.is-mixed .gallery-card.is-portrait {
+  .gallery.is-mixed > .gallery-card.is-portrait {
     grid-column: auto;
-    width: min(100%, 420px);
+    width: min(100%, 390px);
+    justify-self: center;
+  }
+
+  .gallery.is-mixed .gallery-card.is-portrait figcaption p {
+    max-width: 30ch;
   }
 }
 
 @media (max-width: 760px) {
-  .gallery.gallery {
+  .gallery.gallery,
+  .gallery.gallery.is-mixed {
     grid-template-columns: 1fr;
     gap: 46px;
   }
 
   .gallery .gallery-card.is-portrait,
-  .gallery.is-mixed .gallery-card.is-portrait {
+  .gallery.is-mixed > .gallery-card.is-portrait {
+    grid-column: auto;
+    grid-row: auto;
     width: min(100%, 390px);
   }
 
-  .gallery.is-mixed .gallery-card.is-landscape {
+  .gallery.is-mixed > .gallery-card.is-landscape {
     grid-column: auto;
+    grid-row: auto;
     width: 100%;
+  }
+
+  .gallery.is-mixed .gallery-card figcaption p,
+  .gallery.is-mixed .gallery-card.is-portrait figcaption p {
+    max-width: none;
   }
 
   .gallery .gallery-card.is-generated .visual,
