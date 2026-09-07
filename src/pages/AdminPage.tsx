@@ -532,6 +532,53 @@ export function AdminPage() {
     if (image) void deleteProjectScreenshot(image).catch(() => undefined);
   }
 
+  function moveGalleryItem(index: number, offset: -1 | 1) {
+    if (!selectedProject) return;
+
+    const nextIndex = index + offset;
+    if (nextIndex < 0 || nextIndex >= selectedProject.gallery.length) return;
+
+    const projectSlug = selectedProject.slug;
+
+    setProjectDrafts((current) =>
+      current.map((project) => {
+        if (project.slug !== projectSlug) return project;
+        const gallery = project.gallery.map((item) => ({ ...item }));
+        [gallery[index], gallery[nextIndex]] = [gallery[nextIndex], gallery[index]];
+        return { ...project, gallery };
+      }),
+    );
+
+    // Localized gallery titles/captions are matched to canonical screenshots by index,
+    // so move the corresponding translation entries at the same time.
+    setTranslationDrafts((current) => {
+      const localizedProject = current[projectSlug];
+      if (!localizedProject) return current;
+
+      let changed = false;
+      const nextLocalizedProject = { ...localizedProject };
+
+      for (const locale of PROJECT_TRANSLATION_LOCALES) {
+        const translation = localizedProject[locale];
+        if (
+          !translation
+          || index >= translation.gallery.length
+          || nextIndex >= translation.gallery.length
+        ) {
+          continue;
+        }
+
+        const gallery = translation.gallery.map((item) => ({ ...item }));
+        [gallery[index], gallery[nextIndex]] = [gallery[nextIndex], gallery[index]];
+        nextLocalizedProject[locale] = { ...translation, gallery };
+        changed = true;
+      }
+
+      return changed
+        ? { ...current, [projectSlug]: nextLocalizedProject }
+        : current;
+    });
+  }
   async function handleAiFillTranslations() {
     if (!selectedProject) return;
     setTranslationState('loading');
@@ -1374,6 +1421,26 @@ export function AdminPage() {
                             />
                           </label>
                           <div className="admin-screenshot-actions">
+                            <button
+                              type="button"
+                              className="secondary"
+                              disabled={mediaBusy !== null || index === 0}
+                              aria-label={`Move screenshot ${index + 1} up`}
+                              title="Move up"
+                              onClick={() => moveGalleryItem(index, -1)}
+                            >
+                              ↑
+                            </button>
+                            <button
+                              type="button"
+                              className="secondary"
+                              disabled={mediaBusy !== null || index === selectedProject.gallery.length - 1}
+                              aria-label={`Move screenshot ${index + 1} down`}
+                              title="Move down"
+                              onClick={() => moveGalleryItem(index, 1)}
+                            >
+                              ↓
+                            </button>
                             <label className={`admin-upload-button secondary${mediaBusy !== null ? ' is-disabled' : ''}`}>
                               <span>{mediaBusy === index ? mediaUi.uploading : mediaUi.replace}</span>
                               <input
