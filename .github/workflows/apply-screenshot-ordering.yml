@@ -1,0 +1,159 @@
+name: Apply screenshot ordering
+
+on:
+  push:
+    branches:
+      - feature/screenshot-ordering
+    paths:
+      - .github/workflows/apply-screenshot-ordering.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout feature branch
+        uses: actions/checkout@v4
+        with:
+          ref: feature/screenshot-ordering
+
+      - name: Patch screenshot editor
+        shell: bash
+        run: |
+          python <<'PY'
+          from pathlib import Path
+
+          path = Path('src/pages/AdminPage.tsx')
+          text = path.read_text(encoding='utf-8')
+
+          old_helper_anchor = """  function removeGalleryItem(index: number) {
+            if (!selectedProject) return;
+            const image = selectedProject.gallery[index]?.image;
+            updateProject({ gallery: selectedProject.gallery.filter((_, itemIndex) => itemIndex !== index) });
+            if (image) void deleteProjectScreenshot(image).catch(() => undefined);
+          }
+
+          async function handleAiFillTranslations() {
+          """
+
+          new_helper_anchor = """  function removeGalleryItem(index: number) {
+            if (!selectedProject) return;
+            const image = selectedProject.gallery[index]?.image;
+            updateProject({ gallery: selectedProject.gallery.filter((_, itemIndex) => itemIndex !== index) });
+            if (image) void deleteProjectScreenshot(image).catch(() => undefined);
+          }
+
+          function moveGalleryItem(index: number, offset: -1 | 1) {
+            if (!selectedProject) return;
+
+            const nextIndex = index + offset;
+            if (nextIndex < 0 || nextIndex >= selectedProject.gallery.length) return;
+
+            const projectSlug = selectedProject.slug;
+
+            setProjectDrafts((current) =>
+              current.map((project) => {
+                if (project.slug !== projectSlug) return project;
+                const gallery = project.gallery.map((item) => ({ ...item }));
+                [gallery[index], gallery[nextIndex]] = [gallery[nextIndex], gallery[index]];
+                return { ...project, gallery };
+              }),
+            );
+
+            // Localized gallery titles/captions are matched to canonical screenshots by index,
+            // so move the corresponding translation entries at the same time.
+            setTranslationDrafts((current) => {
+              const localizedProject = current[projectSlug];
+              if (!localizedProject) return current;
+
+              let changed = false;
+              const nextLocalizedProject = { ...localizedProject };
+
+              for (const locale of PROJECT_TRANSLATION_LOCALES) {
+                const translation = localizedProject[locale];
+                if (
+                  !translation
+                  || index >= translation.gallery.length
+                  || nextIndex >= translation.gallery.length
+                ) {
+                  continue;
+                }
+
+                const gallery = translation.gallery.map((item) => ({ ...item }));
+                [gallery[index], gallery[nextIndex]] = [gallery[nextIndex], gallery[index]];
+                nextLocalizedProject[locale] = { ...translation, gallery };
+                changed = true;
+              }
+
+              return changed
+                ? { ...current, [projectSlug]: nextLocalizedProject }
+                : current;
+            });
+          }
+
+          async function handleAiFillTranslations() {
+          """
+
+          if old_helper_anchor not in text:
+              raise SystemExit('Could not find removeGalleryItem anchor')
+          text = text.replace(old_helper_anchor, new_helper_anchor, 1)
+
+          old_actions_anchor = """                          <div className=\"admin-screenshot-actions\">
+                            <label className={`admin-upload-button secondary${mediaBusy !== null ? ' is-disabled' : ''}`}>
+          """
+
+          new_actions_anchor = """                          <div className=\"admin-screenshot-actions\">
+                            <button
+                              type=\"button\"
+                              className=\"secondary\"
+                              disabled={mediaBusy !== null || index === 0}
+                              aria-label={`Move screenshot ${index + 1} up`}
+                              title=\"Move up\"
+                              onClick={() => moveGalleryItem(index, -1)}
+                            >
+                              ↑
+                            </button>
+                            <button
+                              type=\"button\"
+                              className=\"secondary\"
+                              disabled={mediaBusy !== null || index === selectedProject.gallery.length - 1}
+                              aria-label={`Move screenshot ${index + 1} down`}
+                              title=\"Move down\"
+                              onClick={() => moveGalleryItem(index, 1)}
+                            >
+                              ↓
+                            </button>
+                            <label className={`admin-upload-button secondary${mediaBusy !== null ? ' is-disabled' : ''}`}>
+          """
+
+          if old_actions_anchor not in text:
+              raise SystemExit('Could not find screenshot actions anchor')
+          text = text.replace(old_actions_anchor, new_actions_anchor, 1)
+
+          path.write_text(text, encoding='utf-8')
+          PY
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Commit feature
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/pages/AdminPage.tsx
+          git diff --cached --quiet && exit 0
+          git commit -m "Add screenshot ordering controls"
+          git push origin HEAD:feature/screenshot-ordering
