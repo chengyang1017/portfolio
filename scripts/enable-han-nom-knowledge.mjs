@@ -11,23 +11,45 @@ function replaceOnce(search, replacement, label) {
   if (source.indexOf(search, first + search.length) !== -1) {
     throw new Error(`Unable to enable Hán-Nôm knowledge: ${label} matched more than once.`);
   }
-  source = source.replace(search, replacement);
+  source = source.slice(0, first) + replacement + source.slice(first + search.length);
 }
 
-replaceOnce(
-  'async function runOpenAI(env, instructions, input, maxOutputTokens) {',
+function replacePatternOnce(pattern, replacement, label) {
+  const match = source.match(pattern);
+  if (!match || match.index === undefined) {
+    throw new Error(`Unable to enable Hán-Nôm knowledge: ${label} was not found.`);
+  }
+
+  const rest = source.slice(match.index + match[0].length);
+  if (rest.match(pattern)) {
+    throw new Error(`Unable to enable Hán-Nôm knowledge: ${label} matched more than once.`);
+  }
+
+  source =
+    source.slice(0, match.index) +
+    replacement +
+    source.slice(match.index + match[0].length);
+}
+
+replacePatternOnce(
+  /async function runOpenAI\(\s*env,\s*instructions,\s*input,\s*maxOutputTokens,?\s*\)\s*\{/,
   "async function runOpenAI(env, instructions, input, maxOutputTokens, tools = [], modelOverride = '', reasoningEffort = 'low') {",
   'runOpenAI signature',
 );
 
-replaceOnce(
-  "      model: env.OPENAI_MODEL || 'gpt-5-mini',\n      reasoning: { effort: 'low' },\n      instructions,\n      input: JSON.stringify(input),\n      max_output_tokens: maxOutputTokens,",
-  "      model: modelOverride || env.OPENAI_MODEL || 'gpt-5-mini',\n      reasoning: { effort: reasoningEffort },\n      instructions,\n      input: JSON.stringify(input),\n      ...(tools.length > 0 ? { tools } : {}),\n      max_output_tokens: maxOutputTokens,",
+replacePatternOnce(
+  /model:\s*env\.OPENAI_MODEL\s*\|\|\s*'gpt-5-mini',\s*reasoning:\s*\{\s*effort:\s*'low',?\s*\},\s*instructions,\s*input:\s*JSON\.stringify\(\s*input,?\s*\),\s*max_output_tokens:\s*maxOutputTokens,/,
+  `model: modelOverride || env.OPENAI_MODEL || 'gpt-5-mini',
+          reasoning: { effort: reasoningEffort },
+          instructions,
+          input: JSON.stringify(input),
+          ...(tools.length > 0 ? { tools } : {}),
+          max_output_tokens: maxOutputTokens,`,
   'Responses API request body',
 );
 
-replaceOnce(
-  'async function translateProject(payload, env) {',
+replacePatternOnce(
+  /async function translateProject\(\s*payload,\s*env,?\s*\)\s*\{/,
   `function hanNomFileSearchTools(env) {
   const vectorStoreId =
     typeof env.HAN_NOM_VECTOR_STORE_ID === 'string'
@@ -220,32 +242,33 @@ async function translateProject(payload, env) {`,
   'translateProject insertion point',
 );
 
-replaceOnce(
-  "  const targetLocales = ['zh-CN', 'zh-TW', 'vi-Latn', 'vi-Hani'];",
-  "  const targetLocales = ['zh-CN', 'zh-TW', 'vi-Latn'];",
+replacePatternOnce(
+  /const targetLocales\s*=\s*\[\s*'zh-CN',\s*'zh-TW',\s*'vi-Latn',\s*'vi-Hani',?\s*\];/,
+  "const targetLocales = ['zh-CN', 'zh-TW', 'vi-Latn'];",
   'translate-project first-pass locales',
 );
 
 replaceOnce(
-  "    'Return JSON only. The top-level object must have exactly four keys: zh-CN, zh-TW, vi-Latn, vi-Hani.',",
-  "    'Return JSON only. The top-level object must have exactly three keys: zh-CN, zh-TW, vi-Latn.',",
+  "'Return JSON only. The top-level object must have exactly four keys: zh-CN, zh-TW, vi-Latn, vi-Hani.'",
+  "'Return JSON only. The top-level object must have exactly three keys: zh-CN, zh-TW, vi-Latn.'",
   'translate-project JSON keys instruction',
 );
 
 replaceOnce(
-  "    'vi-Latn must be natural Vietnamese written in modern Latin orthography.',\n    'vi-Hani must represent the same Vietnamese content in Chữ Nôm / Hán-Nôm writing, not merely translate it into Chinese. Preserve Latin technical and brand terms when a reliable Nôm form is uncertain.',\n    'Keep technical meaning precise and keep all four translations semantically aligned with the English source.',",
-  "    'vi-Latn must be natural Vietnamese written in modern Latin orthography.',\n    'Keep technical meaning precise and keep all three translations semantically aligned with the English source.',",
-  'translate-project first-pass locale instructions',
+  "'vi-Hani must represent the same Vietnamese content in Chữ Nôm / Hán-Nôm writing, not merely translate it into Chinese. Preserve Latin technical and brand terms when a reliable Nôm form is uncertain.',",
+  '',
+  'translate-project vi-Hani first-pass instruction',
 );
 
 replaceOnce(
-  `    const result = {};
-    for (const locale of targetLocales) {
-      result[locale] = cleanProjectTranslation(parsed?.[locale], source);
-    }
+  "'Keep technical meaning precise and keep all four translations semantically aligned with the English source.'",
+  "'Keep technical meaning precise and keep all three translations semantically aligned with the English source.'",
+  'translate-project locale-count instruction',
+);
 
-    return json(result);`,
-  `    const result = {};
+replacePatternOnce(
+  /const result\s*=\s*\{\};\s*for\s*\(\s*const locale of\s*targetLocales\s*\)\s*\{\s*result\[locale\]\s*=\s*cleanProjectTranslation\(\s*parsed\?\.\[locale\],\s*source,?\s*\);\s*\}\s*return json\(result\);/,
+  `const result = {};
     for (const locale of targetLocales) {
       result[locale] = cleanProjectTranslation(parsed?.[locale], source);
     }
@@ -257,17 +280,14 @@ replaceOnce(
 );
 
 replaceOnce(
-  "    'For vi-Hani, write Vietnamese in Chữ Nôm / Hán-Nôm rather than translating into Chinese; keep Latin technical names when uncertain.',\n    'Preserve URLs, repository slugs, code identifiers, framework names, database names, and project brands unless the user explicitly requests a rename.',",
-  "    'For vi-Hani, propose the same Vietnamese meaning in Chữ Nôm / Hán-Nôm rather than Chinese. A dedicated knowledge-grounded converter will validate and rewrite every vi-Hani patch after this planning step.',\n    'For ordinary Vietnamese words in vi-Hani, do not intentionally preserve Quốc Ngữ; only protected brands, technical identifiers, URLs, repository slugs, framework names, database names, APIs, and genuinely foreign names may remain Latin.',\n    'Preserve URLs, repository slugs, code identifiers, framework names, database names, and project brands unless the user explicitly requests a rename.',",
+  "'For vi-Hani, write Vietnamese in Chữ Nôm / Hán-Nôm rather than translating into Chinese; keep Latin technical names when uncertain.',",
+  "'For vi-Hani, propose the same Vietnamese meaning in Chữ Nôm / Hán-Nôm rather than Chinese. A dedicated knowledge-grounded converter will validate and rewrite every vi-Hani patch after this planning step.',\n    'For ordinary Vietnamese words in vi-Hani, do not intentionally preserve Quốc Ngữ; only protected brands, technical identifiers, URLs, repository slugs, framework names, database names, APIs, and genuinely foreign names may remain Latin.',",
   'portfolio-agent vi-Hani planning instructions',
 );
 
-replaceOnce(
-  `      recentConversation: history,
-    }, 16000);
-
-    const projectSlugs`,
-  `      recentConversation: history,
+replacePatternOnce(
+  /recentConversation:\s*history,\s*\},\s*16000,?\s*\);\s*const projectSlugs/,
+  `recentConversation: history,
     }, 16000);
 
     if (Array.isArray(parsed?.translationPatches)) {
