@@ -1,0 +1,143 @@
+/* Final dark-theme balance --------------------------------------------------
+   Nudges the brighter slate pass slightly darker without returning to the
+   near-black version. Layout, sizing, media behaviour and muted accents stay
+   unchanged.
+*/
+
+:root {
+  --paper: #14202c;
+  --surface: #1c2d3f;
+  --surface-strong: #22364a;
+  --dark: #172635;
+  --dark-soft: #1b2e40;
+  --line: rgba(151, 181, 207, 0.23);
+  --line-strong: rgba(121, 168, 196, 0.38);
+}
+
+html {
+  background: var(--paper);
+}
+
+body {
+  background:
+    radial-gradient(circle at 7% -4%, rgba(101, 148, 170, 0.16), transparent 31rem),
+    radial-gradient(circle at 94% 6%, rgba(109, 120, 175, 0.13), transparent 34rem),
+    linear-gradient(180deg, #172533 0%, #1a2c3d 44%, #142331 100%);
+}
+
+.home-hero {
+  background:
+    radial-gradient(circle at 82% 18%, rgba(116, 130, 184, 0.15), transparent 28rem),
+    radial-gradient(circle at 16% 90%, rgba(105, 162, 183, 0.11), transparent 28rem),
+    linear-gradient(145deg, rgba(31, 50, 69, 0.99), rgba(25, 43, 60, 0.99));
+}
+
+.case-hero {
+  background:
+    radial-gradient(circle at 82% 10%, rgba(115, 128, 181, 0.15), transparent 26rem),
+    radial-gradient(circle at 12% 92%, rgba(103, 158, 179, 0.1), transparent 24rem),
+    linear-gradient(145deg, rgba(30, 49, 68, 0.99), rgba(24, 42, 59, 0.99));
+}
+
+.home-work-showcase,
+.home-stack-section,
+.projects-intro,
+.about-hero,
+.overview-redesign,
+.source-page {
+  background-color: rgba(27, 46, 64, 0.95) !important;
+}
+
+.home-work-mini-card,
+.home-work-featured-card,
+.home-area-card,
+.home-stack-card,
+.stack-group,
+.technology-group,
+.project-card,
+.project-row,
+.projects-grid article,
+.projects-list article,
+.project-gallery article,
+.gallery-card,
+.gallery-item,
+.architecture-diagram,
+.source-cta,
+.challenge-grid article,
+.project-pagination-card {
+  background: linear-gradient(145deg, rgba(35, 59, 80, 0.98), rgba(29, 50, 69, 0.97)) !important;
+}
+
+.project-facts,
+.overview-metrics > div,
+.ecosystem-statement,
+.case-action {
+  background: rgba(34, 58, 78, 0.93) !important;
+}
+
+.case-dark.feature-section {
+  background:
+    radial-gradient(circle at 8% 10%, rgba(102, 155, 178, 0.13), transparent 28rem),
+    radial-gradient(circle at 92% 20%, rgba(111, 123, 176, 0.13), transparent 32rem),
+    linear-gradient(145deg, #1b2e40 0%, #21394d 52%, #182a3a 100%);
+}
+
+.feature-card {
+  background:
+    radial-gradient(circle at 100% 0%, rgba(116, 130, 184, 0.08), transparent 14rem),
+    linear-gradient(145deg, rgba(35, 59, 80, 0.97), rgba(29, 51, 70, 0.95)) !important;
+}
+
+.admin-section-nav,
+.navbar {
+  background: rgba(25, 43, 60, 0.95) !important;
+}
+
+.admin-hero,
+.admin-panel,
+.admin-global-agent-panel,
+.admin-access-card,
+.admin-content-hero,
+.admin-content-state-card,
+.admin-content-project-rail,
+.admin-content-panel {
+  background: rgba(28, 48, 67, 0.97) !important;
+}
+
+.admin-project-list,
+.admin-project-editor,
+.admin-tech-group,
+.admin-analysis-card,
+.admin-agent-proposal,
+.admin-global-agent-context,
+.admin-agent-compose,
+.admin-language-note,
+.admin-screenshot-editor,
+.admin-content-copy-grid label,
+.admin-content-media-card {
+  background: rgba(35, 60, 81, 0.95) !important;
+}
+
+.admin-page input,
+.admin-page textarea,
+.admin-page select,
+.admin-content-page input,
+.admin-content-page textarea,
+.admin-content-page select {
+  background: rgba(25, 45, 63, 0.97) !important;
+}
+
+.admin-page button.admin-project-select,
+.admin-page button.admin-locale-tab,
+.admin-content-page .admin-content-project-list button,
+.admin-content-page .admin-content-locale-tabs button {
+  background: rgba(35, 59, 80, 0.95) !important;
+}
+
+.admin-content-locale-tabs {
+  background: rgba(25, 44, 61, 0.82) !important;
+}
+
+.admin-content-publish-bar {
+  background: rgba(27, 47, 65, 0.98) !important;
+}
