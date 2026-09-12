@@ -300,7 +300,8 @@ body::before {
 /* Project detail ------------------------------------------------------------ */
 
 .case-study {
-  overflow: clip;
+  overflow-x: hidden;
+  overflow-y: visible;
   padding-bottom: 92px;
 }
 

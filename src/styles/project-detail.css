@@ -686,3 +686,108 @@
   border: 1px solid var(--line);
   background: #0b0f0d;
 }
+
+/* =========================================================
+   Project hero overflow fix
+   - Prevent uploaded hero images from expanding the grid
+   - Prevent the left title/copy from being clipped
+   - Keep the full hero image visible
+   ========================================================= */
+
+.case-study {
+  overflow-x: hidden;
+}
+
+.case-hero,
+.case-title,
+.case-hero > .visual,
+.project-uploaded-visual {
+  min-width: 0;
+  max-width: 100%;
+}
+
+/* Allow long project titles to wrap instead of pushing the grid wider. */
+.case-title h1,
+.case-title p {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+/* Uploaded hero must always stay inside its own column. */
+.project-uploaded-visual {
+  width: 100%;
+  overflow: hidden;
+}
+
+.project-uploaded-visual img {
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
+
+  display: block;
+
+  object-fit: contain !important;
+  object-position: center !important;
+}
+
+/* Desktop hero:
+   remove the hard 460px minimum that can force horizontal overflow. */
+@media (min-width: 901px) {
+  .case-hero {
+    grid-template-columns:
+      minmax(0, 0.92fr)
+      minmax(0, 1.08fr) !important;
+
+    column-gap: clamp(28px, 4vw, 56px);
+  }
+
+  .case-title {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .case-hero > .visual {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+  }
+}
+
+/* Narrow desktop / large tablet:
+   stack before the two-column layout becomes cramped. */
+@media (min-width: 901px) and (max-width: 1150px) {
+  .case-hero {
+    grid-template-columns:
+      minmax(0, 0.8fr)
+      minmax(0, 1.2fr) !important;
+
+    column-gap: 30px;
+  }
+
+  .case-title h1 {
+    font-size: clamp(2.7rem, 5vw, 4.4rem);
+  }
+}
+
+/* Tablet and mobile */
+@media (max-width: 900px) {
+  .case-hero {
+    grid-template-columns: 1fr !important;
+  }
+
+  .case-title,
+  .case-hero > .visual {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .project-uploaded-visual {
+    height: auto !important;
+    aspect-ratio: 16 / 10;
+  }
+
+  .project-uploaded-visual img {
+    object-fit: contain !important;
+  }
+}
