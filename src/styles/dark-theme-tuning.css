@@ -1799,3 +1799,25 @@ button.secondary:hover,
   border-color:
     rgba(142, 216, 255, 0.52) !important;
 }
+
+/* Always show the complete project hero image */
+.case-hero > .project-uploaded-visual {
+  overflow: hidden !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: #080b0f !important;
+}
+
+.case-hero > .project-uploaded-visual img {
+  width: auto !important;
+  height: auto !important;
+
+  max-width: 100% !important;
+  max-height: 100% !important;
+
+  object-fit: contain !important;
+  object-position: center !important;
+
+  display: block !important;
+}
