@@ -1,25 +1,25 @@
 /* Dark theme tuning ----------------------------------------------------------
-   Medium-dark blue-grey theme: keep the dark direction, but avoid near-black
-   surfaces and keep cyan/blue accents restrained rather than fluorescent.
+   Brighter dark blue-grey theme: still clearly dark, but no longer close to
+   black. Surfaces sit in a slate / navy range and accents stay restrained.
 */
 
 :root {
-  --ink: #edf4fa;
-  --muted: #a9b8c7;
-  --paper: #0f1a26;
-  --surface: #162535;
-  --surface-strong: #1b2d40;
-  --line: rgba(145, 177, 204, 0.22);
-  --line-strong: rgba(111, 163, 193, 0.38);
-  --accent: #6f9fb4;
-  --accent-strong: #7584b0;
-  --accent-soft: rgba(111, 159, 180, 0.13);
-  --blue: #79aac0;
-  --violet: #858fb9;
-  --dark: #101c28;
-  --dark-soft: #142535;
-  --shadow-soft: 0 18px 52px rgba(1, 9, 16, 0.18);
-  --shadow-card: 0 24px 68px rgba(1, 9, 16, 0.24);
+  --ink: #f1f6fb;
+  --muted: #b8c5d1;
+  --paper: #172431;
+  --surface: #203348;
+  --surface-strong: #263d54;
+  --line: rgba(157, 187, 212, 0.25);
+  --line-strong: rgba(124, 171, 199, 0.4);
+  --accent: #789fb0;
+  --accent-strong: #7d88ad;
+  --accent-soft: rgba(120, 159, 176, 0.14);
+  --blue: #83acbd;
+  --violet: #8e97ba;
+  --dark: #1a2a39;
+  --dark-soft: #203447;
+  --shadow-soft: 0 16px 46px rgba(4, 12, 20, 0.15);
+  --shadow-card: 0 22px 60px rgba(4, 12, 20, 0.2);
 }
 
 html {
@@ -28,28 +28,28 @@ html {
 
 body {
   background:
-    radial-gradient(circle at 7% -4%, rgba(91, 142, 166, 0.16), transparent 31rem),
-    radial-gradient(circle at 94% 6%, rgba(101, 115, 171, 0.14), transparent 34rem),
-    linear-gradient(180deg, #111d2a 0%, #132130 44%, #0f1b27 100%);
+    radial-gradient(circle at 7% -4%, rgba(106, 153, 175, 0.18), transparent 31rem),
+    radial-gradient(circle at 94% 6%, rgba(115, 126, 180, 0.15), transparent 34rem),
+    linear-gradient(180deg, #1a2938 0%, #1d3042 44%, #172634 100%);
 }
 
 body::before {
-  opacity: 0.2;
+  opacity: 0.16;
 }
 
 ::selection {
-  background: #79a9bd;
-  color: #08131d;
+  background: #84adbd;
+  color: #0c1822;
 }
 
 .eyebrow {
-  color: #8ab7c8;
+  color: #96bdcc;
 }
 
 .brand {
-  background: linear-gradient(135deg, #6fa8bd, #7486b3);
-  color: #07131d;
-  box-shadow: 0 10px 26px rgba(38, 83, 104, 0.14);
+  background: linear-gradient(135deg, #7bafc2, #7d8db8);
+  color: #0a1620;
+  box-shadow: 0 10px 24px rgba(45, 87, 106, 0.12);
 }
 
 /* Smaller public hero sections. */
@@ -57,9 +57,9 @@ body::before {
   padding: clamp(30px, 4.3vw, 58px);
   border-color: var(--line);
   background:
-    radial-gradient(circle at 82% 18%, rgba(108, 126, 181, 0.16), transparent 28rem),
-    radial-gradient(circle at 16% 90%, rgba(99, 158, 179, 0.12), transparent 28rem),
-    linear-gradient(145deg, rgba(24, 40, 56, 0.98), rgba(18, 32, 46, 0.98));
+    radial-gradient(circle at 82% 18%, rgba(122, 136, 190, 0.17), transparent 28rem),
+    radial-gradient(circle at 16% 90%, rgba(112, 169, 189, 0.13), transparent 28rem),
+    linear-gradient(145deg, rgba(35, 55, 75, 0.99), rgba(28, 47, 66, 0.99));
 }
 
 .home-hero h1 {
@@ -69,7 +69,7 @@ body::before {
 }
 
 .home-hero h1 em {
-  color: #82b6c9;
+  color: #8cc2d2;
   text-shadow: none;
 }
 
@@ -77,9 +77,9 @@ body::before {
   padding: clamp(26px, 4vw, 46px);
   border-color: var(--line);
   background:
-    radial-gradient(circle at 82% 10%, rgba(107, 123, 177, 0.16), transparent 26rem),
-    radial-gradient(circle at 12% 92%, rgba(98, 155, 176, 0.1), transparent 24rem),
-    linear-gradient(145deg, rgba(23, 39, 55, 0.98), rgba(17, 31, 45, 0.98));
+    radial-gradient(circle at 82% 10%, rgba(121, 134, 188, 0.17), transparent 26rem),
+    radial-gradient(circle at 12% 92%, rgba(109, 165, 185, 0.12), transparent 24rem),
+    linear-gradient(145deg, rgba(34, 54, 74, 0.99), rgba(27, 46, 65, 0.99));
 }
 
 .case-title {
@@ -102,8 +102,8 @@ body::before {
   padding: 0 !important;
   border: 1px solid var(--line) !important;
   border-radius: 24px !important;
-  background: #172838 !important;
-  box-shadow: 0 24px 62px rgba(0, 0, 0, 0.22) !important;
+  background: #21384c !important;
+  box-shadow: 0 22px 54px rgba(0, 0, 0, 0.18) !important;
 }
 
 .project-uploaded-visual img {
@@ -114,17 +114,17 @@ body::before {
   object-position: center;
 }
 
-/* Primary actions: muted steel-blue instead of bright cyan. */
+/* Primary actions: muted steel-blue, not fluorescent cyan. */
 .button,
 .home-hero .button,
 .admin-content-primary-action,
 .admin-page button:not(.secondary):not(.danger),
 .admin-content-page button:not(.secondary),
 .admin-upload-button:not(.secondary) {
-  border-color: rgba(115, 165, 189, 0.66) !important;
-  background: linear-gradient(135deg, #527f96 0%, #587a98 52%, #646f9b 100%) !important;
-  color: #f5f8fb !important;
-  box-shadow: 0 10px 24px rgba(17, 53, 72, 0.16) !important;
+  border-color: rgba(127, 173, 195, 0.7) !important;
+  background: linear-gradient(135deg, #62899d 0%, #68849f 52%, #707ba2 100%) !important;
+  color: #f8fbfd !important;
+  box-shadow: 0 9px 22px rgba(24, 60, 79, 0.14) !important;
 }
 
 .button:hover,
@@ -133,21 +133,21 @@ body::before {
 .admin-page button:not(.secondary):not(.danger):not(:disabled):hover,
 .admin-content-page button:not(.secondary):not(:disabled):hover,
 .admin-upload-button:not(.secondary):hover {
-  border-color: rgba(136, 184, 205, 0.76) !important;
-  background: linear-gradient(135deg, #5d8ca2 0%, #6387a2 52%, #707ca7 100%) !important;
-  box-shadow: 0 13px 28px rgba(17, 53, 72, 0.2) !important;
+  border-color: rgba(145, 190, 210, 0.8) !important;
+  background: linear-gradient(135deg, #6f95a7 0%, #758fa9 52%, #7d88ad 100%) !important;
+  box-shadow: 0 12px 26px rgba(24, 60, 79, 0.18) !important;
 }
 
 button.secondary,
 .admin-upload-button.secondary,
 .admin-page button.secondary,
 .admin-content-page button.secondary {
-  border-color: rgba(124, 159, 187, 0.27) !important;
-  background: rgba(28, 48, 66, 0.9) !important;
-  color: #e2edf5 !important;
+  border-color: rgba(140, 172, 198, 0.3) !important;
+  background: rgba(37, 60, 81, 0.92) !important;
+  color: #eaf1f6 !important;
 }
 
-/* Public cards and sections: clearly dark, but not black. */
+/* Public cards and sections: lifted into slate/navy instead of near-black. */
 .home-work-showcase,
 .home-stack-section,
 .projects-intro,
@@ -155,7 +155,7 @@ button.secondary,
 .overview-redesign,
 .source-page {
   border-color: var(--line) !important;
-  background-color: rgba(21, 37, 52, 0.92) !important;
+  background-color: rgba(31, 51, 70, 0.94) !important;
 }
 
 .home-work-mini-card,
@@ -176,8 +176,8 @@ button.secondary,
 .challenge-grid article,
 .project-pagination-card {
   border-color: var(--line) !important;
-  background: linear-gradient(145deg, rgba(26, 45, 62, 0.96), rgba(20, 37, 53, 0.94)) !important;
-  box-shadow: 0 14px 38px rgba(0, 0, 0, 0.14) !important;
+  background: linear-gradient(145deg, rgba(39, 65, 87, 0.98), rgba(32, 55, 75, 0.96)) !important;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.11) !important;
 }
 
 .project-facts,
@@ -185,36 +185,36 @@ button.secondary,
 .ecosystem-statement,
 .case-action {
   border-color: var(--line) !important;
-  background: rgba(25, 44, 61, 0.88) !important;
+  background: rgba(38, 63, 84, 0.92) !important;
 }
 
 .case-dark.feature-section {
   background:
-    radial-gradient(circle at 8% 10%, rgba(93, 151, 174, 0.13), transparent 28rem),
-    radial-gradient(circle at 92% 20%, rgba(103, 117, 170, 0.13), transparent 32rem),
-    linear-gradient(145deg, #132230 0%, #172a3a 52%, #111f2d 100%);
+    radial-gradient(circle at 8% 10%, rgba(108, 162, 184, 0.14), transparent 28rem),
+    radial-gradient(circle at 92% 20%, rgba(116, 128, 181, 0.14), transparent 32rem),
+    linear-gradient(145deg, #203447 0%, #274156 52%, #1c3042 100%);
 }
 
 .feature-card {
-  border-color: rgba(115, 159, 193, 0.27) !important;
+  border-color: rgba(133, 173, 204, 0.3) !important;
   background:
-    radial-gradient(circle at 100% 0%, rgba(108, 125, 178, 0.08), transparent 14rem),
-    linear-gradient(145deg, rgba(25, 45, 63, 0.94), rgba(20, 38, 54, 0.92)) !important;
+    radial-gradient(circle at 100% 0%, rgba(122, 136, 189, 0.09), transparent 14rem),
+    linear-gradient(145deg, rgba(39, 65, 87, 0.96), rgba(32, 56, 76, 0.94)) !important;
 }
 
 .feature-card:hover {
-  border-color: rgba(121, 171, 198, 0.42) !important;
+  border-color: rgba(139, 184, 207, 0.46) !important;
   background:
-    radial-gradient(circle at 100% 0%, rgba(108, 125, 178, 0.11), transparent 14rem),
-    linear-gradient(145deg, rgba(30, 52, 71, 0.98), rgba(23, 43, 60, 0.96)) !important;
+    radial-gradient(circle at 100% 0%, rgba(122, 136, 189, 0.12), transparent 14rem),
+    linear-gradient(145deg, rgba(45, 73, 96, 0.99), rgba(37, 63, 84, 0.98)) !important;
 }
 
-/* Admin: lift surfaces one full step so the editor is easier on the eyes. */
+/* Admin: substantially brighter than the first dark pass. */
 .admin-section-nav,
 .navbar {
   border-color: var(--line) !important;
-  background: rgba(18, 33, 47, 0.92) !important;
-  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.18) !important;
+  background: rgba(28, 47, 65, 0.94) !important;
+  box-shadow: 0 12px 34px rgba(0, 0, 0, 0.14) !important;
 }
 
 .admin-hero,
@@ -226,8 +226,8 @@ button.secondary,
 .admin-content-project-rail,
 .admin-content-panel {
   border-color: var(--line) !important;
-  background: rgba(20, 37, 53, 0.95) !important;
-  box-shadow: 0 16px 44px rgba(0, 0, 0, 0.16) !important;
+  background: rgba(31, 53, 73, 0.96) !important;
+  box-shadow: 0 14px 38px rgba(0, 0, 0, 0.13) !important;
 }
 
 .admin-project-list,
@@ -242,7 +242,7 @@ button.secondary,
 .admin-content-copy-grid label,
 .admin-content-media-card {
   border-color: var(--line) !important;
-  background: rgba(25, 45, 63, 0.92) !important;
+  background: rgba(39, 66, 88, 0.94) !important;
 }
 
 .admin-page input,
@@ -251,9 +251,9 @@ button.secondary,
 .admin-content-page input,
 .admin-content-page textarea,
 .admin-content-page select {
-  border-color: rgba(130, 166, 195, 0.24) !important;
-  background: rgba(17, 35, 50, 0.94) !important;
-  color: #edf4f9 !important;
+  border-color: rgba(145, 178, 203, 0.27) !important;
+  background: rgba(28, 50, 69, 0.96) !important;
+  color: #f1f6fa !important;
 }
 
 /* The project picker and locale tabs are selectors, not CTA buttons. */
@@ -261,9 +261,9 @@ button.secondary,
 .admin-page button.admin-locale-tab,
 .admin-content-page .admin-content-project-list button,
 .admin-content-page .admin-content-locale-tabs button {
-  border-color: rgba(124, 160, 188, 0.2) !important;
-  background: rgba(25, 45, 63, 0.9) !important;
-  color: #e0eaf2 !important;
+  border-color: rgba(140, 174, 200, 0.23) !important;
+  background: rgba(39, 65, 87, 0.94) !important;
+  color: #e8f0f5 !important;
   box-shadow: none !important;
 }
 
@@ -271,34 +271,34 @@ button.secondary,
 .admin-page button.admin-locale-tab:hover,
 .admin-content-page .admin-content-project-list button:hover,
 .admin-content-page .admin-content-locale-tabs button:hover {
-  border-color: rgba(129, 173, 198, 0.32) !important;
-  background: rgba(31, 54, 73, 0.98) !important;
+  border-color: rgba(145, 187, 209, 0.35) !important;
+  background: rgba(46, 74, 97, 0.99) !important;
 }
 
 .admin-page button.admin-project-select.active,
 .admin-page button.admin-locale-tab.active,
 .admin-content-page .admin-content-project-list button.active,
 .admin-content-page .admin-content-locale-tabs button.active {
-  border-color: rgba(128, 174, 199, 0.42) !important;
-  background: linear-gradient(135deg, rgba(54, 86, 105, 0.98), rgba(57, 68, 105, 0.98)) !important;
-  color: #f2f7fb !important;
-  box-shadow: inset 0 0 0 1px rgba(135, 181, 205, 0.13) !important;
+  border-color: rgba(144, 188, 210, 0.44) !important;
+  background: linear-gradient(135deg, rgba(68, 101, 120, 0.99), rgba(69, 82, 119, 0.99)) !important;
+  color: #f5f9fc !important;
+  box-shadow: inset 0 0 0 1px rgba(150, 194, 215, 0.14) !important;
 }
 
 .admin-page .admin-locale-tab.active small {
-  color: #b7c6d2 !important;
+  color: #c3d0da !important;
 }
 
 .admin-section-nav-links a.active {
-  background: linear-gradient(135deg, rgba(69, 105, 123, 0.72), rgba(70, 80, 119, 0.72));
-  color: #e2f0f6;
-  box-shadow: inset 0 0 0 1px rgba(130, 171, 192, 0.23);
+  background: linear-gradient(135deg, rgba(82, 119, 137, 0.76), rgba(82, 92, 130, 0.76));
+  color: #edf5f8;
+  box-shadow: inset 0 0 0 1px rgba(145, 184, 203, 0.24);
 }
 
 .admin-section-nav-links a:hover,
 .navbar nav > a:hover,
 .navbar nav > a.active {
-  background: rgba(101, 146, 168, 0.12);
+  background: rgba(119, 160, 179, 0.14);
 }
 
 .admin-page input:focus,
@@ -307,38 +307,38 @@ button.secondary,
 .admin-content-page input:focus,
 .admin-content-page textarea:focus,
 .admin-content-page select:focus {
-  border-color: rgba(121, 170, 194, 0.56) !important;
-  box-shadow: 0 0 0 3px rgba(111, 159, 180, 0.09) !important;
+  border-color: rgba(137, 184, 205, 0.6) !important;
+  box-shadow: 0 0 0 3px rgba(120, 159, 176, 0.1) !important;
 }
 
 .admin-content-locale-tabs {
   border-color: var(--line) !important;
-  background: rgba(17, 33, 48, 0.72) !important;
+  background: rgba(28, 48, 67, 0.8) !important;
 }
 
 .admin-content-publish-bar {
   border-color: var(--line) !important;
-  background: rgba(19, 35, 50, 0.96) !important;
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.2) !important;
+  background: rgba(30, 51, 70, 0.97) !important;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.16) !important;
 }
 
 .feature-card[data-tone='amber'],
 .feature-card-featured[data-tone='amber'],
 .feature-card[data-tone='sky'],
 .feature-card-featured[data-tone='sky'] {
-  --feature-accent: #78a9bc;
+  --feature-accent: #86b0c0;
 }
 
 .feature-card[data-tone='lime'],
 .feature-card-featured[data-tone='lime'],
 .feature-card[data-tone='mint'],
 .feature-card-featured[data-tone='mint'] {
-  --feature-accent: #72a59e;
+  --feature-accent: #7faea7;
 }
 
 .feature-card[data-tone='violet'],
 .feature-card-featured[data-tone='violet'] {
-  --feature-accent: #858fb7;
+  --feature-accent: #919abb;
 }
 
 @media (max-width: 760px) {
