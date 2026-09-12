@@ -1033,7 +1033,7 @@ select {
 }
 
 .admin-content-media-card:hover img {
-  transform: scale(1.025);
+  transform: none;
 }
 
 .admin-content-media-preview > span {
