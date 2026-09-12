@@ -30,11 +30,15 @@ export interface Project {
   number: string;
   summary: string;
   overview: string;
+
+  heroImage?: string;
+
   technologies: string[];
   features: string[];
   challenges: { title: string; description: string }[];
   architecture: { label: string; detail: string }[];
   gallery: { title: string; caption: string; image?: string }[];
+
   github?: string;
   pageCopy?: Partial<Record<ProjectPageCopyLocale, ProjectPageCopy>>;
   tone: 'lime' | 'blue' | 'sand' | 'lavender' | 'slate' | 'coral';

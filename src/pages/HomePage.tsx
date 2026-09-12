@@ -1,4 +1,8 @@
-import type { CSSProperties } from 'react';
+import {
+  type CSSProperties,
+  type FormEvent,
+  useState,
+} from 'react';
 import { Cloud, Monitor, Server, Terminal, type LucideIcon } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Hero } from '../components/Hero';
@@ -139,6 +143,151 @@ function stackDetailCopy(language: AppLocale) {
   };
 
   return values[language];
+}
+
+function ContactSection({
+  eyebrow,
+  title,
+  description,
+}: {
+  eyebrow: string;
+  title: string;
+  description: string;
+}) {
+  const [state, setState] =
+    useState<'idle' | 'sending' | 'success' | 'error'>('idle');
+
+  const [message, setMessage] = useState('');
+
+  async function submitContact(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    const form = event.currentTarget;
+    const data = new FormData(form);
+
+    setState('sending');
+    setMessage('');
+
+    try {
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: String(data.get('name') ?? ''),
+          email: String(data.get('email') ?? ''),
+          message: String(data.get('message') ?? ''),
+        }),
+      });
+
+      const result = await response.json().catch(() => null);
+
+      if (!response.ok) {
+        throw new Error(result?.error || 'Unable to send message.');
+      }
+
+      form.reset();
+
+      setState('success');
+      setMessage('Message sent. I’ll reply by email.');
+    } catch (error) {
+      setState('error');
+      setMessage(
+        error instanceof Error
+          ? error.message
+          : 'Unable to send message.',
+      );
+    }
+  }
+
+  return (
+    <section className="home-contact shell" id="contact">
+      <div className="home-contact-heading">
+        <p className="eyebrow">05 / {eyebrow}</p>
+
+        <h2>{title}</h2>
+
+        <p className="home-contact-description">
+          {description}
+        </p>
+      </div>
+
+      <form
+        className="home-contact-form"
+        onSubmit={submitContact}
+      >
+        <div className="home-contact-row">
+          <label>
+            <span>Name</span>
+
+            <input
+              name="name"
+              type="text"
+              required
+              maxLength={80}
+              placeholder="Your name"
+            />
+          </label>
+
+          <label>
+            <span>Email</span>
+
+            <input
+              name="email"
+              type="email"
+              required
+              maxLength={160}
+              placeholder="you@example.com"
+            />
+          </label>
+        </div>
+
+        <label>
+          <span>Message</span>
+
+          <textarea
+            name="message"
+            required
+            minLength={10}
+            maxLength={4000}
+            rows={7}
+            placeholder="Tell me about the project, collaboration, or question."
+          />
+        </label>
+
+        <div className="home-contact-actions">
+          <button
+            className="button"
+            type="submit"
+            disabled={state === 'sending'}
+          >
+            {state === 'sending'
+              ? 'Sending…'
+              : 'Send message →'}
+          </button>
+
+          <a
+            href="https://github.com/chengyang1017"
+            target="_blank"
+            rel="noreferrer"
+          >
+            GitHub ↗
+          </a>
+        </div>
+
+        {message && (
+          <p
+            className={`home-contact-message ${
+              state === 'error' ? 'error' : ''
+            }`}
+          >
+            {message}
+          </p>
+        )}
+      </form>
+    </section>
+  );
 }
 
 export function HomePage() {
@@ -366,16 +515,11 @@ export function HomePage() {
   </div>
 </section>
 
-      <section className="home-contact shell" id="contact">
-        <div>
-          <p className="eyebrow">05 / {copy.contact.eyebrow}</p>
-          <h2>{copy.contact.title}</h2>
-        </div>
-        <div>
-          <p>{copy.contact.description}</p>
-          <a className="button" href="https://github.com/chengyang1017">{copy.contact.action}</a>
-        </div>
-      </section>
+      <ContactSection
+        eyebrow={copy.contact.eyebrow}
+        title={copy.contact.title}
+        description={copy.contact.description}
+      />
     </>
   );
 }

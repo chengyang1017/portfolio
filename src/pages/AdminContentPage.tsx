@@ -11,7 +11,7 @@ import {
 import type { TechnologyCatalog } from '../data/technologyCatalog';
 import { useI18n } from '../i18n/I18nProvider';
 import { projectDetailUi } from '../i18n/projectDetailTranslations';
-
+import { uploadProjectScreenshot } from '../admin/projectMedia';
 const PAGE_COPY_LOCALES: Array<{ id: ProjectPageCopyLocale; label: string }> = [
   { id: 'en', label: 'English' },
   { id: 'zh-CN', label: '简体中文' },
@@ -190,7 +190,8 @@ export function AdminContentPage() {
   const [publishState, setPublishState] = useState<'idle' | 'saving' | 'success' | 'error'>('idle');
   const [message, setMessage] = useState('');
   const [downloadKey, setDownloadKey] = useState('');
-
+  const [heroUploadState, setHeroUploadState] =
+    useState<'idle' | 'uploading' | 'error'>('idle');
   const selectedProject = useMemo(
     () => draftProjects.find((project) => project.slug === selectedSlug),
     [draftProjects, selectedSlug],
@@ -324,6 +325,61 @@ export function AdminContentPage() {
     }
   }
 
+  async function uploadHeroImage(file: File) {
+  if (!selectedProject) return;
+
+  setHeroUploadState('uploading');
+  setMessage('');
+
+  try {
+    const uploaded = await uploadProjectScreenshot(
+      file,
+      selectedProject.slug,
+    );
+
+    setDraftProjects((current) =>
+      current.map((project) =>
+        project.slug === selectedProject.slug
+          ? {
+              ...project,
+              heroImage: uploaded.url,
+            }
+          : project,
+      ),
+    );
+
+    setPublishState('idle');
+  } catch (error) {
+    setHeroUploadState('error');
+    setMessage(
+      error instanceof Error
+        ? error.message
+        : 'Hero image upload failed.',
+    );
+    return;
+  }
+
+  setHeroUploadState('idle');
+}
+
+function removeHeroImage() {
+  if (!selectedProject) return;
+
+  setDraftProjects((current) =>
+    current.map((project) =>
+      project.slug === selectedProject.slug
+        ? {
+            ...project,
+            heroImage: undefined,
+          }
+        : project,
+    ),
+  );
+
+  setPublishState('idle');
+  setMessage('');
+}
+
   async function downloadImage(image: string, index: number) {
     if (!selectedProject) return;
     const key = `${selectedProject.slug}-${index}`;
@@ -429,6 +485,63 @@ export function AdminContentPage() {
                 </div>
                 <p>{uiCopy.copyHelp}</p>
               </div>
+
+              <div className="admin-content-hero-media">
+  <div className="admin-content-hero-media-heading">
+    <div>
+      <strong>Project hero image</strong>
+      <p>
+        This image is used only at the top of the project detail page.
+        It is independent from the gallery.
+      </p>
+    </div>
+
+    <label className="admin-upload-button">
+      {heroUploadState === 'uploading'
+        ? 'Uploading…'
+        : selectedProject.heroImage
+          ? 'Replace hero image'
+          : 'Upload hero image'}
+
+      <input
+        type="file"
+        accept="image/png,image/jpeg,image/webp"
+        hidden
+        disabled={heroUploadState === 'uploading'}
+        onChange={(event) => {
+          const file = event.target.files?.[0];
+
+          if (file) {
+            void uploadHeroImage(file);
+          }
+
+          event.currentTarget.value = '';
+        }}
+      />
+    </label>
+  </div>
+
+  {selectedProject.heroImage ? (
+    <div className="admin-content-hero-preview">
+      <img
+        src={selectedProject.heroImage}
+        alt={`${selectedProject.title} hero`}
+      />
+
+      <button
+        type="button"
+        className="secondary"
+        onClick={removeHeroImage}
+      >
+        Remove hero image
+      </button>
+    </div>
+  ) : (
+    <div className="admin-content-empty-media">
+      No custom hero image. The generated project visual will be used.
+    </div>
+  )}
+</div>
 
               <div className="admin-content-locale-tabs" aria-label={uiCopy.locale}>
                 {PAGE_COPY_LOCALES.map((locale) => (

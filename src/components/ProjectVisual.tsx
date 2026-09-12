@@ -15,8 +15,9 @@ export function ProjectVisual({
   compact?: boolean;
   focus?: ProjectVisualFocus;
 }) {
-  const uploadedImage = !compact && !focus
-    ? project.gallery.find((item) => Boolean(item.image))?.image
+  const uploadedImage =
+  !compact && !focus
+    ? project.heroImage
     : undefined;
 
   if (uploadedImage) {

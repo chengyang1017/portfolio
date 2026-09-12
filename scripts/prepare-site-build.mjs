@@ -55,13 +55,23 @@ async function ensurePortfolioSeed(ctx) {
   );
 
   const seededProjects = PORTFOLIO_PROJECT_SEED.map((project) => {
-    const existing = existingBySlug.get(project.slug);
-    if (!existing) return project;
-    return {
-      ...project,
-      gallery: mergeSeedGallery(project.gallery, existing.gallery),
-    };
-  });
+  const existing = existingBySlug.get(project.slug);
+
+  if (!existing) return project;
+
+  return {
+    ...project,
+
+    ...(typeof existing.heroImage === 'string' && existing.heroImage
+      ? { heroImage: existing.heroImage }
+      : {}),
+
+    gallery: mergeSeedGallery(
+      project.gallery,
+      existing.gallery,
+    ),
+  };
+});
 
   const seedSlugs = new Set(PORTFOLIO_PROJECT_SEED.map((project) => project.slug));
   const customProjects = existingProjects.filter(
@@ -89,19 +99,29 @@ export class PortfolioStore {
 
     if (url.pathname.startsWith('/media/')) {
       const id = decodeURIComponent(url.pathname.slice('/media/'.length));
-      if (!/^[a-zA-Z0-9_-]{12,120}$/.test(id)) return json({ error: 'Invalid media id.' }, 400);
+      if (!/^[a-zA-Z0-9_-]{12,120}$/.test(id)) {
+        return json({ error: 'Invalid media id.' }, 400);
+      }
+
       const metaKey = 'media:' + id + ':meta';
 
       if (request.method === 'PUT') {
         const bytes = await request.arrayBuffer();
+
         if (!bytes.byteLength || bytes.byteLength > 8 * 1024 * 1024) {
-          return json({ error: 'Screenshot must be between 1 byte and 8 MB.' }, 413);
+          return json(
+            { error: 'Screenshot must be between 1 byte and 8 MB.' },
+            413,
+          );
         }
 
         const chunkSize = 96 * 1024;
         const chunks = Math.ceil(bytes.byteLength / chunkSize);
-        const contentType = request.headers.get('content-type') || 'application/octet-stream';
-        const originalName = request.headers.get('x-file-name') || '';
+        const contentType =
+          request.headers.get('content-type') ||
+          'application/octet-stream';
+        const originalName =
+          request.headers.get('x-file-name') || '';
 
         await this.ctx.storage.put(metaKey, {
           contentType,
@@ -113,347 +133,1070 @@ export class PortfolioStore {
 
         for (let index = 0; index < chunks; index += 1) {
           const start = index * chunkSize;
-          await this.ctx.storage.put('media:' + id + ':' + index, bytes.slice(start, Math.min(start + chunkSize, bytes.byteLength)));
+
+          await this.ctx.storage.put(
+            'media:' + id + ':' + index,
+            bytes.slice(
+              start,
+              Math.min(
+                start + chunkSize,
+                bytes.byteLength,
+              ),
+            ),
+          );
         }
 
-        return json({ stored: true, id, size: bytes.byteLength, contentType });
+        return json({
+          stored: true,
+          id,
+          size: bytes.byteLength,
+          contentType,
+        });
       }
 
-      const meta = await this.ctx.storage.get(metaKey);
-      if (!meta) return json({ error: 'Media not found.' }, 404);
+      const meta =
+        await this.ctx.storage.get(metaKey);
+
+      if (!meta) {
+        return json(
+          { error: 'Media not found.' },
+          404,
+        );
+      }
 
       if (request.method === 'DELETE') {
         await this.ctx.storage.delete(metaKey);
-        for (let index = 0; index < meta.chunks; index += 1) {
-          await this.ctx.storage.delete('media:' + id + ':' + index);
+
+        for (
+          let index = 0;
+          index < meta.chunks;
+          index += 1
+        ) {
+          await this.ctx.storage.delete(
+            'media:' + id + ':' + index,
+          );
         }
-        return json({ deleted: true, id });
+
+        return json({
+          deleted: true,
+          id,
+        });
       }
 
       if (request.method === 'GET') {
         const parts = [];
-        for (let index = 0; index < meta.chunks; index += 1) {
-          const part = await this.ctx.storage.get('media:' + id + ':' + index);
-          if (!part) return json({ error: 'Media data is incomplete.' }, 500);
+
+        for (
+          let index = 0;
+          index < meta.chunks;
+          index += 1
+        ) {
+          const part =
+            await this.ctx.storage.get(
+              'media:' + id + ':' + index,
+            );
+
+          if (!part) {
+            return json(
+              {
+                error:
+                  'Media data is incomplete.',
+              },
+              500,
+            );
+          }
+
           parts.push(part);
         }
 
-        return new Response(new Blob(parts, { type: meta.contentType }), {
-          headers: {
-            'content-type': meta.contentType,
-            'content-length': String(meta.size),
-            'cache-control': 'public, max-age=31536000, immutable',
+        return new Response(
+          new Blob(parts, {
+            type: meta.contentType,
+          }),
+          {
+            headers: {
+              'content-type':
+                meta.contentType,
+              'content-length':
+                String(meta.size),
+              'cache-control':
+                'public, max-age=31536000, immutable',
+            },
           },
-        });
+        );
       }
 
-      return json({ error: 'Method not allowed' }, 405);
+      return json(
+        { error: 'Method not allowed' },
+        405,
+      );
     }
 
     if (request.method === 'GET') {
-      return json(await ensurePortfolioSeed(this.ctx));
+      return json(
+        await ensurePortfolioSeed(this.ctx),
+      );
     }
 
     if (request.method === 'PATCH') {
-      const patch = await request.json().catch(() => null);
-      if (!patch || typeof patch !== 'object') return json({ error: 'Invalid portfolio data.' }, 400);
-      const current = await ensurePortfolioSeed(this.ctx);
-      const next = { ...current, ...patch, updatedAt: new Date().toISOString() };
-      await this.ctx.storage.put('portfolio', next);
+      const patch =
+        await request.json().catch(
+          () => null,
+        );
+
+      if (
+        !patch ||
+        typeof patch !== 'object'
+      ) {
+        return json(
+          {
+            error:
+              'Invalid portfolio data.',
+          },
+          400,
+        );
+      }
+
+      const current =
+        await ensurePortfolioSeed(this.ctx);
+
+      const next = {
+        ...current,
+        ...patch,
+        updatedAt:
+          new Date().toISOString(),
+      };
+
+      await this.ctx.storage.put(
+        'portfolio',
+        next,
+      );
+
       return json(next);
     }
 
-    return json({ error: 'Method not allowed' }, 405);
+    return json(
+      { error: 'Method not allowed' },
+      405,
+    );
   }
 }
 
 function portfolioStore(env) {
-  const id = env.PORTFOLIO_STORE.idFromName('primary');
+  const id =
+    env.PORTFOLIO_STORE.idFromName(
+      'primary',
+    );
+
   return env.PORTFOLIO_STORE.get(id);
 }
 
 async function readPortfolioStore(env) {
-  const response = await portfolioStore(env).fetch('https://portfolio-store.internal/data');
-  if (!response.ok) throw new Error('Unable to read the Cloudflare portfolio data store.');
-  return response.json();
-}
+  const response =
+    await portfolioStore(env).fetch(
+      'https://portfolio-store.internal/data',
+    );
 
-async function patchPortfolioStore(env, patch) {
-  const response = await portfolioStore(env).fetch('https://portfolio-store.internal/data', {
-    method: 'PATCH',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(patch),
-  });
-  if (!response.ok) throw new Error('Unable to update the Cloudflare portfolio data store.');
-  return response.json();
-}
-
-const ADMIN_SESSION_COOKIE = 'portfolio_admin_session';
-const ADMIN_SESSION_MAX_AGE = 60 * 60 * 24 * 30;
-
-function cookieValue(request, name) {
-  const header = request.headers.get('cookie') || '';
-  for (const part of header.split(';')) {
-    const [key, ...rest] = part.trim().split('=');
-    if (key === name) return rest.join('=');
+  if (!response.ok) {
+    throw new Error(
+      'Unable to read the Cloudflare portfolio data store.',
+    );
   }
+
+  return response.json();
+}
+
+async function patchPortfolioStore(
+  env,
+  patch,
+) {
+  const response =
+    await portfolioStore(env).fetch(
+      'https://portfolio-store.internal/data',
+      {
+        method: 'PATCH',
+        headers: {
+          'Content-Type':
+            'application/json',
+        },
+        body: JSON.stringify(patch),
+      },
+    );
+
+  if (!response.ok) {
+    throw new Error(
+      'Unable to update the Cloudflare portfolio data store.',
+    );
+  }
+
+  return response.json();
+}
+
+const ADMIN_SESSION_COOKIE =
+  'portfolio_admin_session';
+
+const ADMIN_SESSION_MAX_AGE =
+  60 * 60 * 24 * 30;
+
+function cookieValue(
+  request,
+  name,
+) {
+  const header =
+    request.headers.get('cookie') || '';
+
+  for (
+    const part of header.split(';')
+  ) {
+    const [key, ...rest] =
+      part.trim().split('=');
+
+    if (key === name) {
+      return rest.join('=');
+    }
+  }
+
   return '';
 }
 
 function base64Url(bytes) {
   let binary = '';
-  for (const byte of bytes) binary += String.fromCharCode(byte);
-  return btoa(binary).replace(/\\+/g, '-').replace(/\\//g, '_').replace(/=+$/g, '');
+
+  for (const byte of bytes) {
+    binary +=
+      String.fromCharCode(byte);
+  }
+
+  return btoa(binary)
+    .replace(/\\+/g, '-')
+    .replace(/\\//g, '_')
+    .replace(/=+$/g, '');
 }
 
-async function signValue(secret, value) {
-  const key = await crypto.subtle.importKey(
-    'raw',
-    new TextEncoder().encode(secret),
-    { name: 'HMAC', hash: 'SHA-256' },
-    false,
-    ['sign'],
+async function signValue(
+  secret,
+  value,
+) {
+  const key =
+    await crypto.subtle.importKey(
+      'raw',
+      new TextEncoder().encode(secret),
+      {
+        name: 'HMAC',
+        hash: 'SHA-256',
+      },
+      false,
+      ['sign'],
+    );
+
+  const signature =
+    await crypto.subtle.sign(
+      'HMAC',
+      key,
+      new TextEncoder().encode(value),
+    );
+
+  return base64Url(
+    new Uint8Array(signature),
   );
-  const signature = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(value));
-  return base64Url(new Uint8Array(signature));
 }
 
 function safeEqual(left, right) {
-  if (left.length !== right.length) return false;
-  let result = 0;
-  for (let index = 0; index < left.length; index += 1) {
-    result |= left.charCodeAt(index) ^ right.charCodeAt(index);
+  if (
+    left.length !== right.length
+  ) {
+    return false;
   }
+
+  let result = 0;
+
+  for (
+    let index = 0;
+    index < left.length;
+    index += 1
+  ) {
+    result |=
+      left.charCodeAt(index) ^
+      right.charCodeAt(index);
+  }
+
   return result === 0;
 }
 
-async function createAdminSession(env) {
-  const expires = String(Date.now() + ADMIN_SESSION_MAX_AGE * 1000);
-  const secret = env.ADMIN_SESSION_SECRET || env.ADMIN_PASSWORD;
-  if (!secret) throw new Error('ADMIN_PASSWORD is not configured on the Worker.');
-  const signature = await signValue(secret, expires);
+async function createAdminSession(
+  env,
+) {
+  const expires = String(
+    Date.now() +
+      ADMIN_SESSION_MAX_AGE * 1000,
+  );
+
+  const secret =
+    env.ADMIN_SESSION_SECRET ||
+    env.ADMIN_PASSWORD;
+
+  if (!secret) {
+    throw new Error(
+      'ADMIN_PASSWORD is not configured on the Worker.',
+    );
+  }
+
+  const signature =
+    await signValue(
+      secret,
+      expires,
+    );
+
   return expires + '.' + signature;
 }
 
-async function hasAdminSession(request, env) {
-  const token = cookieValue(request, ADMIN_SESSION_COOKIE);
+async function hasAdminSession(
+  request,
+  env,
+) {
+  const token = cookieValue(
+    request,
+    ADMIN_SESSION_COOKIE,
+  );
+
   if (!token) return false;
-  const [expires, signature] = token.split('.');
-  if (!expires || !signature || Number(expires) <= Date.now()) return false;
-  const secret = env.ADMIN_SESSION_SECRET || env.ADMIN_PASSWORD;
-  if (!secret) return false;
-  const expected = await signValue(secret, expires);
-  return safeEqual(signature, expected);
-}
 
-function sessionCookie(request, value, maxAge) {
-  const secure = new URL(request.url).protocol === 'https:' ? '; Secure' : '';
-  return ADMIN_SESSION_COOKIE + '=' + value + '; Path=/; HttpOnly; SameSite=Strict; Max-Age=' + maxAge + secure;
-}
+  const [expires, signature] =
+    token.split('.');
 
-function jsonWithCookie(data, status, cookie) {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: {
-      'content-type': 'application/json; charset=utf-8',
-      'cache-control': 'no-store',
-      'set-cookie': cookie,
-    },
-  });
-}
-
-async function handleAdminLogin(request, env) {
-  if (request.method !== 'POST') return json({ error: 'Method not allowed' }, 405);
-  if (!env.ADMIN_PASSWORD) return json({ error: 'ADMIN_PASSWORD is not configured on the Worker.' }, 503);
-
-  const payload = await request.json().catch(() => null);
-  const password = typeof payload?.password === 'string' ? payload.password : '';
-  if (!password || !safeEqual(password, env.ADMIN_PASSWORD)) {
-    return json({ error: 'Incorrect admin password.' }, 401);
+  if (
+    !expires ||
+    !signature ||
+    Number(expires) <= Date.now()
+  ) {
+    return false;
   }
 
-  const session = await createAdminSession(env);
-  return jsonWithCookie(
-    {
-      authenticated: true,
-      repository: 'Cloudflare portfolio store',
-      defaultBranch: 'live',
-    },
-    200,
-    sessionCookie(request, session, ADMIN_SESSION_MAX_AGE),
+  const secret =
+    env.ADMIN_SESSION_SECRET ||
+    env.ADMIN_PASSWORD;
+
+  if (!secret) return false;
+
+  const expected =
+    await signValue(
+      secret,
+      expires,
+    );
+
+  return safeEqual(
+    signature,
+    expected,
   );
 }
 
-async function handleAdminSession(request, env) {
-  if (request.method !== 'GET') return json({ error: 'Method not allowed' }, 405);
-  if (!(await hasAdminSession(request, env))) return json({ authenticated: false }, 401);
+function sessionCookie(
+  request,
+  value,
+  maxAge,
+) {
+  const secure =
+    new URL(request.url).protocol ===
+    'https:'
+      ? '; Secure'
+      : '';
+
+  return (
+    ADMIN_SESSION_COOKIE +
+    '=' +
+    value +
+    '; Path=/; HttpOnly; SameSite=Strict; Max-Age=' +
+    maxAge +
+    secure
+  );
+}
+
+function jsonWithCookie(
+  data,
+  status,
+  cookie,
+) {
+  return new Response(
+    JSON.stringify(data),
+    {
+      status,
+      headers: {
+        'content-type':
+          'application/json; charset=utf-8',
+        'cache-control':
+          'no-store',
+        'set-cookie': cookie,
+      },
+    },
+  );
+}
+
+async function handleAdminLogin(
+  request,
+  env,
+) {
+  if (
+    request.method !== 'POST'
+  ) {
+    return json(
+      {
+        error:
+          'Method not allowed',
+      },
+      405,
+    );
+  }
+
+  if (!env.ADMIN_PASSWORD) {
+    return json(
+      {
+        error:
+          'ADMIN_PASSWORD is not configured on the Worker.',
+      },
+      503,
+    );
+  }
+
+  const payload =
+    await request
+      .json()
+      .catch(() => null);
+
+  const password =
+    typeof payload?.password ===
+    'string'
+      ? payload.password
+      : '';
+
+  if (
+    !password ||
+    !safeEqual(
+      password,
+      env.ADMIN_PASSWORD,
+    )
+  ) {
+    return json(
+      {
+        error:
+          'Incorrect admin password.',
+      },
+      401,
+    );
+  }
+
+  const session =
+    await createAdminSession(env);
+
+  return jsonWithCookie(
+    {
+      authenticated: true,
+      repository:
+        'Cloudflare portfolio store',
+      defaultBranch: 'live',
+    },
+    200,
+    sessionCookie(
+      request,
+      session,
+      ADMIN_SESSION_MAX_AGE,
+    ),
+  );
+}
+
+async function handleAdminSession(
+  request,
+  env,
+) {
+  if (
+    request.method !== 'GET'
+  ) {
+    return json(
+      {
+        error:
+          'Method not allowed',
+      },
+      405,
+    );
+  }
+
+  if (
+    !(await hasAdminSession(
+      request,
+      env,
+    ))
+  ) {
+    return json(
+      {
+        authenticated: false,
+      },
+      401,
+    );
+  }
+
   return json({
     authenticated: true,
-    repository: 'Cloudflare portfolio store',
+    repository:
+      'Cloudflare portfolio store',
     defaultBranch: 'live',
   });
 }
 
-async function handleAdminLogout(request) {
-  if (request.method !== 'POST') return json({ error: 'Method not allowed' }, 405);
+async function handleAdminLogout(
+  request,
+) {
+  if (
+    request.method !== 'POST'
+  ) {
+    return json(
+      {
+        error:
+          'Method not allowed',
+      },
+      405,
+    );
+  }
+
   return jsonWithCookie(
-    { authenticated: false },
+    {
+      authenticated: false,
+    },
     200,
-    sessionCookie(request, '', 0),
+    sessionCookie(
+      request,
+      '',
+      0,
+    ),
   );
 }
 
-async function handlePublishPortfolio(request, env) {
-  if (request.method !== 'POST') return json({ error: 'Method not allowed' }, 405);
-  if (!(await hasAdminSession(request, env))) return json({ error: 'Admin session required.' }, 401);
+async function handlePublishPortfolio(
+  request,
+  env,
+) {
+  if (
+    request.method !== 'POST'
+  ) {
+    return json(
+      {
+        error:
+          'Method not allowed',
+      },
+      405,
+    );
+  }
 
-  const payload = await request.json().catch(() => null);
-  if (!Array.isArray(payload?.projects) || !payload?.technologyCatalog) {
-    return json({ error: 'Projects and technology catalog are required.' }, 400);
+  if (
+    !(await hasAdminSession(
+      request,
+      env,
+    ))
+  ) {
+    return json(
+      {
+        error:
+          'Admin session required.',
+      },
+      401,
+    );
+  }
+
+  const payload =
+    await request
+      .json()
+      .catch(() => null);
+
+  if (
+    !Array.isArray(
+      payload?.projects,
+    ) ||
+    !payload?.technologyCatalog
+  ) {
+    return json(
+      {
+        error:
+          'Projects and technology catalog are required.',
+      },
+      400,
+    );
   }
 
   try {
-    await patchPortfolioStore(env, {
-      projects: payload.projects,
-      technologyCatalog: payload.technologyCatalog,
+    await patchPortfolioStore(
+      env,
+      {
+        projects:
+          payload.projects,
+        technologyCatalog:
+          payload.technologyCatalog,
+      },
+    );
+
+    return json({
+      stored: true,
     });
-    return json({ stored: true });
   } catch (error) {
-    return json({ error: error?.message || 'Portfolio publish failed.' }, 502);
+    return json(
+      {
+        error:
+          error?.message ||
+          'Portfolio publish failed.',
+      },
+      502,
+    );
   }
 }
 
-
-function projectMediaPublicUrl(id) {
-  return '/api/media/' + encodeURIComponent(id);
+function projectMediaPublicUrl(
+  id,
+) {
+  return (
+    '/api/media/' +
+    encodeURIComponent(id)
+  );
 }
 
-async function handleProjectMedia(request, env) {
-  if (!(await hasAdminSession(request, env))) return json({ error: 'Admin session required.' }, 401);
-
-  if (request.method === 'POST') {
-    const contentType = (request.headers.get('content-type') || '').toLowerCase();
-    if (!['image/png', 'image/jpeg', 'image/webp'].includes(contentType)) {
-      return json({ error: 'Only PNG, JPG, and WebP screenshots are supported.' }, 415);
-    }
-
-    const declaredLength = Number(request.headers.get('content-length') || '0');
-    if (declaredLength > 8 * 1024 * 1024) {
-      return json({ error: 'Screenshot must be 8 MB or smaller.' }, 413);
-    }
-
-    const bytes = await request.arrayBuffer();
-    if (!bytes.byteLength || bytes.byteLength > 8 * 1024 * 1024) {
-      return json({ error: 'Screenshot must be between 1 byte and 8 MB.' }, 413);
-    }
-
-    const id = crypto.randomUUID().replace(/-/g, '');
-    const internal = new Request('https://portfolio-store.internal/media/' + encodeURIComponent(id), {
-      method: 'PUT',
-      headers: {
-        'Content-Type': contentType,
-        'X-File-Name': request.headers.get('x-file-name') || '',
+async function handleProjectMedia(
+  request,
+  env,
+) {
+  if (
+    !(await hasAdminSession(
+      request,
+      env,
+    ))
+  ) {
+    return json(
+      {
+        error:
+          'Admin session required.',
       },
-      body: bytes,
-    });
-    const stored = await portfolioStore(env).fetch(internal);
+      401,
+    );
+  }
+
+  if (
+    request.method === 'POST'
+  ) {
+    const contentType =
+      (
+        request.headers.get(
+          'content-type',
+        ) || ''
+      ).toLowerCase();
+
+    if (
+      ![
+        'image/png',
+        'image/jpeg',
+        'image/webp',
+      ].includes(contentType)
+    ) {
+      return json(
+        {
+          error:
+            'Only PNG, JPG, and WebP screenshots are supported.',
+        },
+        415,
+      );
+    }
+
+    const declaredLength =
+      Number(
+        request.headers.get(
+          'content-length',
+        ) || '0',
+      );
+
+    if (
+      declaredLength >
+      8 * 1024 * 1024
+    ) {
+      return json(
+        {
+          error:
+            'Screenshot must be 8 MB or smaller.',
+        },
+        413,
+      );
+    }
+
+    const bytes =
+      await request.arrayBuffer();
+
+    if (
+      !bytes.byteLength ||
+      bytes.byteLength >
+        8 * 1024 * 1024
+    ) {
+      return json(
+        {
+          error:
+            'Screenshot must be between 1 byte and 8 MB.',
+        },
+        413,
+      );
+    }
+
+    const id =
+      crypto
+        .randomUUID()
+        .replace(/-/g, '');
+
+    const internal =
+      new Request(
+        'https://portfolio-store.internal/media/' +
+          encodeURIComponent(id),
+        {
+          method: 'PUT',
+          headers: {
+            'Content-Type':
+              contentType,
+            'X-File-Name':
+              request.headers.get(
+                'x-file-name',
+              ) || '',
+          },
+          body: bytes,
+        },
+      );
+
+    const stored =
+      await portfolioStore(
+        env,
+      ).fetch(internal);
+
     if (!stored.ok) {
-      const detail = await stored.json().catch(() => null);
-      return json({ error: detail?.error || 'Unable to store screenshot.' }, stored.status);
+      const detail =
+        await stored
+          .json()
+          .catch(() => null);
+
+      return json(
+        {
+          error:
+            detail?.error ||
+            'Unable to store screenshot.',
+        },
+        stored.status,
+      );
     }
 
     return json({
       id,
-      url: projectMediaPublicUrl(id),
+      url:
+        projectMediaPublicUrl(id),
       size: bytes.byteLength,
       contentType,
     });
   }
 
-  if (request.method === 'DELETE') {
-    const url = new URL(request.url);
-    const id = url.searchParams.get('id') || '';
-    if (!/^[a-zA-Z0-9_-]{12,120}$/.test(id)) return json({ error: 'Invalid media id.' }, 400);
-    const response = await portfolioStore(env).fetch('https://portfolio-store.internal/media/' + encodeURIComponent(id), {
-      method: 'DELETE',
-    });
-    if (!response.ok) {
-      const detail = await response.json().catch(() => null);
-      return json({ error: detail?.error || 'Unable to delete screenshot.' }, response.status);
+  if (
+    request.method === 'DELETE'
+  ) {
+    const url =
+      new URL(request.url);
+
+    const id =
+      url.searchParams.get('id') ||
+      '';
+
+    if (
+      !/^[a-zA-Z0-9_-]{12,120}$/.test(
+        id,
+      )
+    ) {
+      return json(
+        {
+          error:
+            'Invalid media id.',
+        },
+        400,
+      );
     }
-    return json({ deleted: true, id });
+
+    const response =
+      await portfolioStore(
+        env,
+      ).fetch(
+        'https://portfolio-store.internal/media/' +
+          encodeURIComponent(id),
+        {
+          method: 'DELETE',
+        },
+      );
+
+    if (!response.ok) {
+      const detail =
+        await response
+          .json()
+          .catch(() => null);
+
+      return json(
+        {
+          error:
+            detail?.error ||
+            'Unable to delete screenshot.',
+        },
+        response.status,
+      );
+    }
+
+    return json({
+      deleted: true,
+      id,
+    });
   }
 
-  return json({ error: 'Method not allowed' }, 405);
+  return json(
+    {
+      error:
+        'Method not allowed',
+    },
+    405,
+  );
 }
 
-async function handlePublicProjectMedia(request, env, id) {
-  if (request.method !== 'GET' && request.method !== 'HEAD') {
-    return json({ error: 'Method not allowed' }, 405);
+async function handlePublicProjectMedia(
+  request,
+  env,
+  id,
+) {
+  if (
+    request.method !== 'GET' &&
+    request.method !== 'HEAD'
+  ) {
+    return json(
+      {
+        error:
+          'Method not allowed',
+      },
+      405,
+    );
   }
-  if (!/^[a-zA-Z0-9_-]{12,120}$/.test(id)) return json({ error: 'Invalid media id.' }, 400);
-  const response = await portfolioStore(env).fetch('https://portfolio-store.internal/media/' + encodeURIComponent(id));
-  if (request.method === 'HEAD' && response.ok) {
-    return new Response(null, { status: 200, headers: response.headers });
+
+  if (
+    !/^[a-zA-Z0-9_-]{12,120}$/.test(
+      id,
+    )
+  ) {
+    return json(
+      {
+        error:
+          'Invalid media id.',
+      },
+      400,
+    );
   }
+
+  const response =
+    await portfolioStore(env).fetch(
+      'https://portfolio-store.internal/media/' +
+        encodeURIComponent(id),
+    );
+
+  if (
+    request.method === 'HEAD' &&
+    response.ok
+  ) {
+    return new Response(
+      null,
+      {
+        status: 200,
+        headers:
+          response.headers,
+      },
+    );
+  }
+
   return response;
 }
 
-async function handlePublishTranslations(request, env) {
-  if (request.method !== 'POST') return json({ error: 'Method not allowed' }, 405);
-  if (!(await hasAdminSession(request, env))) return json({ error: 'Admin session required.' }, 401);
+async function handlePublishTranslations(
+  request,
+  env,
+) {
+  if (
+    request.method !== 'POST'
+  ) {
+    return json(
+      {
+        error:
+          'Method not allowed',
+      },
+      405,
+    );
+  }
 
-  const payload = await request.json().catch(() => null);
-  if (!payload?.catalog || typeof payload.catalog !== 'object') {
-    return json({ error: 'Translation catalog is required.' }, 400);
+  if (
+    !(await hasAdminSession(
+      request,
+      env,
+    ))
+  ) {
+    return json(
+      {
+        error:
+          'Admin session required.',
+      },
+      401,
+    );
+  }
+
+  const payload =
+    await request
+      .json()
+      .catch(() => null);
+
+  if (
+    !payload?.catalog ||
+    typeof payload.catalog !==
+      'object'
+  ) {
+    return json(
+      {
+        error:
+          'Translation catalog is required.',
+      },
+      400,
+    );
   }
 
   try {
-    await patchPortfolioStore(env, { projectTranslationCatalog: payload.catalog });
-    return json({ stored: true });
+    await patchPortfolioStore(
+      env,
+      {
+        projectTranslationCatalog:
+          payload.catalog,
+      },
+    );
+
+    return json({
+      stored: true,
+    });
   } catch (error) {
-    return json({ error: error?.message || 'Translation publish failed.' }, 502);
+    return json(
+      {
+        error:
+          error?.message ||
+          'Translation publish failed.',
+      },
+      502,
+    );
   }
 }
 
-
 function bearerToken(request) {
-  const authorization = request.headers.get('authorization') || '';
-  const match = authorization.match(/^Bearer\\s+(.+)$/i);
-  return match ? match[1].trim() : '';
+  const authorization =
+    request.headers.get(
+      'authorization',
+    ) || '';
+
+  const match =
+    authorization.match(
+      /^Bearer\\s+(.+)$/i,
+    );
+
+  return match
+    ? match[1].trim()
+    : '';
 }
 
-async function hasPortfolioAgentAccess(request, env) {
-  if (await hasAdminSession(request, env)) return true;
+async function hasPortfolioAgentAccess(
+  request,
+  env,
+) {
+  if (
+    await hasAdminSession(
+      request,
+      env,
+    )
+  ) {
+    return true;
+  }
 
-  const token = bearerToken(request);
-  const secret = env.PORTFOLIO_AGENT_TOKEN || env.ADMIN_PASSWORD;
-  if (!token || !secret) return false;
-  return safeEqual(token, secret);
+  const token =
+    bearerToken(request);
+
+  const secret =
+    env.PORTFOLIO_AGENT_TOKEN ||
+    env.ADMIN_PASSWORD;
+
+  if (
+    !token ||
+    !secret
+  ) {
+    return false;
+  }
+
+  return safeEqual(
+    token,
+    secret,
+  );
 }
 
-function validateAgentContentPatch(value) {
-  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+function validateAgentContentPatch(
+  value,
+) {
+  if (
+    !value ||
+    typeof value !== 'object' ||
+    Array.isArray(value)
+  ) {
     return 'patch must be an object.';
   }
 
-  const allowed = new Set(['projects', 'technologyCatalog', 'projectTranslationCatalog']);
-  for (const key of Object.keys(value)) {
-    if (!allowed.has(key)) return 'Unsupported portfolio field: ' + key;
+  const allowed = new Set([
+    'projects',
+    'technologyCatalog',
+    'projectTranslationCatalog',
+  ]);
+
+  for (
+    const key of Object.keys(value)
+  ) {
+    if (!allowed.has(key)) {
+      return (
+        'Unsupported portfolio field: ' +
+        key
+      );
+    }
   }
 
-  if ('projects' in value && !Array.isArray(value.projects)) {
+  if (
+    'projects' in value &&
+    !Array.isArray(
+      value.projects,
+    )
+  ) {
     return 'projects must be an array.';
   }
+
   if (
-    'technologyCatalog' in value &&
-    (!value.technologyCatalog || typeof value.technologyCatalog !== 'object' || Array.isArray(value.technologyCatalog))
+    'technologyCatalog' in
+      value &&
+    (
+      !value.technologyCatalog ||
+      typeof value.technologyCatalog !==
+        'object' ||
+      Array.isArray(
+        value.technologyCatalog,
+      )
+    )
   ) {
     return 'technologyCatalog must be an object.';
   }
+
   if (
-    'projectTranslationCatalog' in value &&
-    (!value.projectTranslationCatalog || typeof value.projectTranslationCatalog !== 'object' || Array.isArray(value.projectTranslationCatalog))
+    'projectTranslationCatalog' in
+      value &&
+    (
+      !value.projectTranslationCatalog ||
+      typeof value.projectTranslationCatalog !==
+        'object' ||
+      Array.isArray(
+        value.projectTranslationCatalog,
+      )
+    )
   ) {
     return 'projectTranslationCatalog must be an object.';
   }
@@ -461,81 +1204,199 @@ function validateAgentContentPatch(value) {
   return '';
 }
 
-async function handleAgentContent(request, env) {
-  if (request.method === 'OPTIONS') {
-    return new Response(null, {
-      status: 204,
-      headers: {
-        'access-control-allow-methods': 'GET, PATCH, OPTIONS',
-        'access-control-allow-headers': 'authorization, content-type',
-        'access-control-max-age': '86400',
+async function handleAgentContent(
+  request,
+  env,
+) {
+  if (
+    request.method === 'OPTIONS'
+  ) {
+    return new Response(
+      null,
+      {
+        status: 204,
+        headers: {
+          'access-control-allow-methods':
+            'GET, PATCH, OPTIONS',
+          'access-control-allow-headers':
+            'authorization, content-type',
+          'access-control-max-age':
+            '86400',
+        },
       },
-    });
+    );
   }
 
-  if (!(await hasPortfolioAgentAccess(request, env))) {
-    return json({ error: 'Portfolio agent authorization required.' }, 401);
+  if (
+    !(await hasPortfolioAgentAccess(
+      request,
+      env,
+    ))
+  ) {
+    return json(
+      {
+        error:
+          'Portfolio agent authorization required.',
+      },
+      401,
+    );
   }
 
-  if (request.method === 'GET') {
+  if (
+    request.method === 'GET'
+  ) {
     try {
-      const data = await readPortfolioStore(env);
+      const data =
+        await readPortfolioStore(
+          env,
+        );
+
       return json({
         data,
-        updatedAt: typeof data?.updatedAt === 'string' ? data.updatedAt : null,
-        storage: 'cloudflare-durable-object',
-        writesRequireDeployment: false,
+        updatedAt:
+          typeof data?.updatedAt ===
+          'string'
+            ? data.updatedAt
+            : null,
+        storage:
+          'cloudflare-durable-object',
+        writesRequireDeployment:
+          false,
       });
     } catch (error) {
-      return json({ error: error?.message || 'Unable to read portfolio content.' }, 502);
+      return json(
+        {
+          error:
+            error?.message ||
+            'Unable to read portfolio content.',
+        },
+        502,
+      );
     }
   }
 
-  if (request.method !== 'PATCH') return json({ error: 'Method not allowed' }, 405);
+  if (
+    request.method !== 'PATCH'
+  ) {
+    return json(
+      {
+        error:
+          'Method not allowed',
+      },
+      405,
+    );
+  }
 
-  const payload = await request.json().catch(() => null);
-  const patch = payload?.patch;
-  const validationError = validateAgentContentPatch(patch);
-  if (validationError) return json({ error: validationError }, 400);
+  const payload =
+    await request
+      .json()
+      .catch(() => null);
+
+  const patch =
+    payload?.patch;
+
+  const validationError =
+    validateAgentContentPatch(
+      patch,
+    );
+
+  if (validationError) {
+    return json(
+      {
+        error:
+          validationError,
+      },
+      400,
+    );
+  }
 
   try {
-    const current = await readPortfolioStore(env);
-    const currentUpdatedAt = typeof current?.updatedAt === 'string' ? current.updatedAt : null;
+    const current =
+      await readPortfolioStore(
+        env,
+      );
+
+    const currentUpdatedAt =
+      typeof current?.updatedAt ===
+      'string'
+        ? current.updatedAt
+        : null;
 
     if (
-      Object.prototype.hasOwnProperty.call(payload || {}, 'expectedUpdatedAt') &&
-      payload.expectedUpdatedAt !== currentUpdatedAt
+      Object.prototype.hasOwnProperty.call(
+        payload || {},
+        'expectedUpdatedAt',
+      ) &&
+      payload.expectedUpdatedAt !==
+        currentUpdatedAt
     ) {
       return json(
         {
-          error: 'Portfolio content changed since it was read.',
-          code: 'CONTENT_VERSION_CONFLICT',
-          updatedAt: currentUpdatedAt,
+          error:
+            'Portfolio content changed since it was read.',
+          code:
+            'CONTENT_VERSION_CONFLICT',
+          updatedAt:
+            currentUpdatedAt,
         },
         409,
       );
     }
 
-    const data = await patchPortfolioStore(env, patch);
+    const data =
+      await patchPortfolioStore(
+        env,
+        patch,
+      );
+
     return json({
       stored: true,
       data,
-      updatedAt: typeof data?.updatedAt === 'string' ? data.updatedAt : null,
-      deploymentTriggered: false,
+      updatedAt:
+        typeof data?.updatedAt ===
+        'string'
+          ? data.updatedAt
+          : null,
+      deploymentTriggered:
+        false,
     });
   } catch (error) {
-    return json({ error: error?.message || 'Unable to update portfolio content.' }, 502);
+    return json(
+      {
+        error:
+          error?.message ||
+          'Unable to update portfolio content.',
+      },
+      502,
+    );
   }
 }
 
-function extractOutputText(response) {
-  if (typeof response?.output_text === 'string' && response.output_text.trim()) {
+function extractOutputText(
+  response,
+) {
+  if (
+    typeof response?.output_text ===
+      'string' &&
+    response.output_text.trim()
+  ) {
     return response.output_text.trim();
   }
 
-  for (const item of response?.output ?? []) {
-    for (const content of item?.content ?? []) {
-      if (content?.type === 'output_text' && typeof content.text === 'string') {
+  for (
+    const item of
+      response?.output ?? []
+  ) {
+    for (
+      const content of
+        item?.content ?? []
+    ) {
+      if (
+        content?.type ===
+          'output_text' &&
+        typeof content.text ===
+          'string'
+      ) {
         return content.text.trim();
       }
     }
@@ -545,116 +1406,367 @@ function extractOutputText(response) {
 }
 
 function parseJsonText(text) {
-  const firstBrace = text.indexOf('{');
-  const lastBrace = text.lastIndexOf('}');
+  const firstBrace =
+    text.indexOf('{');
 
-  if (firstBrace === -1 || lastBrace < firstBrace) {
-    throw new Error('No JSON object found.');
+  const lastBrace =
+    text.lastIndexOf('}');
+
+  if (
+    firstBrace === -1 ||
+    lastBrace < firstBrace
+  ) {
+    throw new Error(
+      'No JSON object found.',
+    );
   }
 
-  return JSON.parse(text.slice(firstBrace, lastBrace + 1));
+  return JSON.parse(
+    text.slice(
+      firstBrace,
+      lastBrace + 1,
+    ),
+  );
 }
 
-function stringArray(value, limit = 16) {
-  if (!Array.isArray(value)) return [];
+function stringArray(
+  value,
+  limit = 16,
+) {
+  if (
+    !Array.isArray(value)
+  ) {
+    return [];
+  }
+
   return value
-    .filter((item) => typeof item === 'string')
-    .map((item) => item.trim())
+    .filter(
+      (item) =>
+        typeof item ===
+        'string',
+    )
+    .map((item) =>
+      item.trim(),
+    )
     .filter(Boolean)
     .slice(0, limit);
 }
 
-function cleanString(value, fallback, limit) {
-  return typeof value === 'string' && value.trim()
-    ? value.trim().slice(0, limit)
+function cleanString(
+  value,
+  fallback,
+  limit,
+) {
+  return (
+    typeof value === 'string' &&
+    value.trim()
+  )
+    ? value
+        .trim()
+        .slice(0, limit)
     : fallback;
 }
 
-function cleanRepositoryResult(value, fallback) {
+function cleanRepositoryResult(
+  value,
+  fallback,
+) {
   return {
-    title: cleanString(value?.title, fallback.title, 120),
-    summary: cleanString(value?.summary, fallback.summary, 700),
-    overview: cleanString(value?.overview, fallback.overview, 2600),
-    technologies: stringArray(value?.technologies, 20),
-    features: stringArray(value?.features, 14),
-  };
-}
-
-function cleanProjectTranslation(value, source) {
-  const sourceFeatures = Array.isArray(source?.features) ? source.features : [];
-  const sourceChallenges = Array.isArray(source?.challenges) ? source.challenges : [];
-  const sourceArchitecture = Array.isArray(source?.architecture) ? source.architecture : [];
-  const sourceGallery = Array.isArray(source?.gallery) ? source.gallery : [];
-
-  return {
-    title: cleanString(value?.title, source?.title || '', 180),
-    shortTitle: cleanString(value?.shortTitle, source?.shortTitle || source?.title || '', 120),
-    summary: cleanString(value?.summary, source?.summary || '', 1200),
-    overview: cleanString(value?.overview, source?.overview || '', 5000),
-    features: sourceFeatures.map((fallback, index) =>
-      cleanString(value?.features?.[index], fallback, 900)
+    title: cleanString(
+      value?.title,
+      fallback.title,
+      120,
     ),
-    challenges: sourceChallenges.map((fallback, index) => ({
-      title: cleanString(value?.challenges?.[index]?.title, fallback?.title || '', 500),
-      description: cleanString(
-        value?.challenges?.[index]?.description,
-        fallback?.description || '',
-        1800
+    summary: cleanString(
+      value?.summary,
+      fallback.summary,
+      700,
+    ),
+    overview: cleanString(
+      value?.overview,
+      fallback.overview,
+      2600,
+    ),
+    technologies:
+      stringArray(
+        value?.technologies,
+        20,
       ),
-    })),
-    architecture: sourceArchitecture.map((fallback, index) => ({
-      label: cleanString(value?.architecture?.[index]?.label, fallback?.label || '', 300),
-      detail: cleanString(value?.architecture?.[index]?.detail, fallback?.detail || '', 900),
-    })),
-    gallery: sourceGallery.map((fallback, index) => ({
-      title: cleanString(value?.gallery?.[index]?.title, fallback?.title || '', 500),
-      caption: cleanString(value?.gallery?.[index]?.caption, fallback?.caption || '', 1400),
-    })),
+    features:
+      stringArray(
+        value?.features,
+        14,
+      ),
   };
 }
 
-async function runOpenAI(env, instructions, input, maxOutputTokens) {
-  const response = await fetch('https://api.openai.com/v1/responses', {
-    method: 'POST',
-    headers: {
-      Authorization: 'Bearer ' + env.OPENAI_API_KEY,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      model: env.OPENAI_MODEL || 'gpt-5-mini',
-      reasoning: { effort: 'low' },
-      instructions,
-      input: JSON.stringify(input),
-      max_output_tokens: maxOutputTokens,
-    }),
-  });
+function cleanProjectTranslation(
+  value,
+  source,
+) {
+  const sourceFeatures =
+    Array.isArray(
+      source?.features,
+    )
+      ? source.features
+      : [];
+
+  const sourceChallenges =
+    Array.isArray(
+      source?.challenges,
+    )
+      ? source.challenges
+      : [];
+
+  const sourceArchitecture =
+    Array.isArray(
+      source?.architecture,
+    )
+      ? source.architecture
+      : [];
+
+  const sourceGallery =
+    Array.isArray(
+      source?.gallery,
+    )
+      ? source.gallery
+      : [];
+
+  return {
+    title: cleanString(
+      value?.title,
+      source?.title || '',
+      180,
+    ),
+
+    shortTitle: cleanString(
+      value?.shortTitle,
+      source?.shortTitle ||
+        source?.title ||
+        '',
+      120,
+    ),
+
+    summary: cleanString(
+      value?.summary,
+      source?.summary || '',
+      1200,
+    ),
+
+    overview: cleanString(
+      value?.overview,
+      source?.overview || '',
+      5000,
+    ),
+
+    features:
+      sourceFeatures.map(
+        (
+          fallback,
+          index,
+        ) =>
+          cleanString(
+            value?.features?.[
+              index
+            ],
+            fallback,
+            900,
+          ),
+      ),
+
+    challenges:
+      sourceChallenges.map(
+        (
+          fallback,
+          index,
+        ) => ({
+          title: cleanString(
+            value
+              ?.challenges?.[
+              index
+            ]?.title,
+            fallback?.title ||
+              '',
+            500,
+          ),
+
+          description:
+            cleanString(
+              value
+                ?.challenges?.[
+                index
+              ]?.description,
+              fallback
+                ?.description ||
+                '',
+              1800,
+            ),
+        }),
+      ),
+
+    architecture:
+      sourceArchitecture.map(
+        (
+          fallback,
+          index,
+        ) => ({
+          label: cleanString(
+            value
+              ?.architecture?.[
+              index
+            ]?.label,
+            fallback?.label ||
+              '',
+            300,
+          ),
+
+          detail: cleanString(
+            value
+              ?.architecture?.[
+              index
+            ]?.detail,
+            fallback?.detail ||
+              '',
+            900,
+          ),
+        }),
+      ),
+
+    gallery:
+      sourceGallery.map(
+        (
+          fallback,
+          index,
+        ) => ({
+          title: cleanString(
+            value?.gallery?.[
+              index
+            ]?.title,
+            fallback?.title ||
+              '',
+            500,
+          ),
+
+          caption: cleanString(
+            value?.gallery?.[
+              index
+            ]?.caption,
+            fallback?.caption ||
+              '',
+            1400,
+          ),
+        }),
+      ),
+  };
+}
+
+async function runOpenAI(
+  env,
+  instructions,
+  input,
+  maxOutputTokens,
+) {
+  const response =
+    await fetch(
+      'https://api.openai.com/v1/responses',
+      {
+        method: 'POST',
+
+        headers: {
+          Authorization:
+            'Bearer ' +
+            env.OPENAI_API_KEY,
+
+          'Content-Type':
+            'application/json',
+        },
+
+        body: JSON.stringify({
+          model:
+            env.OPENAI_MODEL ||
+            'gpt-5-mini',
+
+          reasoning: {
+            effort: 'low',
+          },
+
+          instructions,
+
+          input:
+            JSON.stringify(
+              input,
+            ),
+
+          max_output_tokens:
+            maxOutputTokens,
+        }),
+      },
+    );
 
   if (!response.ok) {
-    const detail = await response.text();
-    const error = new Error('OpenAI request failed.');
-    error.status = response.status;
-    error.detail = detail.slice(0, 1400);
+    const detail =
+      await response.text();
+
+    const error =
+      new Error(
+        'OpenAI request failed.',
+      );
+
+    error.status =
+      response.status;
+
+    error.detail =
+      detail.slice(
+        0,
+        1400,
+      );
+
     throw error;
   }
 
-  const data = await response.json();
-  const outputText = extractOutputText(data);
+  const data =
+    await response.json();
+
+  const outputText =
+    extractOutputText(data);
 
   if (!outputText) {
-    throw new Error('OpenAI returned no text output.');
+    throw new Error(
+      'OpenAI returned no text output.',
+    );
   }
 
-  return parseJsonText(outputText);
+  return parseJsonText(
+    outputText,
+  );
 }
 
-async function translateProject(payload, env) {
-  const source = payload?.project;
+async function translateProject(
+  payload,
+  env,
+) {
+  const source =
+    payload?.project;
 
-  if (!source || typeof source !== 'object') {
-    return json({ error: 'Project source is required.' }, 400);
+  if (
+    !source ||
+    typeof source !== 'object'
+  ) {
+    return json(
+      {
+        error:
+          'Project source is required.',
+      },
+      400,
+    );
   }
 
-  const targetLocales = ['zh-CN', 'zh-TW', 'vi-Latn', 'vi-Hani'];
+  const targetLocales = [
+    'zh-CN',
+    'zh-TW',
+    'vi-Latn',
+    'vi-Hani',
+  ];
 
   const instructions = [
     'You translate complete developer-portfolio project content from English.',
@@ -671,162 +1783,877 @@ async function translateProject(payload, env) {
   ].join(' ');
 
   try {
-    const parsed = await runOpenAI(
-      env,
-      instructions,
-      { sourceProject: source, targetLocales },
-      16000,
-    );
+    const parsed =
+      await runOpenAI(
+        env,
+        instructions,
+        {
+          sourceProject:
+            source,
+          targetLocales,
+        },
+        16000,
+      );
 
     const result = {};
-    for (const locale of targetLocales) {
-      result[locale] = cleanProjectTranslation(parsed?.[locale], source);
+
+    for (
+      const locale of
+        targetLocales
+    ) {
+      result[locale] =
+        cleanProjectTranslation(
+          parsed?.[locale],
+          source,
+        );
     }
 
     return json(result);
   } catch (error) {
     return json(
       {
-        error: error?.message || 'AI translation failed.',
-        status: error?.status,
-        detail: error?.detail,
+        error:
+          error?.message ||
+          'AI translation failed.',
+
+        status:
+          error?.status,
+
+        detail:
+          error?.detail,
       },
       502,
     );
   }
 }
 
+const AGENT_TRANSLATION_LOCALES =
+  [
+    'zh-CN',
+    'zh-TW',
+    'vi-Latn',
+    'vi-Hani',
+  ];
 
-const AGENT_TRANSLATION_LOCALES = ['zh-CN', 'zh-TW', 'vi-Latn', 'vi-Hani'];
-const AGENT_GROUPS = ['client', 'backend', 'platform'];
+const AGENT_GROUPS = [
+  'client',
+  'backend',
+  'platform',
+];
 
-function agentString(value, limit) {
-  return typeof value === 'string' ? value.trim().slice(0, limit) : undefined;
+function agentString(
+  value,
+  limit,
+) {
+  return typeof value ===
+    'string'
+    ? value
+        .trim()
+        .slice(0, limit)
+    : undefined;
 }
 
-function agentStringArray(value, limit = 24, itemLimit = 900) {
-  if (!Array.isArray(value)) return undefined;
-  return value.filter((item) => typeof item === 'string').map((item) => item.trim().slice(0, itemLimit)).filter(Boolean).slice(0, limit);
-}
-
-function agentObjectArray(value, left, right, limit = 20) {
-  if (!Array.isArray(value)) return undefined;
-  return value.filter((item) => item && typeof item === 'object').map((item) => ({
-    [left]: typeof item[left] === 'string' ? item[left].trim().slice(0, 500) : '',
-    [right]: typeof item[right] === 'string' ? item[right].trim().slice(0, 1800) : '',
-  })).filter((item) => item[left]).slice(0, limit);
-}
-
-function cleanAgentProjectPatch(value) {
-  if (!value || typeof value !== 'object') return {};
-  const patch = {};
-  for (const [field, limit] of Object.entries({ title: 180, shortTitle: 120, status: 160, summary: 1200, overview: 5000, github: 500 })) {
-    const cleaned = agentString(value[field], limit);
-    if (cleaned !== undefined) patch[field] = cleaned;
+function agentStringArray(
+  value,
+  limit = 24,
+  itemLimit = 900,
+) {
+  if (
+    !Array.isArray(value)
+  ) {
+    return undefined;
   }
-  const technologies = agentStringArray(value.technologies, 30, 120);
-  const features = agentStringArray(value.features, 24, 900);
-  const challenges = agentObjectArray(value.challenges, 'title', 'description');
-  const architecture = agentObjectArray(value.architecture, 'label', 'detail');
-  const gallery = agentObjectArray(value.gallery, 'title', 'caption');
-  if (technologies !== undefined) patch.technologies = technologies;
-  if (features !== undefined) patch.features = features;
-  if (challenges !== undefined) patch.challenges = challenges;
-  if (architecture !== undefined) patch.architecture = architecture;
-  if (gallery !== undefined) patch.gallery = gallery;
-  if (['Language', 'AI & Developer Tools', 'Product'].includes(value.category)) patch.category = value.category;
-  if (['lime', 'blue', 'sand', 'lavender', 'slate', 'coral'].includes(value.tone)) patch.tone = value.tone;
-  if (['morphology', 'commerce', 'language', 'keyboard', 'ide', 'inflection'].includes(value.mockup)) patch.mockup = value.mockup;
+
+  return value
+    .filter(
+      (item) =>
+        typeof item ===
+        'string',
+    )
+    .map((item) =>
+      item
+        .trim()
+        .slice(
+          0,
+          itemLimit,
+        ),
+    )
+    .filter(Boolean)
+    .slice(0, limit);
+}
+
+function agentObjectArray(
+  value,
+  left,
+  right,
+  limit = 20,
+) {
+  if (
+    !Array.isArray(value)
+  ) {
+    return undefined;
+  }
+
+  return value
+    .filter(
+      (item) =>
+        item &&
+        typeof item ===
+          'object',
+    )
+    .map((item) => ({
+      [left]:
+        typeof item[left] ===
+        'string'
+          ? item[left]
+              .trim()
+              .slice(
+                0,
+                500,
+              )
+          : '',
+
+      [right]:
+        typeof item[
+          right
+        ] === 'string'
+          ? item[right]
+              .trim()
+              .slice(
+                0,
+                1800,
+              )
+          : '',
+    }))
+    .filter(
+      (item) =>
+        item[left],
+    )
+    .slice(0, limit);
+}
+
+function cleanAgentProjectPatch(
+  value,
+) {
+  if (
+    !value ||
+    typeof value !== 'object'
+  ) {
+    return {};
+  }
+
+  const patch = {};
+
+  for (
+    const [
+      field,
+      limit,
+    ] of Object.entries({
+      title: 180,
+      shortTitle: 120,
+      status: 160,
+      summary: 1200,
+      overview: 5000,
+      github: 500,
+    })
+  ) {
+    const cleaned =
+      agentString(
+        value[field],
+        limit,
+      );
+
+    if (
+      cleaned !==
+      undefined
+    ) {
+      patch[field] =
+        cleaned;
+    }
+  }
+
+  const technologies =
+    agentStringArray(
+      value.technologies,
+      30,
+      120,
+    );
+
+  const features =
+    agentStringArray(
+      value.features,
+      24,
+      900,
+    );
+
+  const challenges =
+    agentObjectArray(
+      value.challenges,
+      'title',
+      'description',
+    );
+
+  const architecture =
+    agentObjectArray(
+      value.architecture,
+      'label',
+      'detail',
+    );
+
+  const gallery =
+    agentObjectArray(
+      value.gallery,
+      'title',
+      'caption',
+    );
+
+  if (
+    technologies !==
+    undefined
+  ) {
+    patch.technologies =
+      technologies;
+  }
+
+  if (
+    features !== undefined
+  ) {
+    patch.features =
+      features;
+  }
+
+  if (
+    challenges !==
+    undefined
+  ) {
+    patch.challenges =
+      challenges;
+  }
+
+  if (
+    architecture !==
+    undefined
+  ) {
+    patch.architecture =
+      architecture;
+  }
+
+  if (
+    gallery !== undefined
+  ) {
+    patch.gallery =
+      gallery;
+  }
+
+  if (
+    [
+      'Language',
+      'AI & Developer Tools',
+      'Product',
+    ].includes(
+      value.category,
+    )
+  ) {
+    patch.category =
+      value.category;
+  }
+
+  if (
+    [
+      'lime',
+      'blue',
+      'sand',
+      'lavender',
+      'slate',
+      'coral',
+    ].includes(value.tone)
+  ) {
+    patch.tone =
+      value.tone;
+  }
+
+  if (
+    [
+      'morphology',
+      'commerce',
+      'language',
+      'keyboard',
+      'ide',
+      'inflection',
+    ].includes(
+      value.mockup,
+    )
+  ) {
+    patch.mockup =
+      value.mockup;
+  }
+
   return patch;
 }
 
-function cleanAgentTranslationPatch(value) {
-  if (!value || typeof value !== 'object') return {};
-  const patch = {};
-  for (const [field, limit] of Object.entries({ title: 180, shortTitle: 120, summary: 1200, overview: 5000 })) {
-    const cleaned = agentString(value[field], limit);
-    if (cleaned !== undefined) patch[field] = cleaned;
+function cleanAgentTranslationPatch(
+  value,
+) {
+  if (
+    !value ||
+    typeof value !== 'object'
+  ) {
+    return {};
   }
-  const features = agentStringArray(value.features, 24, 900);
-  const challenges = agentObjectArray(value.challenges, 'title', 'description');
-  const architecture = agentObjectArray(value.architecture, 'label', 'detail');
-  const gallery = agentObjectArray(value.gallery, 'title', 'caption');
-  if (features !== undefined) patch.features = features;
-  if (challenges !== undefined) patch.challenges = challenges;
-  if (architecture !== undefined) patch.architecture = architecture;
-  if (gallery !== undefined) patch.gallery = gallery;
+
+  const patch = {};
+
+  for (
+    const [
+      field,
+      limit,
+    ] of Object.entries({
+      title: 180,
+      shortTitle: 120,
+      summary: 1200,
+      overview: 5000,
+    })
+  ) {
+    const cleaned =
+      agentString(
+        value[field],
+        limit,
+      );
+
+    if (
+      cleaned !==
+      undefined
+    ) {
+      patch[field] =
+        cleaned;
+    }
+  }
+
+  const features =
+    agentStringArray(
+      value.features,
+      24,
+      900,
+    );
+
+  const challenges =
+    agentObjectArray(
+      value.challenges,
+      'title',
+      'description',
+    );
+
+  const architecture =
+    agentObjectArray(
+      value.architecture,
+      'label',
+      'detail',
+    );
+
+  const gallery =
+    agentObjectArray(
+      value.gallery,
+      'title',
+      'caption',
+    );
+
+  if (
+    features !== undefined
+  ) {
+    patch.features =
+      features;
+  }
+
+  if (
+    challenges !==
+      undefined
+  ) {
+    patch.challenges =
+      challenges;
+  }
+
+  if (
+    architecture !==
+      undefined
+  ) {
+    patch.architecture =
+      architecture;
+  }
+
+  if (
+    gallery !== undefined
+  ) {
+    patch.gallery =
+      gallery;
+  }
+
   return patch;
 }
 
-function cleanAgentNewProject(value, index) {
-  if (!value || typeof value !== 'object') return null;
-  const slug = agentString(value.slug, 120)?.toLowerCase().replace(/[^a-z0-9-]+/g, '-').replace(/^-+|-+$/g, '');
-  const title = agentString(value.title, 180);
-  if (!slug || !title) return null;
+function cleanAgentNewProject(
+  value,
+  index,
+) {
+  if (
+    !value ||
+    typeof value !== 'object'
+  ) {
+    return null;
+  }
+
+  const slug =
+    agentString(
+      value.slug,
+      120,
+    )
+      ?.toLowerCase()
+      .replace(
+        /[^a-z0-9-]+/g,
+        '-',
+      )
+      .replace(
+        /^-+|-+$/g,
+        '',
+      );
+
+  const title =
+    agentString(
+      value.title,
+      180,
+    );
+
+  if (
+    !slug ||
+    !title
+  ) {
+    return null;
+  }
+
   return {
     slug,
     title,
-    shortTitle: agentString(value.shortTitle, 120) || title,
-    category: ['Language', 'AI & Developer Tools', 'Product'].includes(value.category) ? value.category : 'Product',
-    status: agentString(value.status, 160) || 'In Development',
-    number: agentString(value.number, 20) || String(index + 1).padStart(2, '0'),
-    summary: agentString(value.summary, 1200) || '',
-    overview: agentString(value.overview, 5000) || '',
-    technologies: agentStringArray(value.technologies, 30, 120) || [],
-    features: agentStringArray(value.features, 24, 900) || [],
-    challenges: agentObjectArray(value.challenges, 'title', 'description') || [],
-    architecture: agentObjectArray(value.architecture, 'label', 'detail') || [],
-    gallery: agentObjectArray(value.gallery, 'title', 'caption') || [],
-    github: agentString(value.github, 500),
-    tone: ['lime', 'blue', 'sand', 'lavender', 'slate', 'coral'].includes(value.tone) ? value.tone : 'blue',
-    mockup: ['morphology', 'commerce', 'language', 'keyboard', 'ide', 'inflection'].includes(value.mockup) ? value.mockup : 'language',
+
+    shortTitle:
+      agentString(
+        value.shortTitle,
+        120,
+      ) || title,
+
+    category:
+      [
+        'Language',
+        'AI & Developer Tools',
+        'Product',
+      ].includes(
+        value.category,
+      )
+        ? value.category
+        : 'Product',
+
+    status:
+      agentString(
+        value.status,
+        160,
+      ) ||
+      'In Development',
+
+    number:
+      agentString(
+        value.number,
+        20,
+      ) ||
+      String(
+        index + 1,
+      ).padStart(
+        2,
+        '0',
+      ),
+
+    summary:
+      agentString(
+        value.summary,
+        1200,
+      ) || '',
+
+    overview:
+      agentString(
+        value.overview,
+        5000,
+      ) || '',
+
+    technologies:
+      agentStringArray(
+        value.technologies,
+        30,
+        120,
+      ) || [],
+
+    features:
+      agentStringArray(
+        value.features,
+        24,
+        900,
+      ) || [],
+
+    challenges:
+      agentObjectArray(
+        value.challenges,
+        'title',
+        'description',
+      ) || [],
+
+    architecture:
+      agentObjectArray(
+        value.architecture,
+        'label',
+        'detail',
+      ) || [],
+
+    gallery:
+      agentObjectArray(
+        value.gallery,
+        'title',
+        'caption',
+      ) || [],
+
+    github:
+      agentString(
+        value.github,
+        500,
+      ),
+
+    tone:
+      [
+        'lime',
+        'blue',
+        'sand',
+        'lavender',
+        'slate',
+        'coral',
+      ].includes(
+        value.tone,
+      )
+        ? value.tone
+        : 'blue',
+
+    mockup:
+      [
+        'morphology',
+        'commerce',
+        'language',
+        'keyboard',
+        'ide',
+        'inflection',
+      ].includes(
+        value.mockup,
+      )
+        ? value.mockup
+        : 'language',
   };
 }
 
-function cleanTechnologyOperation(value) {
-  if (!value || typeof value !== 'object' || !AGENT_GROUPS.includes(value.group)) return null;
-  if (value.action === 'add' && value.item && typeof value.item === 'object') {
-    const name = agentString(value.item.name, 120);
-    const color = agentString(value.item.color, 32);
-    if (!name || !color) return null;
-    return { action: 'add', group: value.group, item: { name, color, logo: agentString(value.item.logo, 500) } };
+function cleanTechnologyOperation(
+  value,
+) {
+  if (
+    !value ||
+    typeof value !== 'object' ||
+    !AGENT_GROUPS.includes(
+      value.group,
+    )
+  ) {
+    return null;
   }
-  if ((value.action === 'update' || value.action === 'remove') && typeof value.name === 'string') {
-    const name = value.name.trim().slice(0, 120);
-    if (!name) return null;
-    if (value.action === 'remove') return { action: 'remove', group: value.group, name };
+
+  if (
+    value.action === 'add' &&
+    value.item &&
+    typeof value.item ===
+      'object'
+  ) {
+    const name =
+      agentString(
+        value.item.name,
+        120,
+      );
+
+    const color =
+      agentString(
+        value.item.color,
+        32,
+      );
+
+    if (
+      !name ||
+      !color
+    ) {
+      return null;
+    }
+
+    return {
+      action: 'add',
+      group: value.group,
+
+      item: {
+        name,
+        color,
+
+        logo:
+          agentString(
+            value.item.logo,
+            500,
+          ),
+      },
+    };
+  }
+
+  if (
+    (
+      value.action ===
+        'update' ||
+      value.action ===
+        'remove'
+    ) &&
+    typeof value.name ===
+      'string'
+  ) {
+    const name =
+      value.name
+        .trim()
+        .slice(0, 120);
+
+    if (!name) {
+      return null;
+    }
+
+    if (
+      value.action ===
+      'remove'
+    ) {
+      return {
+        action: 'remove',
+        group:
+          value.group,
+        name,
+      };
+    }
+
     const patch = {};
-    const nextName = agentString(value.patch?.name, 120);
-    const color = agentString(value.patch?.color, 32);
-    const logo = agentString(value.patch?.logo, 500);
-    if (nextName !== undefined) patch.name = nextName;
-    if (color !== undefined) patch.color = color;
-    if (logo !== undefined) patch.logo = logo;
-    return { action: 'update', group: value.group, name, patch };
+
+    const nextName =
+      agentString(
+        value.patch?.name,
+        120,
+      );
+
+    const color =
+      agentString(
+        value.patch?.color,
+        32,
+      );
+
+    const logo =
+      agentString(
+        value.patch?.logo,
+        500,
+      );
+
+    if (
+      nextName !==
+      undefined
+    ) {
+      patch.name =
+        nextName;
+    }
+
+    if (
+      color !== undefined
+    ) {
+      patch.color =
+        color;
+    }
+
+    if (
+      logo !== undefined
+    ) {
+      patch.logo =
+        logo;
+    }
+
+    return {
+      action: 'update',
+      group: value.group,
+      name,
+      patch,
+    };
   }
+
   return null;
 }
 
-function portfolioAgentChangedFields(projectPatches, translationPatches, newProjects, deleteProjectSlugs, technologyOperations) {
+function portfolioAgentChangedFields(
+  projectPatches,
+  translationPatches,
+  newProjects,
+  deleteProjectSlugs,
+  technologyOperations,
+) {
   const fields = [];
-  for (const item of projectPatches) for (const field of Object.keys(item.patch)) fields.push(item.slug + '.en.' + field);
-  for (const item of translationPatches) for (const field of Object.keys(item.patch)) fields.push(item.slug + '.' + item.locale + '.' + field);
-  for (const item of newProjects) fields.push('new-project:' + item.slug);
-  for (const slug of deleteProjectSlugs) fields.push('delete-project:' + slug);
-  for (const item of technologyOperations) fields.push('technology:' + item.group + ':' + (item.name || item.item?.name || item.action));
-  return fields.slice(0, 120);
+
+  for (
+    const item of
+      projectPatches
+  ) {
+    for (
+      const field of
+        Object.keys(
+          item.patch,
+        )
+    ) {
+      fields.push(
+        item.slug +
+          '.en.' +
+          field,
+      );
+    }
+  }
+
+  for (
+    const item of
+      translationPatches
+  ) {
+    for (
+      const field of
+        Object.keys(
+          item.patch,
+        )
+    ) {
+      fields.push(
+        item.slug +
+          '.' +
+          item.locale +
+          '.' +
+          field,
+      );
+    }
+  }
+
+  for (
+    const item of
+      newProjects
+  ) {
+    fields.push(
+      'new-project:' +
+        item.slug,
+    );
+  }
+
+  for (
+    const slug of
+      deleteProjectSlugs
+  ) {
+    fields.push(
+      'delete-project:' +
+        slug,
+    );
+  }
+
+  for (
+    const item of
+      technologyOperations
+  ) {
+    fields.push(
+      'technology:' +
+        item.group +
+        ':' +
+        (
+          item.name ||
+          item.item?.name ||
+          item.action
+        ),
+    );
+  }
+
+  return fields.slice(
+    0,
+    120,
+  );
 }
 
-async function runPortfolioAgent(payload, env) {
-  const instruction = typeof payload?.instruction === 'string' ? payload.instruction.trim() : '';
-  const projects = Array.isArray(payload?.projects) ? payload.projects.slice(0, 60) : [];
-  if (!instruction || projects.length === 0) return json({ error: 'Portfolio projects and agent instruction are required.' }, 400);
+async function runPortfolioAgent(
+  payload,
+  env,
+) {
+  const instruction =
+    typeof payload?.instruction ===
+      'string'
+      ? payload.instruction.trim()
+      : '';
 
-  const translations = payload?.translations && typeof payload.translations === 'object' ? payload.translations : {};
-  const technologyCatalog = payload?.technologyCatalog && typeof payload.technologyCatalog === 'object' ? payload.technologyCatalog : {};
-  const history = Array.isArray(payload?.history)
-    ? payload.history.filter((item) => item && (item.role === 'user' || item.role === 'assistant') && typeof item.content === 'string').slice(-12).map((item) => ({ role: item.role, content: item.content.slice(0, 2000) }))
-    : [];
+  const projects =
+    Array.isArray(
+      payload?.projects,
+    )
+      ? payload.projects.slice(
+          0,
+          60,
+        )
+      : [];
+
+  if (
+    !instruction ||
+    projects.length === 0
+  ) {
+    return json(
+      {
+        error:
+          'Portfolio projects and agent instruction are required.',
+      },
+      400,
+    );
+  }
+
+  const translations =
+    payload?.translations &&
+    typeof payload.translations ===
+      'object'
+      ? payload.translations
+      : {};
+
+  const technologyCatalog =
+    payload?.technologyCatalog &&
+    typeof payload.technologyCatalog ===
+      'object'
+      ? payload.technologyCatalog
+      : {};
+
+  const history =
+    Array.isArray(
+      payload?.history,
+    )
+      ? payload.history
+          .filter(
+            (item) =>
+              item &&
+              (
+                item.role ===
+                  'user' ||
+                item.role ===
+                  'assistant'
+              ) &&
+              typeof item.content ===
+                'string',
+          )
+          .slice(-12)
+          .map((item) => ({
+            role: item.role,
+            content:
+              item.content.slice(
+                0,
+                2000,
+              ),
+          }))
+      : [];
 
   const instructions = [
     'You are the global editing agent for an entire developer portfolio CMS.',
@@ -850,198 +2677,787 @@ async function runPortfolioAgent(payload, env) {
   ].join(' ');
 
   try {
-    const parsed = await runOpenAI(env, instructions, {
-      instruction,
-      selectedSlug: payload?.selectedSlug || '',
-      activeLocale: payload?.activeLocale || 'en',
-      projects,
-      translations,
-      technologyCatalog,
-      recentConversation: history,
-    }, 16000);
+    const parsed =
+      await runOpenAI(
+        env,
+        instructions,
+        {
+          instruction,
+          selectedSlug:
+            payload?.selectedSlug ||
+            '',
+          activeLocale:
+            payload?.activeLocale ||
+            'en',
+          projects,
+          translations,
+          technologyCatalog,
+          recentConversation:
+            history,
+        },
+        16000,
+      );
 
-    const projectSlugs = new Set(projects.map((project) => project?.slug).filter(Boolean));
-    const projectPatches = Array.isArray(parsed?.projectPatches)
-      ? parsed.projectPatches.map((item) => ({ slug: typeof item?.slug === 'string' ? item.slug : '', patch: cleanAgentProjectPatch(item?.patch) })).filter((item) => projectSlugs.has(item.slug) && Object.keys(item.patch).length > 0).slice(0, 80)
-      : [];
-    const translationPatches = Array.isArray(parsed?.translationPatches)
-      ? parsed.translationPatches.map((item) => ({ slug: typeof item?.slug === 'string' ? item.slug : '', locale: item?.locale, patch: cleanAgentTranslationPatch(item?.patch) })).filter((item) => projectSlugs.has(item.slug) && AGENT_TRANSLATION_LOCALES.includes(item.locale) && Object.keys(item.patch).length > 0).slice(0, 180)
-      : [];
-    const newProjects = Array.isArray(parsed?.newProjects)
-      ? parsed.newProjects.map((item, index) => cleanAgentNewProject(item, projects.length + index)).filter(Boolean).slice(0, 12)
-      : [];
-    const explicitDelete = /\b(delete|remove)\b|删除|刪除|移除|xóa/i.test(instruction);
-    const deleteProjectSlugs = explicitDelete && Array.isArray(parsed?.deleteProjectSlugs)
-      ? parsed.deleteProjectSlugs.filter((slug) => typeof slug === 'string' && projectSlugs.has(slug)).slice(0, 20)
-      : [];
-    const technologyOperations = Array.isArray(parsed?.technologyOperations)
-      ? parsed.technologyOperations.map(cleanTechnologyOperation).filter(Boolean).slice(0, 60)
-      : [];
+    const projectSlugs =
+      new Set(
+        projects
+          .map(
+            (project) =>
+              project?.slug,
+          )
+          .filter(Boolean),
+      );
+
+    const projectPatches =
+      Array.isArray(
+        parsed?.projectPatches,
+      )
+        ? parsed.projectPatches
+            .map((item) => ({
+              slug:
+                typeof item?.slug ===
+                'string'
+                  ? item.slug
+                  : '',
+
+              patch:
+                cleanAgentProjectPatch(
+                  item?.patch,
+                ),
+            }))
+            .filter(
+              (item) =>
+                projectSlugs.has(
+                  item.slug,
+                ) &&
+                Object.keys(
+                  item.patch,
+                ).length > 0,
+            )
+            .slice(0, 80)
+        : [];
+
+    const translationPatches =
+      Array.isArray(
+        parsed?.translationPatches,
+      )
+        ? parsed.translationPatches
+            .map((item) => ({
+              slug:
+                typeof item?.slug ===
+                'string'
+                  ? item.slug
+                  : '',
+
+              locale:
+                item?.locale,
+
+              patch:
+                cleanAgentTranslationPatch(
+                  item?.patch,
+                ),
+            }))
+            .filter(
+              (item) =>
+                projectSlugs.has(
+                  item.slug,
+                ) &&
+                AGENT_TRANSLATION_LOCALES.includes(
+                  item.locale,
+                ) &&
+                Object.keys(
+                  item.patch,
+                ).length > 0,
+            )
+            .slice(
+              0,
+              180,
+            )
+        : [];
+
+    const newProjects =
+      Array.isArray(
+        parsed?.newProjects,
+      )
+        ? parsed.newProjects
+            .map(
+              (
+                item,
+                index,
+              ) =>
+                cleanAgentNewProject(
+                  item,
+                  projects.length +
+                    index,
+                ),
+            )
+            .filter(Boolean)
+            .slice(0, 12)
+        : [];
+
+    const explicitDelete =
+      /\b(delete|remove)\b|删除|刪除|移除|xóa/i.test(
+        instruction,
+      );
+
+    const deleteProjectSlugs =
+      explicitDelete &&
+      Array.isArray(
+        parsed?.deleteProjectSlugs,
+      )
+        ? parsed.deleteProjectSlugs
+            .filter(
+              (slug) =>
+                typeof slug ===
+                  'string' &&
+                projectSlugs.has(
+                  slug,
+                ),
+            )
+            .slice(0, 20)
+        : [];
+
+    const technologyOperations =
+      Array.isArray(
+        parsed?.technologyOperations,
+      )
+        ? parsed.technologyOperations
+            .map(
+              cleanTechnologyOperation,
+            )
+            .filter(Boolean)
+            .slice(0, 60)
+        : [];
 
     return json({
-      message: cleanString(parsed?.message, 'Portfolio draft proposal prepared for review.', 1400),
+      message: cleanString(
+        parsed?.message,
+        'Portfolio draft proposal prepared for review.',
+        1400,
+      ),
+
       projectPatches,
       translationPatches,
       newProjects,
       deleteProjectSlugs,
       technologyOperations,
-      changedFields: portfolioAgentChangedFields(projectPatches, translationPatches, newProjects, deleteProjectSlugs, technologyOperations),
+
+      changedFields:
+        portfolioAgentChangedFields(
+          projectPatches,
+          translationPatches,
+          newProjects,
+          deleteProjectSlugs,
+          technologyOperations,
+        ),
     });
-  } catch (error) {
-    return json({ error: error?.message || 'Portfolio agent failed.', status: error?.status, detail: error?.detail }, 502);
-  }
-}
-
-async function analyzeRepository(payload, env) {
-  const repository = payload?.repository ?? {};
-  const detectedTechnologies = stringArray(payload?.detectedTechnologies, 30);
-  const rootFiles = stringArray(payload?.rootFiles, 80);
-  const evidence = typeof payload?.evidence === 'string'
-    ? payload.evidence.slice(0, 30000)
-    : '';
-
-  const fallback = {
-    title: typeof repository?.name === 'string' ? repository.name : 'Repository',
-    summary:
-      typeof repository?.description === 'string' && repository.description.trim()
-        ? repository.description.trim()
-        : 'Software repository.',
-    overview:
-      typeof repository?.description === 'string' && repository.description.trim()
-        ? repository.description.trim()
-        : 'Software repository.',
-  };
-
-  const prompt = {
-    repository: {
-      name: repository?.name,
-      full_name: repository?.full_name,
-      description: repository?.description,
-      default_branch: repository?.default_branch,
-      html_url: repository?.html_url,
-    },
-    languages: payload?.languages ?? {},
-    rootFiles,
-    detectedTechnologies,
-    evidence,
-  };
-
-  try {
-    const parsed = await runOpenAI(
-      env,
-      [
-        'You analyze software repositories for a developer portfolio.',
-        'Use only the repository evidence provided by the caller.',
-        'Do not invent features, technologies, architecture, deployment state, users, or metrics.',
-        'Return JSON only, with exactly these keys: title, summary, overview, technologies, features.',
-        'summary should be one concise portfolio sentence.',
-        'overview should be a factual paragraph explaining what the project is and how the verified parts fit together.',
-        'technologies must be an array of concrete technologies supported by the evidence.',
-        'features must be an array of concrete user-visible or developer-facing capabilities supported by the evidence.',
-        'If evidence is insufficient for a feature, omit it.',
-      ].join(' '),
-      prompt,
-      2200,
-    );
-
-    return json(cleanRepositoryResult(parsed, fallback));
   } catch (error) {
     return json(
       {
-        error: error?.message || 'Repository AI analysis failed.',
-        status: error?.status,
-        detail: error?.detail,
+        error:
+          error?.message ||
+          'Portfolio agent failed.',
+
+        status:
+          error?.status,
+
+        detail:
+          error?.detail,
       },
       502,
     );
   }
 }
 
-async function handlePortfolioAi(request, env) {
-  if (request.method !== 'POST') {
-    return json({ error: 'Method not allowed' }, 405);
+async function analyzeRepository(
+  payload,
+  env,
+) {
+  const repository =
+    payload?.repository ?? {};
+
+  const detectedTechnologies =
+    stringArray(
+      payload?.detectedTechnologies,
+      30,
+    );
+
+  const rootFiles =
+    stringArray(
+      payload?.rootFiles,
+      80,
+    );
+
+  const evidence =
+    typeof payload?.evidence ===
+      'string'
+      ? payload.evidence.slice(
+          0,
+          30000,
+        )
+      : '';
+
+  const fallback = {
+    title:
+      typeof repository?.name ===
+      'string'
+        ? repository.name
+        : 'Repository',
+
+    summary:
+      typeof repository?.description ===
+        'string' &&
+      repository.description.trim()
+        ? repository.description.trim()
+        : 'Software repository.',
+
+    overview:
+      typeof repository?.description ===
+        'string' &&
+      repository.description.trim()
+        ? repository.description.trim()
+        : 'Software repository.',
+  };
+
+  const prompt = {
+    repository: {
+      name:
+        repository?.name,
+
+      full_name:
+        repository?.full_name,
+
+      description:
+        repository?.description,
+
+      default_branch:
+        repository?.default_branch,
+
+      html_url:
+        repository?.html_url,
+    },
+
+    languages:
+      payload?.languages ?? {},
+
+    rootFiles,
+    detectedTechnologies,
+    evidence,
+  };
+
+  try {
+    const parsed =
+      await runOpenAI(
+        env,
+        [
+          'You analyze software repositories for a developer portfolio.',
+          'Use only the repository evidence provided by the caller.',
+          'Do not invent features, technologies, architecture, deployment state, users, or metrics.',
+          'Return JSON only, with exactly these keys: title, summary, overview, technologies, features.',
+          'summary should be one concise portfolio sentence.',
+          'overview should be a factual paragraph explaining what the project is and how the verified parts fit together.',
+          'technologies must be an array of concrete technologies supported by the evidence.',
+          'features must be an array of concrete user-visible or developer-facing capabilities supported by the evidence.',
+          'If evidence is insufficient for a feature, omit it.',
+        ].join(' '),
+        prompt,
+        2200,
+      );
+
+    return json(
+      cleanRepositoryResult(
+        parsed,
+        fallback,
+      ),
+    );
+  } catch (error) {
+    return json(
+      {
+        error:
+          error?.message ||
+          'Repository AI analysis failed.',
+
+        status:
+          error?.status,
+
+        detail:
+          error?.detail,
+      },
+      502,
+    );
+  }
+}
+
+async function handleContact(
+  request,
+  env,
+) {
+  if (
+    request.method !== 'POST'
+  ) {
+    return json(
+      {
+        error:
+          'Method not allowed.',
+      },
+      405,
+    );
   }
 
-  if (!(await hasAdminSession(request, env))) {
-    return json({ error: 'Admin session required.' }, 401);
+  const body =
+    await request
+      .json()
+      .catch(() => null);
+
+  if (
+    !body ||
+    typeof body !== 'object'
+  ) {
+    return json(
+      {
+        error:
+          'Invalid request.',
+      },
+      400,
+    );
   }
 
-  if (!env.OPENAI_API_KEY) {
-    return json({ error: 'OPENAI_API_KEY is not configured on the Worker.' }, 503);
+  const name =
+    typeof body.name ===
+      'string'
+      ? body.name.trim()
+      : '';
+
+  const email =
+    typeof body.email ===
+      'string'
+      ? body.email.trim()
+      : '';
+
+  const message =
+    typeof body.message ===
+      'string'
+      ? body.message.trim()
+      : '';
+
+  if (
+    !name ||
+    name.length > 80 ||
+    !email ||
+    email.length > 160 ||
+    !message ||
+    message.length < 10 ||
+    message.length > 4000
+  ) {
+    return json(
+      {
+        error:
+          'Please complete all contact fields.',
+      },
+      400,
+    );
+  }
+
+  const emailPattern =
+    /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;
+
+  if (
+    !emailPattern.test(
+      email,
+    )
+  ) {
+    return json(
+      {
+        error:
+          'Please enter a valid email address.',
+      },
+      400,
+    );
+  }
+
+  if (
+    !env.RESEND_API_KEY
+  ) {
+    return json(
+      {
+        error:
+          'Contact email service is not configured.',
+      },
+      503,
+    );
+  }
+
+  const to =
+    env.CONTACT_TO_EMAIL ||
+    'chengyang1017@gmail.com';
+
+  const from =
+    env.CONTACT_FROM_EMAIL ||
+    'Portfolio <onboarding@resend.dev>';
+
+  const response =
+    await fetch(
+      'https://api.resend.com/emails',
+      {
+        method: 'POST',
+
+        headers: {
+          Authorization:
+            'Bearer ' +
+            env.RESEND_API_KEY,
+
+          'Content-Type':
+            'application/json',
+        },
+
+        body: JSON.stringify({
+          from,
+
+          to: [to],
+
+          reply_to: email,
+
+          subject:
+            'Portfolio contact — ' +
+            name,
+
+          text: [
+            'New portfolio contact',
+            '',
+            'Name: ' + name,
+            'Email: ' + email,
+            '',
+            message,
+          ].join('\\n'),
+        }),
+      },
+    );
+
+  if (!response.ok) {
+    const detail =
+      await response.text();
+
+    console.error(
+      'Resend error:',
+      response.status,
+      detail,
+    );
+
+    return json(
+      {
+        error:
+          'Unable to send message right now.',
+      },
+      502,
+    );
+  }
+
+  return json({
+    sent: true,
+  });
+}
+
+async function handlePortfolioAi(
+  request,
+  env,
+) {
+  if (
+    request.method !== 'POST'
+  ) {
+    return json(
+      {
+        error:
+          'Method not allowed',
+      },
+      405,
+    );
+  }
+
+  if (
+    !(await hasAdminSession(
+      request,
+      env,
+    ))
+  ) {
+    return json(
+      {
+        error:
+          'Admin session required.',
+      },
+      401,
+    );
+  }
+
+  if (
+    !env.OPENAI_API_KEY
+  ) {
+    return json(
+      {
+        error:
+          'OPENAI_API_KEY is not configured on the Worker.',
+      },
+      503,
+    );
   }
 
   let payload;
+
   try {
-    payload = await request.json();
+    payload =
+      await request.json();
   } catch {
-    return json({ error: 'Invalid JSON request.' }, 400);
+    return json(
+      {
+        error:
+          'Invalid JSON request.',
+      },
+      400,
+    );
   }
 
-  if (payload?.mode === 'portfolio-agent') {
-    return runPortfolioAgent(payload, env);
+  if (
+    payload?.mode ===
+    'portfolio-agent'
+  ) {
+    return runPortfolioAgent(
+      payload,
+      env,
+    );
   }
 
-  if (payload?.mode === 'translate-project') {
-    return translateProject(payload, env);
+  if (
+    payload?.mode ===
+    'translate-project'
+  ) {
+    return translateProject(
+      payload,
+      env,
+    );
   }
 
-  return analyzeRepository(payload, env);
+  return analyzeRepository(
+    payload,
+    env,
+  );
 }
 
 export default {
-  async fetch(request, env) {
-    const url = new URL(request.url);
+  async fetch(
+    request,
+    env,
+  ) {
+    const url =
+      new URL(request.url);
 
-    if (url.pathname === '/api/admin/login') return handleAdminLogin(request, env);
-    if (url.pathname === '/api/admin/logout') return handleAdminLogout(request);
-    if (url.pathname === '/api/admin/session') return handleAdminSession(request, env);
-    if (url.pathname === '/api/admin/publish-portfolio') return handlePublishPortfolio(request, env);
-    if (url.pathname === '/api/admin/publish-translations') return handlePublishTranslations(request, env);
-    if (url.pathname === '/api/admin/project-media') return handleProjectMedia(request, env);
-    if (url.pathname.startsWith('/api/media/')) {
-      return handlePublicProjectMedia(request, env, decodeURIComponent(url.pathname.slice('/api/media/'.length)));
+    if (
+      url.pathname ===
+      '/api/contact'
+    ) {
+      return handleContact(
+        request,
+        env,
+      );
     }
-    if (url.pathname === '/api/agent/content') return handleAgentContent(request, env);
 
-    if (url.pathname === '/api/portfolio-data' && request.method === 'GET') {
+    if (
+      url.pathname ===
+      '/api/admin/login'
+    ) {
+      return handleAdminLogin(
+        request,
+        env,
+      );
+    }
+
+    if (
+      url.pathname ===
+      '/api/admin/logout'
+    ) {
+      return handleAdminLogout(
+        request,
+      );
+    }
+
+    if (
+      url.pathname ===
+      '/api/admin/session'
+    ) {
+      return handleAdminSession(
+        request,
+        env,
+      );
+    }
+
+    if (
+      url.pathname ===
+      '/api/admin/publish-portfolio'
+    ) {
+      return handlePublishPortfolio(
+        request,
+        env,
+      );
+    }
+
+    if (
+      url.pathname ===
+      '/api/admin/publish-translations'
+    ) {
+      return handlePublishTranslations(
+        request,
+        env,
+      );
+    }
+
+    if (
+      url.pathname ===
+      '/api/admin/project-media'
+    ) {
+      return handleProjectMedia(
+        request,
+        env,
+      );
+    }
+
+    if (
+      url.pathname.startsWith(
+        '/api/media/',
+      )
+    ) {
+      return handlePublicProjectMedia(
+        request,
+        env,
+        decodeURIComponent(
+          url.pathname.slice(
+            '/api/media/'
+              .length,
+          ),
+        ),
+      );
+    }
+
+    if (
+      url.pathname ===
+      '/api/agent/content'
+    ) {
+      return handleAgentContent(
+        request,
+        env,
+      );
+    }
+
+    if (
+      url.pathname ===
+        '/api/portfolio-data' &&
+      request.method === 'GET'
+    ) {
       try {
-        return json(await readPortfolioStore(env));
+        return json(
+          await readPortfolioStore(
+            env,
+          ),
+        );
       } catch (error) {
-        return json({ error: error?.message || 'Unable to load portfolio data.' }, 502);
+        return json(
+          {
+            error:
+              error?.message ||
+              'Unable to load portfolio data.',
+          },
+          502,
+        );
       }
     }
 
-    if (url.pathname === '/api/portfolio-ai') {
-      return handlePortfolioAi(request, env);
+    if (
+      url.pathname ===
+      '/api/portfolio-ai'
+    ) {
+      return handlePortfolioAi(
+        request,
+        env,
+      );
     }
 
-    const response = await env.ASSETS.fetch(request);
-    if (response.status !== 404) return response;
+    const response =
+      await env.ASSETS.fetch(
+        request,
+      );
 
-    url.pathname = '/index.html';
-    return env.ASSETS.fetch(new Request(url, request));
+    if (
+      response.status !== 404
+    ) {
+      return response;
+    }
+
+    url.pathname =
+      '/index.html';
+
+    return env.ASSETS.fetch(
+      new Request(
+        url,
+        request,
+      ),
+    );
   },
 };
 `;
 
-await mkdir('dist/server', { recursive: true });
-await writeFile('dist/server/index.js', workerSource);
+await mkdir(
+  'dist/server',
+  {
+    recursive: true,
+  },
+);
+
+await writeFile(
+  'dist/server/index.js',
+  workerSource,
+);
+
 await writeFile(
   'dist/server/wrangler.json',
   JSON.stringify(
     {
-      name: 'lim-cheng-yang-portfolio',
-      main: 'index.js',
-      compatibility_date: '2026-08-01',
+      name:
+        'lim-cheng-yang-portfolio',
+
+      main:
+        'index.js',
+
+      compatibility_date:
+        '2026-08-01',
+
       assets: {
         directory: '../',
-        binding: 'ASSETS',
-        not_found_handling: 'single-page-application',
+
+        binding:
+          'ASSETS',
+
+        not_found_handling:
+          'single-page-application',
       },
+
       durable_objects: {
-        bindings: [{ name: 'PORTFOLIO_STORE', class_name: 'PortfolioStore' }],
+        bindings: [
+          {
+            name:
+              'PORTFOLIO_STORE',
+
+            class_name:
+              'PortfolioStore',
+          },
+        ],
       },
-      migrations: [{ tag: 'v1', new_sqlite_classes: ['PortfolioStore'] }],
+
+      migrations: [
+        {
+          tag: 'v1',
+
+          new_sqlite_classes: [
+            'PortfolioStore',
+          ],
+        },
+      ],
     },
     null,
     2,
