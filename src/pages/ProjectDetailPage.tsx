@@ -4,7 +4,7 @@ import { FeatureShowcase } from '../components/FeatureShowcase';
 import { ProjectGallery } from '../components/ProjectGallery';
 import { ProjectVisual } from '../components/ProjectVisual';
 import { TechTag } from '../components/TechTag';
-import { getProject, projects } from '../data/projects';
+import { getProject, projects, type ProjectPageCopy } from '../data/projects';
 import { useI18n } from '../i18n/I18nProvider';
 import { localizeProject } from '../i18n/localizeProject';
 import { glyphoraEcosystemCopy, projectDetailUi } from '../i18n/projectDetailTranslations';
@@ -100,6 +100,11 @@ export function ProjectDetailPage() {
 
   const project = localizeProject(sourceProject, language);
   const ui = projectDetailUi(language);
+  const editablePageCopy = sourceProject.pageCopy?.[language];
+  const pageCopy = <K extends keyof ProjectPageCopy>(key: K, fallback: string) => {
+    const value = editablePageCopy?.[key];
+    return typeof value === 'string' && value.trim() ? value : fallback;
+  };
   const projectCategory = localizedCategory(project.category, language);
   const projectStatus = localizedStatus(project.status, language);
   const ecosystem = project.slug === 'glyphora' ? glyphoraEcosystemCopy(language) : null;
@@ -147,16 +152,18 @@ export function ProjectDetailPage() {
 
       {project.gallery.length > 0 && (
         <section className="case-section shell">
-          <p className="eyebrow">{ui.projectAreas}</p>
-          <h2 className="case-heading project-areas-heading">{ui.projectAreasHeading}</h2>
+          <p className="eyebrow">{pageCopy('projectAreasLabel', ui.projectAreas)}</p>
+          <h2 className="case-heading project-areas-heading">
+            {pageCopy('projectAreasHeading', ui.projectAreasHeading)}
+          </h2>
           <ProjectGallery project={project} />
         </section>
       )}
 
       <section className="case-section shell overview overview-redesign">
         <div className="overview-rail">
-          <p className="eyebrow">{ui.overview}</p>
-          <span>{ui.snapshot}</span>
+          <p className="eyebrow">{pageCopy('overviewLabel', ui.overview)}</p>
+          <span>{pageCopy('snapshotLabel', ui.snapshot)}</span>
         </div>
 
         <div className="overview-main">
@@ -179,7 +186,10 @@ export function ProjectDetailPage() {
             </aside>
           )}
 
-          <dl className="overview-metrics" aria-label={ui.snapshot}>
+          <dl
+            className="overview-metrics"
+            aria-label={pageCopy('snapshotLabel', ui.snapshot)}
+          >
             <div>
               <dt>{ui.verifiedFeatures}</dt>
               <dd>{String(project.features.length).padStart(2, '0')}</dd>
@@ -196,48 +206,48 @@ export function ProjectDetailPage() {
         </div>
 
         <aside className="overview-sidebar">
-  <span className="overview-sidebar-label">{ui.explore}</span>
+          <span className="overview-sidebar-label">{ui.explore}</span>
 
-  <div className="case-links">
-    {project.github && (
-      <a
-        className="case-action"
-        href={project.github}
-        target="_blank"
-        rel="noreferrer"
-      >
-        <span className="case-action-icon">
-          <GitHubIcon />
-        </span>
+          <div className="case-links">
+            {project.github && (
+              <a
+                className="case-action"
+                href={project.github}
+                target="_blank"
+                rel="noreferrer"
+              >
+                <span className="case-action-icon">
+                  <GitHubIcon />
+                </span>
 
-        <span className="case-action-label">
-          {ui.githubRepository}
-        </span>
+                <span className="case-action-label">
+                  {ui.githubRepository}
+                </span>
 
-        <span className="case-action-arrow" aria-hidden="true">
-          ↗
-        </span>
-      </a>
-    )}
+                <span className="case-action-arrow" aria-hidden="true">
+                  ↗
+                </span>
+              </a>
+            )}
 
-    <Link
-      className="case-action"
-      to={`/projects/${project.slug}/source`}
-    >
-      <span className="case-action-icon">
-        <SourceCodeIcon />
-      </span>
+            <Link
+              className="case-action"
+              to={`/projects/${project.slug}/source`}
+            >
+              <span className="case-action-icon">
+                <SourceCodeIcon />
+              </span>
 
-      <span className="case-action-label">
-        {t('source.entry')}
-      </span>
+              <span className="case-action-label">
+                {t('source.entry')}
+              </span>
 
-      <span className="case-action-arrow" aria-hidden="true">
-        →
-      </span>
-    </Link>
-  </div>
-</aside>
+              <span className="case-action-arrow" aria-hidden="true">
+                →
+              </span>
+            </Link>
+          </div>
+        </aside>
       </section>
 
       {project.features.length > 0 && (
@@ -245,12 +255,14 @@ export function ProjectDetailPage() {
           <div className="shell">
             <div className="feature-section-intro">
               <div>
-                <p className="eyebrow">{ui.featureSection}</p>
-                <h2>{ui.featureHeading}</h2>
+                <p className="eyebrow">
+                  {pageCopy('featureSectionLabel', ui.featureSection)}
+                </p>
+                <h2>{pageCopy('featureHeading', ui.featureHeading)}</h2>
               </div>
               <div className="feature-section-summary">
                 <strong>{String(project.features.length).padStart(2, '0')}</strong>
-                <p>{ui.featureSummary}</p>
+                <p>{pageCopy('featureSummary', ui.featureSummary)}</p>
               </div>
             </div>
             <FeatureShowcase
@@ -263,8 +275,10 @@ export function ProjectDetailPage() {
       )}
 
       <section className="case-section shell">
-        <p className="eyebrow">{ui.architecture}</p>
-        <h2 className="case-heading">{ui.architectureHeading}</h2>
+        <p className="eyebrow">{pageCopy('architectureLabel', ui.architecture)}</p>
+        <h2 className="case-heading">
+          {pageCopy('architectureHeading', ui.architectureHeading)}
+        </h2>
         <ArchitectureDiagram nodes={project.architecture} />
         <div className="all-tags">
           {project.technologies.map((technology) => (
@@ -275,9 +289,14 @@ export function ProjectDetailPage() {
         {project.github && (
           <div className="source-cta">
             <div>
-              <small>{ui.sourceWalkthroughLabel}</small>
-              <strong>{ui.sourceWalkthroughTitle}</strong>
-              <p>{ui.sourceWalkthroughDescription}</p>
+              <small>{pageCopy('sourceWalkthroughLabel', ui.sourceWalkthroughLabel)}</small>
+              <strong>{pageCopy('sourceWalkthroughTitle', ui.sourceWalkthroughTitle)}</strong>
+              <p>
+                {pageCopy(
+                  'sourceWalkthroughDescription',
+                  ui.sourceWalkthroughDescription,
+                )}
+              </p>
             </div>
             <Link to={`/projects/${project.slug}/source`}>{ui.exploreSource}</Link>
           </div>
@@ -287,7 +306,7 @@ export function ProjectDetailPage() {
       {project.challenges.length > 0 && (
         <section className="case-section challenges">
           <div className="shell">
-            <p className="eyebrow">{ui.implementation}</p>
+            <p className="eyebrow">{pageCopy('implementationLabel', ui.implementation)}</p>
             <div className="challenge-grid">
               {project.challenges.map((item, challengeIndex) => (
                 <article key={item.title}>
@@ -300,8 +319,6 @@ export function ProjectDetailPage() {
           </div>
         </section>
       )}
-
-      
 
       <nav className="project-pagination shell" aria-label="Adjacent projects">
         <Link className="project-pagination-card" to={`/projects/${prev.slug}`}>
