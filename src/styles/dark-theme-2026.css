@@ -1,0 +1,669 @@
+/* Deep dark portfolio theme --------------------------------------------------
+   Final override layer. Keep the existing layout and CMS structure, but move
+   the whole site to a dark navy / charcoal visual system with cyan + blue
+   interaction accents. Yellow/lime UI accents are intentionally removed.
+*/
+
+:root {
+  color-scheme: dark;
+
+  --ink: #eef6ff;
+  --muted: #91a4ba;
+  --paper: #08111d;
+  --surface: #0d1825;
+  --surface-strong: #111f2e;
+  --line: rgba(133, 169, 205, 0.18);
+  --line-strong: rgba(90, 190, 255, 0.34);
+
+  --accent: #35d0ff;
+  --accent-strong: #5b7cff;
+  --accent-soft: rgba(53, 208, 255, 0.12);
+  --accent-ink: #04131e;
+
+  --dark: #050b13;
+  --dark-soft: #0a1420;
+  --blue: #62b7ff;
+  --violet: #8a7dff;
+  --sand: #6f8cff;
+  --coral: #ff7f9d;
+
+  --shadow-soft: 0 18px 58px rgba(0, 0, 0, 0.24);
+  --shadow-card: 0 28px 80px rgba(0, 0, 0, 0.34);
+}
+
+html {
+  background: var(--paper);
+}
+
+body {
+  color: var(--ink);
+  background:
+    radial-gradient(circle at 8% -6%, rgba(53, 208, 255, 0.12), transparent 30rem),
+    radial-gradient(circle at 94% 4%, rgba(91, 124, 255, 0.15), transparent 34rem),
+    linear-gradient(180deg, #07101b 0%, #09131f 42%, #060d16 100%);
+}
+
+body::before {
+  opacity: 0.28;
+  background-image:
+    linear-gradient(rgba(128, 180, 226, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(128, 180, 226, 0.045) 1px, transparent 1px);
+  mask-image: linear-gradient(to bottom, black, transparent 88%);
+}
+
+::selection {
+  background: #35d0ff;
+  color: #04131e;
+}
+
+.eyebrow {
+  color: #62cfff;
+}
+
+/* Navigation ---------------------------------------------------------------- */
+
+.navbar {
+  border-color: rgba(114, 164, 207, 0.18);
+  background: rgba(8, 17, 29, 0.78);
+  box-shadow: 0 16px 50px rgba(0, 0, 0, 0.3);
+}
+
+.brand {
+  background: linear-gradient(135deg, #35d0ff, #5b7cff);
+  color: #03111c;
+  box-shadow: 0 10px 28px rgba(53, 208, 255, 0.18);
+}
+
+.navbar nav > a:hover,
+.navbar nav > a.active {
+  background: rgba(53, 208, 255, 0.1);
+  color: #eefdff;
+}
+
+.language-switcher-trigger {
+  border-color: rgba(114, 164, 207, 0.2);
+  background: rgba(15, 29, 44, 0.78);
+  color: var(--ink);
+}
+
+.language-switcher-trigger:hover,
+.language-switcher-trigger[aria-expanded='true'] {
+  border-color: rgba(53, 208, 255, 0.42);
+  background: rgba(20, 39, 57, 0.92);
+}
+
+.language-menu {
+  border-color: rgba(114, 164, 207, 0.2);
+  background: rgba(8, 17, 29, 0.97);
+  box-shadow: 0 30px 90px rgba(0, 0, 0, 0.52);
+}
+
+.language-menu-row:hover,
+.language-script-row:hover,
+.language-menu-back:hover,
+.language-script-row[aria-checked='true'] {
+  background: rgba(53, 208, 255, 0.09);
+}
+
+.language-menu-code {
+  border-color: rgba(53, 208, 255, 0.28);
+  color: #35d0ff;
+}
+
+/* Shared buttons ------------------------------------------------------------ */
+
+.button,
+.home-hero .button,
+.admin-content-primary-action,
+.admin-page button:not(.secondary):not(.danger),
+.admin-content-page button:not(.secondary),
+.admin-upload-button:not(.secondary) {
+  border-color: #35d0ff !important;
+  background: linear-gradient(135deg, #35d0ff 0%, #4da6ff 52%, #5b7cff 100%) !important;
+  color: #04131e !important;
+  box-shadow: 0 12px 32px rgba(53, 208, 255, 0.16) !important;
+}
+
+.button:hover,
+.home-hero .button:hover,
+.admin-content-primary-action:hover,
+.admin-page button:not(.secondary):not(.danger):not(:disabled):hover,
+.admin-content-page button:not(.secondary):not(:disabled):hover,
+.admin-upload-button:not(.secondary):hover {
+  border-color: #7ee4ff !important;
+  background: linear-gradient(135deg, #5edcff 0%, #62b7ff 54%, #748cff 100%) !important;
+  box-shadow: 0 16px 38px rgba(53, 208, 255, 0.23) !important;
+}
+
+button.secondary,
+.admin-upload-button.secondary,
+.admin-page button.secondary,
+.admin-content-page button.secondary {
+  border-color: rgba(111, 170, 219, 0.26) !important;
+  background: rgba(16, 31, 46, 0.88) !important;
+  color: #dcecff !important;
+}
+
+button.secondary:hover,
+.admin-upload-button.secondary:hover,
+.admin-page button.secondary:not(:disabled):hover,
+.admin-content-page button.secondary:not(:disabled):hover {
+  border-color: rgba(53, 208, 255, 0.42) !important;
+  background: rgba(23, 47, 68, 0.96) !important;
+}
+
+/* Home ---------------------------------------------------------------------- */
+
+.home-hero {
+  border-color: var(--line);
+  background:
+    radial-gradient(circle at 82% 18%, rgba(91, 124, 255, 0.19), transparent 28rem),
+    radial-gradient(circle at 16% 90%, rgba(53, 208, 255, 0.11), transparent 28rem),
+    linear-gradient(145deg, rgba(13, 25, 39, 0.98), rgba(8, 17, 29, 0.96));
+  box-shadow: var(--shadow-card);
+}
+
+.home-hero::after {
+  color: rgba(110, 184, 255, 0.045);
+}
+
+.home-hero h1 em {
+  color: #55d8ff;
+  text-shadow: 0 0 34px rgba(53, 208, 255, 0.12);
+}
+
+.home-hero-aside,
+.home-focus-list > div {
+  border-color: var(--line);
+}
+
+.home-work-showcase,
+.home-stack-section {
+  border-color: var(--line);
+  background: rgba(10, 21, 34, 0.78);
+  box-shadow: var(--shadow-soft);
+}
+
+.home-work-mini-card,
+.home-work-featured-card,
+.home-area-card,
+.home-stack-card,
+.stack-group,
+.technology-group {
+  border-color: var(--line) !important;
+  background: linear-gradient(145deg, rgba(16, 31, 46, 0.92), rgba(10, 22, 35, 0.88)) !important;
+  box-shadow: 0 14px 38px rgba(0, 0, 0, 0.18);
+}
+
+.home-work-mini-card:hover,
+.home-work-featured-card:hover,
+.home-area-card:hover,
+.home-stack-card:hover {
+  border-color: rgba(53, 208, 255, 0.34) !important;
+  box-shadow: 0 22px 58px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(53, 208, 255, 0.05);
+}
+
+.home-work-card-arrow {
+  background: rgba(53, 208, 255, 0.09);
+  color: #62d8ff;
+}
+
+.home-areas {
+  background:
+    linear-gradient(180deg, transparent, rgba(12, 25, 39, 0.72) 12%, rgba(12, 25, 39, 0.72) 88%, transparent);
+}
+
+/* Projects ------------------------------------------------------------------ */
+
+.projects-intro {
+  border-color: var(--line);
+  background:
+    radial-gradient(circle at 100% 0%, rgba(91, 124, 255, 0.16), transparent 30rem),
+    radial-gradient(circle at 0% 100%, rgba(53, 208, 255, 0.08), transparent 24rem),
+    rgba(10, 21, 34, 0.88);
+}
+
+.project-card,
+.project-row,
+.projects-grid article,
+.projects-list article {
+  border-color: var(--line) !important;
+  background: linear-gradient(145deg, rgba(16, 31, 46, 0.94), rgba(10, 22, 35, 0.9)) !important;
+  box-shadow: 0 16px 44px rgba(0, 0, 0, 0.18);
+}
+
+/* About --------------------------------------------------------------------- */
+
+.about-hero {
+  border-color: var(--line);
+  background:
+    radial-gradient(circle at 85% 20%, rgba(138, 125, 255, 0.16), transparent 26rem),
+    radial-gradient(circle at 10% 90%, rgba(53, 208, 255, 0.08), transparent 24rem),
+    rgba(10, 21, 34, 0.86);
+}
+
+.about-page article,
+.about-page .about-card,
+.about-page .about-panel,
+.about-page .about-skill-card {
+  border-color: var(--line) !important;
+  background-color: rgba(14, 28, 42, 0.86) !important;
+}
+
+/* Project detail ------------------------------------------------------------ */
+
+.case-hero {
+  border-color: var(--line);
+  background:
+    radial-gradient(circle at 82% 10%, rgba(91, 124, 255, 0.18), transparent 26rem),
+    radial-gradient(circle at 12% 92%, rgba(53, 208, 255, 0.1), transparent 24rem),
+    linear-gradient(145deg, rgba(13, 25, 39, 0.96), rgba(8, 17, 29, 0.95));
+}
+
+.project-visual {
+  box-shadow: 0 28px 74px rgba(0, 0, 0, 0.42);
+}
+
+.project-facts {
+  border-color: var(--line);
+  background: rgba(13, 27, 42, 0.72);
+}
+
+.project-gallery article,
+.gallery-card,
+.gallery-item {
+  border-color: var(--line) !important;
+  background: rgba(13, 27, 42, 0.86) !important;
+  box-shadow: var(--shadow-soft);
+}
+
+.overview-redesign {
+  border-color: var(--line);
+  background:
+    radial-gradient(circle at 95% 0%, rgba(91, 124, 255, 0.08), transparent 24rem),
+    rgba(10, 21, 34, 0.86);
+}
+
+.overview-metrics > div,
+.ecosystem-statement,
+.case-action {
+  border-color: var(--line) !important;
+  background: rgba(15, 31, 47, 0.72) !important;
+}
+
+.case-action:hover {
+  border-color: rgba(53, 208, 255, 0.36) !important;
+  background: rgba(20, 43, 62, 0.86) !important;
+}
+
+.case-dark.feature-section {
+  color: #edf7ff;
+  background:
+    radial-gradient(circle at 8% 10%, rgba(53, 208, 255, 0.12), transparent 28rem),
+    radial-gradient(circle at 92% 20%, rgba(91, 124, 255, 0.15), transparent 32rem),
+    linear-gradient(145deg, #07111d 0%, #0a1724 52%, #060d16 100%);
+}
+
+.case-dark.feature-section::before {
+  opacity: 0.28;
+  background-image:
+    linear-gradient(rgba(110, 177, 226, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(110, 177, 226, 0.05) 1px, transparent 1px);
+}
+
+.feature-section-summary {
+  border-left-color: rgba(101, 183, 255, 0.22);
+}
+
+.feature-card {
+  border-color: rgba(83, 170, 227, 0.24) !important;
+  background:
+    radial-gradient(circle at 100% 0%, rgba(91, 124, 255, 0.07), transparent 14rem),
+    linear-gradient(145deg, rgba(12, 27, 43, 0.86), rgba(8, 20, 33, 0.82)) !important;
+  box-shadow: inset 0 1px 0 rgba(180, 222, 255, 0.035), 0 14px 38px rgba(0, 0, 0, 0.12);
+}
+
+.feature-card:hover {
+  border-color: rgba(53, 208, 255, 0.42) !important;
+  background:
+    radial-gradient(circle at 100% 0%, rgba(91, 124, 255, 0.1), transparent 14rem),
+    linear-gradient(145deg, rgba(15, 34, 52, 0.94), rgba(9, 23, 37, 0.9)) !important;
+}
+
+.feature-card::after {
+  border-color: rgba(80, 171, 232, 0.1);
+}
+
+.feature-card[data-tone='amber'],
+.feature-card-featured[data-tone='amber'] {
+  --feature-accent: #35d0ff;
+}
+
+.feature-card[data-tone='lime'],
+.feature-card-featured[data-tone='lime'] {
+  --feature-accent: #2dd4bf;
+}
+
+.feature-card[data-tone='sky'],
+.feature-card-featured[data-tone='sky'] {
+  --feature-accent: #35d0ff;
+}
+
+.feature-card[data-tone='mint'],
+.feature-card-featured[data-tone='mint'] {
+  --feature-accent: #4fd1c5;
+}
+
+.feature-card[data-tone='violet'],
+.feature-card-featured[data-tone='violet'] {
+  --feature-accent: #7c96ff;
+}
+
+.architecture-diagram,
+.source-cta,
+.challenge-grid article,
+.project-pagination-card {
+  border-color: var(--line) !important;
+  background: rgba(12, 25, 39, 0.84) !important;
+  box-shadow: var(--shadow-soft);
+}
+
+.challenges {
+  background: rgba(6, 14, 23, 0.5);
+}
+
+/* Source explorer ----------------------------------------------------------- */
+
+.source-page {
+  border-color: var(--line);
+  background:
+    radial-gradient(circle at 98% 0%, rgba(91, 124, 255, 0.08), transparent 24rem),
+    rgba(9, 19, 31, 0.88);
+  box-shadow: var(--shadow-card);
+}
+
+.source-page header,
+.source-overview,
+.source-category-card,
+.source-feature-card,
+.related-files,
+.code-flow-panel {
+  border-color: var(--line) !important;
+  background-color: rgba(13, 27, 42, 0.82) !important;
+}
+
+.source-page pre,
+.source-code,
+.code-block,
+.code-panel {
+  border-color: rgba(89, 164, 218, 0.18) !important;
+  background: #050c14 !important;
+  box-shadow: 0 20px 52px rgba(0, 0, 0, 0.34);
+}
+
+/* Forms --------------------------------------------------------------------- */
+
+input,
+textarea,
+select {
+  color-scheme: dark;
+}
+
+.admin-page input,
+.admin-page textarea,
+.admin-page select,
+.admin-content-page input,
+.admin-content-page textarea,
+.admin-content-page select {
+  border-color: rgba(100, 154, 199, 0.2) !important;
+  background: rgba(8, 19, 31, 0.82) !important;
+  color: #eaf5ff !important;
+  box-shadow: inset 0 1px 0 rgba(162, 211, 247, 0.035);
+}
+
+.admin-page input::placeholder,
+.admin-page textarea::placeholder,
+.admin-content-page input::placeholder,
+.admin-content-page textarea::placeholder {
+  color: #61758c;
+}
+
+.admin-page input:focus,
+.admin-page textarea:focus,
+.admin-page select:focus,
+.admin-content-page input:focus,
+.admin-content-page textarea:focus,
+.admin-content-page select:focus {
+  border-color: rgba(53, 208, 255, 0.62) !important;
+  box-shadow: 0 0 0 4px rgba(53, 208, 255, 0.1) !important;
+}
+
+/* Main admin workspace ------------------------------------------------------ */
+
+.admin-section-nav {
+  border-color: var(--line);
+  background: rgba(8, 18, 29, 0.84);
+  box-shadow: 0 14px 42px rgba(0, 0, 0, 0.28);
+}
+
+.admin-section-nav-links a {
+  color: var(--muted);
+}
+
+.admin-section-nav-links a:hover {
+  background: rgba(53, 208, 255, 0.08);
+  color: #eaf7ff;
+}
+
+.admin-section-nav-links a.active {
+  background: linear-gradient(135deg, rgba(53, 208, 255, 0.18), rgba(91, 124, 255, 0.2));
+  color: #8fe7ff;
+  box-shadow: inset 0 0 0 1px rgba(53, 208, 255, 0.24);
+}
+
+.admin-hero {
+  border-color: var(--line) !important;
+  background:
+    radial-gradient(circle at 92% 12%, rgba(91, 124, 255, 0.14), transparent 26rem),
+    radial-gradient(circle at 8% 90%, rgba(53, 208, 255, 0.08), transparent 24rem),
+    rgba(10, 21, 34, 0.9) !important;
+}
+
+.admin-hero-status > span {
+  border: 1px solid rgba(91, 160, 211, 0.18) !important;
+  background: rgba(13, 28, 43, 0.82) !important;
+  color: #b8c9da;
+}
+
+.admin-panel,
+.admin-global-agent-panel,
+.admin-access-card {
+  border-color: var(--line) !important;
+  background: rgba(9, 20, 32, 0.91) !important;
+  box-shadow: var(--shadow-soft);
+}
+
+.admin-project-list,
+.admin-project-editor,
+.admin-tech-group,
+.admin-analysis-card,
+.admin-agent-proposal,
+.admin-global-agent-context,
+.admin-agent-compose,
+.admin-language-note,
+.admin-screenshot-editor {
+  border-color: var(--line) !important;
+  background: rgba(13, 27, 42, 0.78) !important;
+}
+
+.admin-project-select.active,
+.admin-locale-tab.active {
+  background: linear-gradient(135deg, rgba(53, 208, 255, 0.18), rgba(91, 124, 255, 0.22)) !important;
+  color: #dff8ff !important;
+  box-shadow: inset 0 0 0 1px rgba(53, 208, 255, 0.25);
+}
+
+.admin-project-select:hover,
+.admin-locale-tab:hover {
+  background: rgba(53, 208, 255, 0.07) !important;
+}
+
+.admin-screenshot-card {
+  border-color: var(--line) !important;
+  background: rgba(11, 24, 38, 0.92) !important;
+}
+
+.admin-message,
+.admin-agent-message,
+.admin-screenshot-empty {
+  border-color: var(--line) !important;
+  background: rgba(12, 25, 39, 0.74) !important;
+}
+
+/* Page copy & media admin --------------------------------------------------- */
+
+.admin-content-hero {
+  border-color: var(--line);
+  background:
+    radial-gradient(circle at 84% 20%, rgba(91, 124, 255, 0.18), transparent 24rem),
+    radial-gradient(circle at 12% 90%, rgba(53, 208, 255, 0.09), transparent 20rem),
+    rgba(9, 20, 32, 0.92);
+}
+
+.admin-content-preview-link {
+  border-color: rgba(96, 162, 214, 0.25);
+  background: rgba(15, 31, 47, 0.82);
+  color: #ddebfa;
+}
+
+.admin-content-preview-link:hover {
+  border-color: rgba(53, 208, 255, 0.42);
+  background: rgba(20, 44, 63, 0.9);
+}
+
+.admin-content-state-card,
+.admin-content-project-rail,
+.admin-content-panel {
+  border-color: var(--line);
+  background: rgba(9, 20, 32, 0.9);
+  box-shadow: var(--shadow-soft);
+}
+
+.admin-content-project-list button {
+  color: var(--ink) !important;
+}
+
+.admin-content-project-list button:hover {
+  background: rgba(53, 208, 255, 0.07) !important;
+}
+
+.admin-content-project-list button.active {
+  background: linear-gradient(135deg, rgba(53, 208, 255, 0.18), rgba(91, 124, 255, 0.22)) !important;
+  color: #e3f8ff !important;
+  box-shadow: inset 0 0 0 1px rgba(53, 208, 255, 0.22) !important;
+}
+
+.admin-content-locale-tabs {
+  border-color: var(--line);
+  background: rgba(5, 14, 24, 0.52);
+}
+
+.admin-content-locale-tabs button {
+  color: var(--ink) !important;
+}
+
+.admin-content-locale-tabs button.active {
+  background: rgba(24, 48, 68, 0.84) !important;
+  box-shadow: inset 0 0 0 1px rgba(53, 208, 255, 0.18), 0 9px 24px rgba(0, 0, 0, 0.18) !important;
+}
+
+.admin-content-copy-grid label {
+  border-color: var(--line);
+  background: rgba(13, 27, 42, 0.66);
+}
+
+.admin-content-media-card {
+  border-color: var(--line);
+  background: rgba(11, 24, 38, 0.92);
+  box-shadow: 0 12px 34px rgba(0, 0, 0, 0.2);
+}
+
+.admin-content-media-preview {
+  background: #07111c;
+}
+
+.admin-content-media-preview > span {
+  background: rgba(4, 12, 21, 0.82);
+  color: #dff7ff;
+}
+
+.admin-content-publish-bar {
+  border-color: rgba(91, 158, 207, 0.24);
+  background: rgba(7, 16, 27, 0.92);
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.35);
+}
+
+.admin-content-message {
+  border-color: var(--line);
+  background: rgba(12, 25, 39, 0.82);
+}
+
+.admin-content-message.success {
+  border-color: rgba(45, 212, 191, 0.28);
+  color: #6ee7d8;
+}
+
+/* Generic text / divider cleanup ------------------------------------------- */
+
+hr,
+.project-facts > div,
+.overview-rail,
+.overview-sidebar,
+.admin-panel-heading,
+.admin-content-panel-heading,
+.admin-content-rail-heading {
+  border-color: var(--line) !important;
+}
+
+p,
+small,
+.home-work-card-meta,
+.project-facts dt,
+.overview-sidebar-label,
+.admin-section-nav-brand small {
+  color: var(--muted);
+}
+
+h1,
+h2,
+h3,
+h4,
+strong,
+dt,
+dd {
+  color: var(--ink);
+}
+
+/* Keep destructive states distinct without reintroducing yellow. */
+button.danger,
+.admin-page button.danger {
+  border-color: rgba(255, 103, 133, 0.32) !important;
+  background: rgba(255, 82, 117, 0.1) !important;
+  color: #ff9bb0 !important;
+}
+
+button.danger:hover,
+.admin-page button.danger:not(:disabled):hover {
+  border-color: rgba(255, 123, 150, 0.5) !important;
+  background: rgba(255, 82, 117, 0.16) !important;
+}
+
+/* Mobile -------------------------------------------------------------------- */
+
+@media (max-width: 760px) {
+  .navbar nav {
+    border-color: var(--line);
+    background: rgba(7, 16, 27, 0.98);
+    box-shadow: var(--shadow-card);
+  }
+}
