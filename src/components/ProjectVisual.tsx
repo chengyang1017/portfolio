@@ -15,6 +15,23 @@ export function ProjectVisual({
   compact?: boolean;
   focus?: ProjectVisualFocus;
 }) {
+  const uploadedImage = !compact && !focus
+    ? project.gallery.find((item) => Boolean(item.image))?.image
+    : undefined;
+
+  if (uploadedImage) {
+    return (
+      <div className={`visual project-uploaded-visual tone-${project.tone}`}>
+        <img
+          src={uploadedImage}
+          alt={`${project.title} project preview`}
+          loading="eager"
+          decoding="async"
+        />
+      </div>
+    );
+  }
+
   const moduleSource = project.features.length > 0 ? project.features : project.technologies;
   const modules = moduleSource.slice(0, 3);
   const focusIndex = focus?.index ?? 1;
@@ -22,7 +39,10 @@ export function ProjectVisual({
 
   const technologies = project.technologies;
   const items = technologies.length > 0
-    ? Array.from({ length: Math.min(3, technologies.length) }, (_, index) => technologies[(focusIndex + index) % technologies.length])
+    ? Array.from(
+        { length: Math.min(3, technologies.length) },
+        (_, index) => technologies[(focusIndex + index) % technologies.length],
+      )
     : [];
 
   const heading = focus?.title ?? project.title;
