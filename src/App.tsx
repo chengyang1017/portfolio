@@ -1,8 +1,10 @@
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { useEffect } from 'react';
+import { AdminSectionNav } from './components/AdminSectionNav';
 import { Footer } from './components/Footer';
 import { Navbar } from './components/Navbar';
 import { AboutPage } from './pages/AboutPage';
+import { AdminContentPage } from './pages/AdminContentPage';
 import { AdminPage } from './pages/AdminPage';
 import { HomePage } from './pages/HomePage';
 import { ProjectDetailPage } from './pages/ProjectDetailPage';
@@ -19,7 +21,7 @@ function MetadataSync(){
   const { pathname } = useLocation();
   useEffect(() => {
     const project = pathname.startsWith('/projects/') ? getProject(pathname.split('/').pop() ?? '') : undefined;
-    const page = project?.title ?? (pathname === '/projects' ? 'Projects' : pathname === '/about' ? 'About' : pathname === '/admin' || pathname === '/admin/translations' ? 'Admin' : 'Portfolio');
+    const page = project?.title ?? (pathname === '/projects' ? 'Projects' : pathname === '/about' ? 'About' : pathname.startsWith('/admin') ? 'Admin' : 'Portfolio');
     const title = `${page} — Lim Cheng Yang`;
     const description = project?.summary ?? 'Portfolio of Lim Cheng Yang documenting public software repositories and one project in development.';
     const canonicalUrl = `${PRODUCTION_ORIGIN}${pathname}`;
@@ -37,4 +39,4 @@ function MetadataSync(){
   }, [pathname]);
   return null;
 }
-export default function App(){ return <><ScrollToTop/><MetadataSync/><Navbar/><Routes><Route path="/" element={<HomePage/>}/><Route path="/projects" element={<ProjectsPage/>}/><Route path="/projects/:slug/source" element={<ProjectSourcePage/>}/><Route path="/projects/:slug/source/:category" element={<SourceCategoryPage/>}/><Route path="/projects/:slug/source/:category/:feature" element={<SourceFeaturePage/>}/><Route path="/projects/:slug" element={<ProjectDetailPage/>}/><Route path="/about" element={<AboutPage/>}/><Route path="/admin" element={<AdminPage/>}/><Route path="/admin/translations" element={<Navigate to="/admin" replace/>}/><Route path="*" element={<HomePage/>}/></Routes><Footer/></>; }
+export default function App(){ return <><ScrollToTop/><MetadataSync/><Navbar/><Routes><Route path="/" element={<HomePage/>}/><Route path="/projects" element={<ProjectsPage/>}/><Route path="/projects/:slug/source" element={<ProjectSourcePage/>}/><Route path="/projects/:slug/source/:category" element={<SourceCategoryPage/>}/><Route path="/projects/:slug/source/:category/:feature" element={<SourceFeaturePage/>}/><Route path="/projects/:slug" element={<ProjectDetailPage/>}/><Route path="/about" element={<AboutPage/>}/><Route path="/admin" element={<><AdminSectionNav/><AdminPage/></>}/><Route path="/admin/content" element={<><AdminSectionNav/><AdminContentPage/></>}/><Route path="/admin/translations" element={<Navigate to="/admin" replace/>}/><Route path="*" element={<HomePage/>}/></Routes><Footer/></>; }

@@ -3,6 +3,24 @@ import portfolioSeedExtra from './portfolioSeedExtra.json';
 
 export type ProjectCategory = 'Language' | 'AI & Developer Tools' | 'Product';
 
+export type ProjectPageCopyLocale = 'en' | 'zh-CN' | 'zh-TW' | 'vi-Latn' | 'vi-Hani';
+
+export type ProjectPageCopy = {
+  projectAreasLabel?: string;
+  projectAreasHeading?: string;
+  overviewLabel?: string;
+  snapshotLabel?: string;
+  featureSectionLabel?: string;
+  featureHeading?: string;
+  featureSummary?: string;
+  architectureLabel?: string;
+  architectureHeading?: string;
+  sourceWalkthroughLabel?: string;
+  sourceWalkthroughTitle?: string;
+  sourceWalkthroughDescription?: string;
+  implementationLabel?: string;
+};
+
 export interface Project {
   slug: string;
   title: string;
@@ -18,6 +36,7 @@ export interface Project {
   architecture: { label: string; detail: string }[];
   gallery: { title: string; caption: string; image?: string }[];
   github?: string;
+  pageCopy?: Partial<Record<ProjectPageCopyLocale, ProjectPageCopy>>;
   tone: 'lime' | 'blue' | 'sand' | 'lavender' | 'slate' | 'coral';
   mockup: 'morphology' | 'commerce' | 'language' | 'keyboard' | 'ide' | 'inflection';
 }
