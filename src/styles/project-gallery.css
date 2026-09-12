@@ -375,3 +375,115 @@
     transition: none;
   }
 }
+
+/* =========================================================
+   Gallery layout fix
+   - Keep every gallery card at a stable width
+   - Prevent the first screenshot from being squeezed
+   - Keep caption numbers away from the clipped card edge
+   ========================================================= */
+
+@media (min-width: 1101px) {
+  .gallery.gallery,
+  .gallery.gallery.is-mixed {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 48px 24px;
+    align-items: start;
+  }
+
+  .gallery > .gallery-card,
+  .gallery > .gallery-card.is-generated,
+  .gallery > .gallery-card.is-landscape,
+  .gallery > .gallery-card.is-portrait,
+  .gallery.is-mixed > .gallery-card,
+  .gallery.is-mixed > .gallery-card.is-generated,
+  .gallery.is-mixed > .gallery-card.is-landscape,
+  .gallery.is-mixed > .gallery-card.is-portrait {
+    grid-column: auto !important;
+    grid-row: auto !important;
+
+    width: 100% !important;
+    max-width: none !important;
+    min-width: 0;
+
+    justify-self: stretch !important;
+    align-self: start;
+  }
+}
+
+/* Caption must stay inside the rounded card instead of touching its edge. */
+.gallery .gallery-card figcaption,
+.gallery.is-mixed .gallery-card figcaption {
+  box-sizing: border-box;
+
+  margin-top: 0;
+  padding: 18px 20px 22px;
+
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  gap: 14px;
+  align-items: start;
+}
+
+/* Stable number column. */
+.gallery .gallery-card figcaption > span,
+.gallery.is-mixed .gallery-card figcaption > span {
+  min-width: 34px;
+  padding-top: 3px;
+
+  display: block;
+
+  font-size: 0.72rem;
+  line-height: 1.2;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+}
+
+/* Never let long title/caption force the card wider. */
+.gallery .gallery-card figcaption > div {
+  min-width: 0;
+}
+
+.gallery .gallery-card figcaption strong,
+.gallery .gallery-card figcaption p {
+  overflow-wrap: anywhere;
+}
+
+/* Tablet */
+@media (min-width: 761px) and (max-width: 1100px) {
+  .gallery.gallery,
+  .gallery.gallery.is-mixed {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .gallery > .gallery-card,
+  .gallery.is-mixed > .gallery-card,
+  .gallery.is-mixed > .gallery-card.is-landscape,
+  .gallery.is-mixed > .gallery-card.is-portrait {
+    grid-column: auto !important;
+    grid-row: auto !important;
+    width: 100% !important;
+    max-width: none !important;
+  }
+}
+
+/* Mobile */
+@media (max-width: 760px) {
+  .gallery.gallery,
+  .gallery.gallery.is-mixed {
+    grid-template-columns: 1fr !important;
+  }
+
+  .gallery > .gallery-card,
+  .gallery.is-mixed > .gallery-card,
+  .gallery.is-mixed > .gallery-card.is-landscape,
+  .gallery.is-mixed > .gallery-card.is-portrait {
+    width: 100% !important;
+    max-width: none !important;
+  }
+
+  .gallery .gallery-card figcaption,
+  .gallery.is-mixed .gallery-card figcaption {
+    padding: 16px 16px 20px;
+  }
+}
